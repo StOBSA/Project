@@ -1,6 +1,7 @@
 use core::panic;
 use geos::Geom;
 use pathfinding::prelude::kruskal;
+use petgraph::Graph;
 use std::{
     collections::{HashMap, HashSet},
     f64::INFINITY,
@@ -68,7 +69,9 @@ impl<'t> Instance<'t> {
                         .map(|c| &self.problem.obstacle_corners[*c]),
                 )
                 .collect::<Vec<_>>();
-
+            
+            // let mut graph = Graph::new_undirected();
+            
             for i in 0..vertices.len() {
                 for j in (i + 1)..vertices.len() {
                     let t1 = vertices[i];
@@ -77,20 +80,19 @@ impl<'t> Instance<'t> {
                         .expect("could not create CoordSeq")
                         .create_line_string()
                         .expect("could not convert CoordSeq to LineString");
-
+                    let mut length = line.length().unwrap();
                     for obstacle in &self.problem.obstacles {
                         match line.intersection(obstacle.polygon.as_ref().unwrap()) {
                             Ok(intersect) => {
-                                let mut length = line.length().unwrap();
                                 if length > 0.0 {
                                     length -= intersect.length().unwrap();
                                     length += intersect.length().unwrap() * obstacle.weight;
                                 }
-                                distances.push(length);
                             }
                             Err(err) => println!("{}", err),
                         }
                     }
+                    distances.push(length)
                 }
             }
             let mut max = 0.0;
@@ -103,8 +105,8 @@ impl<'t> Instance<'t> {
                 .iter()
                 .map(|v| (u32::MAX as f64 * (*v) / max) as u64)
                 .collect::<Vec<_>>();
-            println!("distance = {:?}", distances);
-            println!("scaled distances = {:?}", scaled_distances);
+            // println!("distance = {:?}", distances);
+            // println!("scaled distances = {:?}", scaled_distances);
 
             for i in 0..vertices.len() {
                 for j in (i + 1)..vertices.len() {
@@ -125,7 +127,7 @@ impl<'t> Instance<'t> {
                         index += 1;
                     }
                 }
-                println!("{:?} to {:?}: {}", vertices[*edge.0], vertices[*edge.1], distances[index]);
+                // println!("{:?} to {:?}: {}", vertices[*edge.0], vertices[*edge.1], distances[index]);
                 total_distance += distances[index];
                 // total_distance += edge.2 as f64
             }
@@ -176,7 +178,6 @@ fn main() {
             Err(_) => panic!("could not read line in terminal file"),
         })
         .collect::<Vec<[f64; 2]>>();
-    println!("{:?}", terminals);
 
     let mut obstacles = Vec::new();
     {
