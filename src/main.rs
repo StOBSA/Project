@@ -1,7 +1,7 @@
 use core::panic;
 use geos::Geom;
 use pathfinding::prelude::kruskal;
-use petgraph::Graph;
+
 use std::{
     collections::{HashMap, HashSet},
     f64::INFINITY,
