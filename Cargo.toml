@@ -1,0 +1,12 @@
+[package]
+name = "geostesting"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+geos = "8.1.0"         # computational geometry suite
+csv = "1.1"            # data im/export
+pathfinding = "3.0.13" # kruskal
+petgraph = "0.6.2"
