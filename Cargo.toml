@@ -9,3 +9,7 @@ edition = "2021"
 geos = "8.1.0"         # computational geometry suite
 csv = "1.1"            # data im/export
 pathfinding = "3.0.13" # kruskal
+rand = "0.8.5"
+nalgebra = "*"
+itertools = "0.10.3"
+tetra = "0.7.0"
