@@ -1,5 +1,4 @@
-use core::{panic};
-use geos::Geometry;
+use core::panic;
 use itertools::Itertools;
 use pathfinding::prelude::kruskal;
 use rand::{distributions::Uniform, Rng, SeedableRng};
@@ -287,6 +286,7 @@ type Point = (f64, f64);
 const M_RANGE_MIN: f64 = 0.01;
 const NUMBER_OFFSPRING: i32 = 500 / 3;
 const P_FLIP_MOVE_MIN: f64 = 0.01;
+const INF: f64 = 1e10;
 
 struct SteinerProblem {
     terminals: Vec<Point>,
@@ -335,11 +335,11 @@ impl SteinerProblem {
                 (triangle[0][0], triangle[0][1]),
                 (triangle[1][0], triangle[1][1]),
                 (triangle[2][0], triangle[2][1]),
-                1e-9,
+                1e-6,
             ));
         }
 
-        let mut bounds = (f64::INFINITY, 0.0, f64::INFINITY, 0.0);
+        let mut bounds = (INF, 0.0, INF, 0.0);
         for point in terminals.iter().chain(obstacle_corners.iter()) {
             if point.0 < bounds.0 {
                 bounds.0 = point.0
@@ -379,7 +379,7 @@ impl SteinerProblem {
 
     fn coordinates_in_solid_obstacle(&self, coordinates: Point) -> bool {
         for obstacle in self.obstacles.iter() {
-            if obstacle.weight == f64::INFINITY {
+            if obstacle.weight == INF {
                 if geometry::point_in_polygon(coordinates.0, coordinates.1, &obstacle.points) {
                     return true;
                 }
@@ -414,7 +414,7 @@ struct Instance {
 struct StOBGA {
     problem: Rc<SteinerProblem>,
     population: Vec<Instance>,
-    ranom_generator: rand::rngs::StdRng,
+    random_generator: rand::rngs::StdRng,
     current_generation: usize,
     child_buffer: Vec<Instance>,
 }
@@ -423,7 +423,7 @@ impl StOBGA {
     fn crossover(&mut self, parent_1_index: usize, parent_2_index: usize) {
         let min_x = self.problem.bounds.0;
         let max_x = self.problem.bounds.1;
-        let random_x_value = self.ranom_generator.gen_range(min_x..max_x);
+        let random_x_value = self.random_generator.gen_range(min_x..max_x);
 
         let mut steiner_points_1 = Vec::new();
         let mut steiner_points_2 = Vec::new();
@@ -565,7 +565,7 @@ impl StOBGA {
         let mut stobga = StOBGA {
             problem,
             population,
-            ranom_generator: rng,
+            random_generator: rng,
             current_generation: 0,
             child_buffer: Vec::new(),
         };
@@ -594,7 +594,7 @@ impl StOBGA {
     fn tournament_select(&mut self, size: usize, to_die: bool) -> usize {
         if to_die {
             return rand::seq::index::sample(
-                &mut self.ranom_generator,
+                &mut self.random_generator,
                 self.population.len(),
                 size,
             )
@@ -602,12 +602,12 @@ impl StOBGA {
             .max_by(|i1, i2| {
                 let w1 = self.population[*i1].get_mst().total_weight;
                 let w2 = self.population[*i2].get_mst().total_weight;
-                w1.partial_cmp(&w2).unwrap()
+                w1.total_cmp(&w2)
             })
             .unwrap();
         } else {
             return rand::seq::index::sample(
-                &mut self.ranom_generator,
+                &mut self.random_generator,
                 self.population.len(),
                 size,
             )
@@ -638,7 +638,7 @@ impl StOBGA {
         }
         for (child_index, population_index) in children.iter().enumerate() {
             self.child_buffer[child_index].mutate(
-                &mut self.ranom_generator,
+                &mut self.random_generator,
                 p_flip_move,
                 self.current_generation,
             );
@@ -653,8 +653,7 @@ impl StOBGA {
                 .as_ref()
                 .unwrap()
                 .total_weight
-                .partial_cmp(&i2.minimum_spanning_tree.as_ref().unwrap().total_weight)
-                .unwrap()
+                .total_cmp(&i2.minimum_spanning_tree.as_ref().unwrap().total_weight)
         });
         self.current_generation += 1;
     }
@@ -665,7 +664,6 @@ impl Instance {
         if self.minimum_spanning_tree.is_none() {
             let mut edges = Vec::new();
             let mut distances = Vec::new();
-            let mut counter = 0;
 
             let vertices = self
                 .problem
@@ -681,16 +679,20 @@ impl Instance {
                 .map(|&c| c)
                 .collect::<Vec<_>>();
 
-            for i in 0..vertices.len() {
-                for j in (i + 1)..vertices.len() {
-                    let t1 = vertices[i];
-                    let t2 = vertices[j];
-                    let mut length = geometry::euclidean_distance(t1, t2);
-                    for obstacle in &self.problem.obstacles {
-                        let il =
-                            geometry::intersection_length(t1.0, t1.1, t2.0, t2.1, &obstacle.points);
-                        length -= il;
-                        length += il * obstacle.weight;
+            for slice in vertices.iter().combinations(2) {
+                let t1 = *slice[0];
+                let t2 = *slice[1];
+                let mut length = geometry::euclidean_distance(t1, t2);
+                for obstacle in &self.problem.obstacles {
+                    let il =
+                        geometry::intersection_length(t1.0, t1.1, t2.0, t2.1, &obstacle.points);
+                    if il > 0.0 {
+                        if obstacle.weight == INF {
+                            length = INF;
+                        } else {
+                            length -= il;
+                            length += il * obstacle.weight;
+                        }
                     }
                     distances.push(length)
                 }
@@ -706,7 +708,8 @@ impl Instance {
                 .map(|v| (u32::MAX as f64 * (*v) / max) as u64)
                 .collect::<Vec<_>>();
 
-            for i in 0..vertices.len() {
+            let mut counter = 0;
+            for i in 0..(vertices.len() - 1) {
                 for j in (i + 1)..vertices.len() {
                     edges.push((i, j, scaled_distances[counter]));
                     counter += 1;
@@ -724,6 +727,10 @@ impl Instance {
                         }
                         index += 1;
                     }
+                }
+                if distances[index] == INF {
+                    total_distance = INF;
+                    break;
                 }
                 total_distance += distances[index];
             }
@@ -842,22 +849,22 @@ impl Instance {
             (0, n) => {
                 self.chromosome
                     .included_corners
-                    .remove(&candidate_corners[rng.gen_range(0..n)]);
+                    .remove(&candidate_corners[if n > 1 { rng.gen_range(0..n) } else { 0 }]);
             }
             (n, 0) => {
                 self.chromosome
                     .steiner_points
-                    .remove(candidate_steiner_points[rng.gen_range(0..n)]);
+                    .remove(candidate_steiner_points[if n > 1 { rng.gen_range(0..n) } else { 0 }]);
             }
             (n, m) => {
                 if rng.gen_bool((n as f64 / m as f64).clamp(0.0, 1.0)) {
-                    self.chromosome
-                        .steiner_points
-                        .remove(candidate_steiner_points[rng.gen_range(0..n)]);
+                    self.chromosome.steiner_points.remove(
+                        candidate_steiner_points[if n > 1 { rng.gen_range(0..n) } else { 0 }],
+                    );
                 } else {
                     self.chromosome
                         .included_corners
-                        .remove(&candidate_corners[rng.gen_range(0..m)]);
+                        .remove(&candidate_corners[if m > 1 { rng.gen_range(0..m) } else { 0 }]);
                 }
             }
         }
@@ -900,7 +907,11 @@ impl Instance {
             }
             self.chromosome.steiner_points.push(new_steiner);
         } else {
-            let random_triple = candidates[rng.gen_range(0..candidates.len())];
+            let random_triple = candidates[if candidates.len() > 1 {
+                rng.gen_range(0..candidates.len())
+            } else {
+                0
+            }];
             let p1 = self.minimum_spanning_tree.as_ref().unwrap().vertices[random_triple.0];
             let p2 = self.minimum_spanning_tree.as_ref().unwrap().vertices[random_triple.1];
             let p3 = self.minimum_spanning_tree.as_ref().unwrap().vertices[random_triple.2];
@@ -927,14 +938,14 @@ impl Instance {
                 let x_sign = if rng.gen_bool(0.5) { 1.0 } else { -1.0 };
                 let y_sign = if rng.gen_bool(0.5) { 1.0 } else { -1.0 };
 
-                let mut new_x = self.chromosome.steiner_points[i].0;
-                let mut new_y = self.chromosome.steiner_points[i].1;
-
-                new_x += x_sign * rng.gen_range(M_RANGE_MIN..m_range);
-                new_y += y_sign * rng.gen_range(M_RANGE_MIN..m_range);
-
-                self.chromosome.steiner_points[i].0 = new_x;
-                self.chromosome.steiner_points[i].1 = new_y;
+                if m_range > M_RANGE_MIN {
+                    let dist = Uniform::new(M_RANGE_MIN, m_range);
+                    self.chromosome.steiner_points[i].0 = dist.sample(rng) * x_sign;
+                    self.chromosome.steiner_points[i].1 = dist.sample(rng) * y_sign;
+                } else {
+                    self.chromosome.steiner_points[i].0 = M_RANGE_MIN * x_sign;
+                    self.chromosome.steiner_points[i].1 = M_RANGE_MIN * y_sign;
+                }
             }
         }
         for i in 0..k {
@@ -963,13 +974,9 @@ impl Obstacle {
 }
 
 fn main() {
-    std::env::set_var("RUST_BACKTRACE", "1");
+    std::env::set_var("RUST_BACKTRACE", "full");
     let mut reader = csv::ReaderBuilder::new()
-        .from_path(
-            "/home/lama/Dokumente/Uni/Amsterdam/sem\
-        ester 22/Thesis/code/dataset/p618-rosenberg_suppl/\
-        TestCases/SoftObstacles/terminals5.csv",
-        )
+        .from_path("terminals.csv")
         .expect("error");
     let terminals = reader
         .records()
@@ -987,11 +994,7 @@ fn main() {
         let mut current_obstacle = Obstacle::new(0.0, vec![]);
         for line in csv::ReaderBuilder::new()
             .has_headers(false)
-            .from_path(
-                "/home/lama/Dokumente/Uni/Amsterdam/semester 22\
-            /Thesis/code/dataset/p618-rosenberg_suppl/TestCases/SoftObs\
-            tacles/obstacles5.csv",
-            )
+            .from_path("obstacles.csv")
             .expect("could not open obstacle file")
             .records()
             .map(|u| u.unwrap())
@@ -1001,7 +1004,7 @@ fn main() {
                 current_obstacle = Obstacle::new(0.0, vec![]);
             } else if line.get(1) == Some("") || line.get(1) == None {
                 if &line[0] == "max" {
-                    current_obstacle.weight = f64::INFINITY;
+                    current_obstacle.weight = INF;
                 } else {
                     current_obstacle.weight = (&line[0]).parse().expect("bad csv");
                 }
@@ -1016,6 +1019,41 @@ fn main() {
     }
     let problem = SteinerProblem::new(terminals.clone(), obstacles.clone());
     let mut stobga = StOBGA::new(Rc::new(problem), 500, 166, 166, 166);
+    let problem = SteinerProblem::new(terminals.clone(), obstacles.clone());
+    // let mut stobga = StOBGA::new(Rc::new(problem), 500, 166, 166, 166);
+    // let mut streak = (0, INF);
+    // println!("generation;average;best;chromosome");
+    // while stobga.current_generation < 1500 {
+    //     stobga.step();
+    //     if stobga.population[0].get_mst().total_weight < streak.1 {
+    //         streak = (0, stobga.population[0].get_mst().total_weight);
+    //         println!(
+    //             "{};{};{};{:?}",
+    //             stobga.current_generation,
+    //             {
+    //                 let mut avg = 0.0;
+    //                 for i in stobga.population.iter_mut() {
+    //                     avg += i.get_mst().total_weight;
+    //                 }
+    //                 avg / 500.0
+    //             },
+    //             { stobga.population[0].get_mst().total_weight },
+    //             stobga.population[0].chromosome
+    //         );
+    //     } else {
+    //         streak.0 += 1
+    //     }
+    //     if streak.0 == 200 {
+    //         break;
+    //     }
+    // }
+    let mut i = Instance{chromosome:Chromosome { steiner_points: vec![(0.8556624327025935, 0.25)], included_corners: HashSet::from([3]) },minimum_spanning_tree:None,problem:Rc::new(problem)};
+    println!("{}", i.get_mst().total_weight);
+}
+
+#[cfg(test)]
+mod test {
+    use crate::geometry::{fermat_point, intersection_length};
 
     // let mut step = 0;
     // loop {
@@ -1140,19 +1178,31 @@ impl State for GameState {
     }
 }
 
-#[cfg(test)]
-mod test {
+    #[test]
+    fn test_geometry() {
+        assert!(crate::geometry::point_in_polygon(
+            0.0,
+            0.0,
+            &[(-1.0, -1.0), (1.0, 1.0), (0.0, 2.0)]
+        ))
+    }
 
     #[test]
-    fn test1() {
-        println!(
-            "{:?}",
-            crate::geometry::fermat_point(
-                (0.512, 0.414),
-                (0.43, 0.5900000000000001),
-                (0.728, 0.406),
-                1e-10
-            )
+    fn test_geometry2() {
+        assert_eq!(
+            crate::geometry::line_segment_polygon_intersection(
+                0.0,
+                0.0,
+                2.0,
+                0.0,
+                &[(1.0, 0.0), (1.0, -1.0), (-1.0, -1.0)],
+                true
+            ),
+            vec![(1.0, 0.0)]
+        );
+        assert_eq!(
+            intersection_length(0.0, 0.0, 2.0, 0.0, &[(1.0, 0.0), (1.0, -1.0), (-1.0, -1.0)]),
+            0.0
         );
     }
 
