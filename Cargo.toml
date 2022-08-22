@@ -6,10 +6,9 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-geos = "8.1.0"         # computational geometry suite
-csv = "1.1"            # data im/export
-pathfinding = "3.0.13" # kruskal
-rand = "0.8.5"
-nalgebra = "*"
-itertools = "0.10.3"
-tetra = "0.7.0"
+geos        = "8.1.0"  # delaunay triangulation
+rand        = "0.8.5"  # random number generation
+nalgebra    = "*"       # linear algebra library
+itertools   = "0.10.3" # simplifications for iterations
+tetra       = "0.7.0"  # GUI output
+petgraph    = "0.6.2"  # Graph library used to compute MST
