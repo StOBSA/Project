@@ -5,6 +5,14 @@ use petgraph::data::FromElements;
 use petgraph::visit::EdgeRef;
 
 use rand::{distributions::Uniform, prelude::Distribution, Rng, SeedableRng};
+use tetra::Context;
+use tetra::ContextBuilder;
+use tetra::State;
+use tetra::graphics;
+use tetra::graphics::Color;
+use tetra::graphics::mesh::GeometryBuilder;
+use tetra::graphics::mesh::Mesh;
+use tetra::math::Vec2;
 
 mod geometry {
     pub const RADIANS_120_DEGREE: f64 = 2.0 * std::f64::consts::PI / 3.0;
@@ -1204,7 +1212,7 @@ struct GameState {
 }
 
 impl State for GameState {
-    fn update(&mut self, ctx: &mut Context) -> Result<()> {
+    fn update(&mut self, ctx: &mut Context) -> tetra::Result<()> {
         let stobga = self.stobga.try_read();
         if let Ok(stobga) = stobga {
             // stobga.step();
