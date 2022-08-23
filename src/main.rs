@@ -1071,7 +1071,7 @@ fn main() {
     }
     // return;
     let problem = SteinerProblem::new(terminals.clone(), obstacles.clone());
-    let mut stobga = StOBGA::new(Arc::new(problem), 500, 166, 166, 166);
+    let stobga = StOBGA::new(Arc::new(problem), 500, 166, 166, 166);
 
     // let mut streak = (0, f64::INFINITY);
     // println!("generation;average;best;chromosome");
@@ -1138,7 +1138,7 @@ fn main() {
     //     step += 1;
     // }
 
-    let mut stobga = Arc::new(std::sync::RwLock::new(stobga));
+    let stobga = Arc::new(std::sync::RwLock::new(stobga));
     let clone = Arc::clone(&stobga);
     thread::spawn(move || {
         loop {
@@ -1155,7 +1155,7 @@ fn main() {
                 stobga: Arc::clone(&stobga),
                 shapes: Vec::new(),
             })
-        });
+        }).unwrap();
 }
 
 struct GameState {
@@ -1165,7 +1165,7 @@ struct GameState {
 
 impl State for GameState {
     fn update(&mut self, ctx: &mut Context) -> Result<()> {
-        let mut stobga = self.stobga.try_read();
+        let stobga = self.stobga.try_read();
         if let Ok(stobga) = stobga {
             // stobga.step();
         self.shapes.clear();
