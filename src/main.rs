@@ -332,6 +332,7 @@ struct SteinerProblem {
     centroids: Vec<Point>,
     bounds: Bounds,
     average_terminal_distance: f64,
+    base_graph : petgraph::graph::UnGraph<Point, f64, u32>
 }
 
 impl SteinerProblem {
@@ -409,6 +410,59 @@ impl SteinerProblem {
         }
         average_terminal_distance /= counter as f64;
 
+        let mut graph = petgraph::Graph::new_undirected();
+        for terminal in terminals.iter() {
+            graph.add_node((*terminal).clone());
+        }
+        for i1 in 0..(terminals.len() - 1) {
+            let t1 = terminals[i1];
+            for i2 in (i1 + 1)..terminals.len() {
+                let t2 = terminals[i2];
+                let mut length = geometry::euclidean_distance(t1, t2);
+                let line_bounds = Bounds {
+                    min_x: t1.0.min(t2.0),
+                    min_y: t1.1.min(t2.1),
+                    max_x: t1.0.max(t2.0),
+                    max_y: t1.1.max(t2.1),
+                };
+                for obstacle in &obstacles {
+                    let bounds = &obstacle.bounds;
+                    if overlap(
+                        line_bounds.min_x,
+                        line_bounds.min_y,
+                        line_bounds.max_x,
+                        line_bounds.max_y,
+                        bounds.min_x,
+                        bounds.min_y,
+                        bounds.max_x,
+                        bounds.max_y,
+                    ) {
+                        let intersection_len = geometry::intersection_length(
+                            t1.0,
+                            t1.1,
+                            t2.0,
+                            t2.1,
+                            &obstacle.points,
+                            &obstacle.bounds,
+                        );
+                        if intersection_len > 0.0 {
+                            if obstacle.weight == INF {
+                                length = INF;
+                            } else {
+                                length -= intersection_len;
+                                length += intersection_len * obstacle.weight;
+                            }
+                        }
+                    }
+                }
+                graph.add_edge(
+                    petgraph::graph::NodeIndex::new(i1),
+                    petgraph::graph::NodeIndex::new(i2),
+                    length,
+                );
+            }
+        }
+
         SteinerProblem {
             terminals,
             obstacles,
@@ -416,6 +470,7 @@ impl SteinerProblem {
             centroids,
             bounds,
             average_terminal_distance,
+            base_graph : graph
         }
     }
 
@@ -723,29 +778,22 @@ impl StOBGA {
 impl Instance {
     fn get_mst(&mut self) -> &MinimumSpanningTree {
         if self.minimum_spanning_tree.is_none() {
-            let mut graph = petgraph::Graph::new_undirected();
-            let vertices = self
-                .problem
-                .terminals
-                .iter()
-                .chain(self.chromosome.steiner_points.iter())
-                .chain(
-                    self.chromosome
-                        .included_corners
-                        .iter()
-                        .map(|c| &self.problem.obstacle_corners[*c]),
-                )
-                .map(|&c| c)
-                .collect::<Vec<_>>();
-
-            for vertex in vertices.iter() {
-                graph.add_node((*vertex).clone());
+            let mut graph = self.problem.base_graph.clone();
+            let source_vertices = self.chromosome.steiner_points.iter().chain(
+                self.chromosome
+                    .included_corners
+                    .iter()
+                    .map(|c| &self.problem.obstacle_corners[*c]),
+            )
+            .map(|&c| c);
+            
+            for vertex in source_vertices.clone() {
+                graph.add_node(vertex.clone());
             }
-            for i1 in 0..(vertices.len() - 1) {
-                let t1 = vertices[i1];
-                for i2 in (i1 + 1)..vertices.len() {
-                    let t2 = vertices[i2];
-                    let mut length = geometry::euclidean_distance(t1, t2);
+            for (i1, t1) in source_vertices.enumerate() {
+
+                for (i2, t2) in self.problem.terminals.iter().enumerate() {
+                    let mut length = geometry::euclidean_distance(t1, *t2);
                     let line_bounds = Bounds {
                         min_x: t1.0.min(t2.0),
                         min_y: t1.1.min(t2.1),
@@ -783,7 +831,7 @@ impl Instance {
                         }
                     }
                     graph.add_edge(
-                        petgraph::graph::NodeIndex::new(i1),
+                        petgraph::graph::NodeIndex::new(i1+self.problem.base_graph.node_count()),
                         petgraph::graph::NodeIndex::new(i2),
                         length,
                     );
