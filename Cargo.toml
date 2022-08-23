@@ -1,6 +1,6 @@
 [package]
-name = "geostesting"
-version = "0.1.0"
+name = "stobga"
+version = "0.2.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 geos        = "8.1.0"  # delaunay triangulation
 rand        = "0.8.5"  # random number generation
-nalgebra    = "*"       # linear algebra library
+nalgebra    = "*"      # linear algebra library
 itertools   = "0.10.3" # simplifications for iterations
 tetra       = "0.7.0"  # GUI output
 petgraph    = "0.6.2"  # Graph library used to compute MST
