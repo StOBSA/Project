@@ -688,7 +688,7 @@ impl Instance {
                 .collect::<Vec<_>>();
 
             for vertex in vertices.iter() {
-                graph.add_node(vertex.clone());
+                graph.add_node((*vertex).clone());
             }
             for i1 in 0..(vertices.len()-1) {
                 let t1 = vertices[i1];
@@ -706,10 +706,8 @@ impl Instance {
                                 length += il * obstacle.weight;
                             }
                         }
-                        if length < INF {
-                            graph.add_edge(petgraph::graph::NodeIndex::new(i1), petgraph::graph::NodeIndex::new(i2), length);
-                        }
                     }
+                    graph.add_edge(petgraph::graph::NodeIndex::new(i1), petgraph::graph::NodeIndex::new(i2), length);
                 }
             }
             let mst = petgraph::graph::UnGraph::<_, _>::from_elements(petgraph::algo::min_spanning_tree(&graph));
@@ -1033,9 +1031,9 @@ struct GameState {
 
 impl State for GameState {
     fn update(&mut self, ctx: &mut Context) -> Result<()> {
-        println!("{}", self.stobga.current_generation);
         self.stobga.step();
         self.shapes.clear();
+        println!("{} - {}", self.stobga.current_generation, self.stobga.population[0].get_mst().total_weight);
 
         for obstacle in &self.stobga.population[0].problem.obstacles {
             let mut points = obstacle.points.iter()
@@ -1189,6 +1187,51 @@ mod test {
             &[(0.0, 0.0), (1.0, 0.0), (0.5, -1.0)],
             &(0.0, 0.0, 1.0, 0.0)
         ),0.0)
+    }
+
+    #[test]
+    fn test_geometry10() {
+        assert!(
+            crate::geometry::intersection_length(
+                0.845641974,0.904959172,
+                0.753467217,0.42431886,
+                &[
+                    (0.796,0.898),
+                    (0.804,0.784),
+                    (0.906,0.792),
+                    (0.908,0.886),
+                ],
+                &(0.0, 0.0, 1.0, 0.0)
+            ) > 0.0
+        )
+    }
+
+    #[test]
+    fn test_geometry11() {
+        println!("{}",crate::geometry::intersection_length(
+            0.936640447,0.706594727,
+            0.753467217,0.42431886,
+            &[
+                (0.784,0.522),
+                (0.798,0.44799999999999995),
+                (0.906,0.45199999999999996),
+                (0.9,0.534),
+            ],
+            &(0.0, 0.0, 1.0, 0.0)
+        ));
+        assert!(
+            crate::geometry::intersection_length(
+                0.936640447,0.706594727,
+                0.753467217,0.42431886,
+                &[
+                    (0.784,0.522),
+                    (0.798,0.44799999999999995),
+                    (0.906,0.45199999999999996),
+                    (0.9,0.534),
+                ],
+                &(0.0, 0.0, 1.0, 0.0)
+            ) > 0.0
+        )
     }
 
     #[test]
