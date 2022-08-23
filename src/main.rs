@@ -324,7 +324,10 @@ mod geometry {
     }
 }
 
-use std::{collections::HashSet, rc::Rc};
+use std::sync::Arc;
+use std::thread;
+use std::time::Duration;
+use std::{collections::HashSet};
 
 type Point = (f64, f64);
 
@@ -475,13 +478,13 @@ struct MinimumSpanningTree {
 
 #[derive(Clone)]
 struct Instance {
-    problem: Rc<SteinerProblem>,
+    problem: Arc<SteinerProblem>,
     chromosome: Chromosome,
     minimum_spanning_tree: Option<MinimumSpanningTree>,
 }
 
 struct StOBGA {
-    problem: Rc<SteinerProblem>,
+    problem: Arc<SteinerProblem>,
     population: Vec<Instance>,
     random_generator: rand::rngs::StdRng,
     current_generation: usize,
@@ -568,7 +571,7 @@ impl StOBGA {
     }
 
     fn new(
-        problem: Rc<SteinerProblem>,
+        problem: Arc<SteinerProblem>,
         population_size: usize,
         t1: usize,
         t2: usize,
@@ -579,7 +582,7 @@ impl StOBGA {
 
         for _ in 0..t1 {
             population.push(Instance {
-                problem: Rc::clone(&problem),
+                problem: Arc::clone(&problem),
                 chromosome: Chromosome {
                     steiner_points: problem.centroids.clone(),
                     included_corners: HashSet::new(),
@@ -603,7 +606,7 @@ impl StOBGA {
                 steiner_points.push((rng.sample(x_dist), rng.sample(y_dist)));
             }
             population.push(Instance {
-                problem: Rc::clone(&problem),
+                problem: Arc::clone(&problem),
                 chromosome: Chromosome {
                     steiner_points: steiner_points,
                     included_corners: HashSet::new(),
@@ -622,7 +625,7 @@ impl StOBGA {
             }
 
             population.push(Instance {
-                problem: Rc::clone(&problem),
+                problem: Arc::clone(&problem),
                 chromosome: Chromosome {
                     steiner_points: Vec::new(),
                     included_corners: corners,
@@ -1068,53 +1071,53 @@ fn main() {
     }
     // return;
     let problem = SteinerProblem::new(terminals.clone(), obstacles.clone());
-    let mut stobga = StOBGA::new(Rc::new(problem), 500, 166, 166, 166);
+    let mut stobga = StOBGA::new(Arc::new(problem), 500, 166, 166, 166);
 
-    let mut streak = (0, f64::INFINITY);
-    println!("generation;average;best;chromosome");
-    while stobga.current_generation < 1500 {
-        stobga.step();
-        // stobga.population[0].chromosome = Chromosome{steiner_points:vec![],included_corners:stobga.problem.obstacle_corners.iter().enumerate().map(|(a,b)|a).collect()};
-        // stobga.population[0].get_mst();
-        // let graph = &stobga.population[0].minimum_spanning_tree.as_ref().unwrap().graph;
-        if stobga.population[0].get_mst().total_weight < streak.1-1e-6 {
-            streak = (0, stobga.population[0].get_mst().total_weight);
+    // let mut streak = (0, f64::INFINITY);
+    // println!("generation;average;best;chromosome");
+    // while stobga.current_generation < 1500 {
+    //     stobga.step();
+    //     // stobga.population[0].chromosome = Chromosome{steiner_points:vec![],included_corners:stobga.problem.obstacle_corners.iter().enumerate().map(|(a,b)|a).collect()};
+    //     // stobga.population[0].get_mst();
+    //     // let graph = &stobga.population[0].minimum_spanning_tree.as_ref().unwrap().graph;
+    //     if stobga.population[0].get_mst().total_weight < streak.1-1e-6 {
+    //         streak = (0, stobga.population[0].get_mst().total_weight);
 
-            println!(
-                "{};{};{};{:?}",
-                stobga.current_generation,
-                {
-                    let mut avg = 0.0;
-                    for i in stobga.population.iter_mut() {
-                        avg += i.get_mst().total_weight;
-                    }
-                    avg / 500.0
-                },
-                { stobga.population[0].get_mst().total_weight },
-                stobga.population[0].chromosome
-            );
-        } else {
-            streak.0 += 1
-        }
-        if streak.0 == 200 {
-            break;
-        }
-    }
-    println!(
-        "{};{};{};{:?}",
-        stobga.current_generation,
-        {
-            let mut avg = 0.0;
-            for i in stobga.population.iter_mut() {
-                avg += i.get_mst().total_weight;
-            }
-            avg / 500.0
-        },
-        { stobga.population[0].get_mst().total_weight },
-        stobga.population[0].chromosome
-    );
+    //         println!(
+    //             "{};{};{};{:?}",
+    //             stobga.current_generation,
+    //             {
+    //                 let mut avg = 0.0;
+    //                 for i in stobga.population.iter_mut() {
+    //                     avg += i.get_mst().total_weight;
+    //                 }
+    //                 avg / 500.0
+    //             },
+    //             { stobga.population[0].get_mst().total_weight },
+    //             stobga.population[0].chromosome
+    //         );
+    //     } else {
+    //         streak.0 += 1
+    //     }
+    //     if streak.0 == 200 {
+    //         break;
+    //     }
+    // }
+    // println!(
+    //     "{};{};{};{:?}",
+    //     stobga.current_generation,
+    //     {
+    //         let mut avg = 0.0;
+    //         for i in stobga.population.iter_mut() {
+    //             avg += i.get_mst().total_weight;
+    //         }
+    //         avg / 500.0
+    //     },
+    //     { stobga.population[0].get_mst().total_weight },
+    //     stobga.population[0].chromosome
+    // );
 
-    // let mut i = Instance{chromosome:Chromosome { steiner_points: vec![(0.7891687313029053, 0.253945198380253)], included_corners: HashSet::from([3]) },minimum_spanning_tree:None,problem:Rc::new(problem)};
+    // let mut i = Instance{chromosome:Chromosome { steiner_points: vec![(0.7891687313029053, 0.253945198380253)], included_corners: HashSet::from([3]) },minimum_spanning_tree:None,problem:Arc::new(problem)};
     // println!("{}", i.get_mst().total_weight);
 
     // let mut step = 0;
@@ -1135,56 +1138,69 @@ fn main() {
     //     step += 1;
     // }
 
-    // ContextBuilder::new("Rosenberg", 500, 500)
-    //     .build()
-    //     .expect("err")
-    //     .run(|_| {
-    //         Ok(GameState {
-    //             stobga,
-    //             shapes: Vec::new(),
-    //         })
-    //     });
+    let mut stobga = Arc::new(std::sync::RwLock::new(stobga));
+    let clone = Arc::clone(&stobga);
+    thread::spawn(move || {
+        loop {
+            clone.write().unwrap().step();
+            thread::sleep(Duration::from_millis(10));
+        }
+    }
+    );
+    ContextBuilder::new("StOBGA", 500, 500)
+        .build()
+        .expect("err")
+        .run(|_| {
+            Ok(GameState {
+                stobga: Arc::clone(&stobga),
+                shapes: Vec::new(),
+            })
+        });
 }
 
 struct GameState {
-    stobga: StOBGA,
+    stobga: Arc<std::sync::RwLock<StOBGA>>,
     shapes: Vec<Mesh>,
 }
 
 impl State for GameState {
     fn update(&mut self, ctx: &mut Context) -> Result<()> {
-        self.stobga.step();
+        let mut stobga = self.stobga.try_read();
+        if let Ok(stobga) = stobga {
+            // stobga.step();
         self.shapes.clear();
         println!(
             "{} - {}",
-            self.stobga.current_generation,
-            self.stobga.population[0].get_mst().total_weight
+            stobga.current_generation.clone(),
+            if stobga.population[0].minimum_spanning_tree.is_some() {format!("{}",stobga.population[0].minimum_spanning_tree.as_ref().unwrap().total_weight)} else {String::from("NA")}
         );
 
-        for obstacle in &self.stobga.population[0].problem.obstacles {
+        for obstacle in &stobga.population[0].problem.obstacles {
             let mut points = obstacle
                 .points
                 .iter()
                 .map(|v| Vec2::new((v.0 * 400.0) as f32, (v.1 * 400.0) as f32))
                 .collect::<Vec<_>>();
-            points.push(points[0].clone());
-            self.shapes.push(
-                GeometryBuilder::new()
-                    .set_color(Color::rgba(1.0, 1.0, 0.5, 0.5))
-                    .rectangle(
-                        graphics::mesh::ShapeStyle::Fill,
-                        graphics::Rectangle {
-                            x: (obstacle.bounds.min_x * 400.0) as f32,
-                            y: (obstacle.bounds.min_y * 400.0) as f32,
-                            width: ((obstacle.bounds.max_x - obstacle.bounds.min_x) * 400.0) as f32,
-                            height: ((obstacle.bounds.max_y - obstacle.bounds.min_y) * 400.0)
-                                as f32,
-                        },
-                    )
-                    .unwrap()
-                    .build_mesh(ctx)
-                    .unwrap(),
-            );
+            if points.len() > 0 {
+                points.push(points[0].clone());
+            }
+            // self.shapes.push(
+            //     GeometryBuilder::new()
+            //         .set_color(Color::rgba(1.0, 1.0, 0.5, 0.5))
+            //         .rectangle(
+            //             graphics::mesh::ShapeStyle::Fill,
+            //             graphics::Rectangle {
+            //                 x: (obstacle.bounds.min_x * 400.0) as f32,
+            //                 y: (obstacle.bounds.min_y * 400.0) as f32,
+            //                 width: ((obstacle.bounds.max_x - obstacle.bounds.min_x) * 400.0) as f32,
+            //                 height: ((obstacle.bounds.max_y - obstacle.bounds.min_y) * 400.0)
+            //                     as f32,
+            //             },
+            //         )
+            //         .unwrap()
+            //         .build_mesh(ctx)
+            //         .unwrap(),
+            // );
             self.shapes.push(
                 GeometryBuilder::new()
                     .set_color(Color::rgb(1.0, 1.0, 0.5))
@@ -1194,7 +1210,7 @@ impl State for GameState {
                     .unwrap(),
             );
         }
-        let graph = &self.stobga.population[0]
+        let graph = &stobga.population[0]
             .minimum_spanning_tree
             .as_ref()
             .unwrap()
@@ -1231,6 +1247,37 @@ impl State for GameState {
                     .unwrap(),
             );
         }
+        for steiner in &stobga.population[0].chromosome.steiner_points {
+            self.shapes.push(
+                GeometryBuilder::new()
+                    .set_color(Color::rgb(0.0, 1.0, 0.0))
+                    .circle(
+                        graphics::mesh::ShapeStyle::Fill,
+                        Vec2::new((steiner.0 * 400.0) as f32, (steiner.1 * 400.0) as f32),
+                        5.0,
+                    )
+                    .unwrap()
+                    .build_mesh(ctx)
+                    .unwrap(),
+            );
+        }
+        for steiner in &stobga.population[0].chromosome.included_corners {
+            let steiner = &stobga.problem.obstacle_corners[*steiner];
+            self.shapes.push(
+                GeometryBuilder::new()
+                    .set_color(Color::rgb(0.0, 1.0, 0.0))
+                    .circle(
+                        graphics::mesh::ShapeStyle::Fill,
+                        Vec2::new((steiner.0 * 400.0) as f32, (steiner.1 * 400.0) as f32),
+                        5.0,
+                    )
+                    .unwrap()
+                    .build_mesh(ctx)
+                    .unwrap(),
+            );
+        }
+        }
+        
         Ok(())
     }
     fn draw(&mut self, ctx: &mut Context) -> tetra::Result {
