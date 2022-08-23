@@ -1,10 +1,15 @@
+use geometry::Bounds;
+use geometry::overlap;
 use itertools::Itertools;
-use petgraph::visit::{EdgeRef};
-use petgraph::{data::FromElements};
+use petgraph::data::FromElements;
+use petgraph::visit::EdgeRef;
 
-use rand::{distributions::Uniform, Rng, SeedableRng, prelude::Distribution};
+use rand::{distributions::Uniform, prelude::Distribution, Rng, SeedableRng};
 use tetra::{
-    graphics::{mesh::{GeometryBuilder, Mesh}, Color},
+    graphics::{
+        mesh::{GeometryBuilder, Mesh},
+        Color,
+    },
     math::Vec2,
     *,
 };
@@ -12,13 +17,39 @@ use tetra::{
 mod geometry {
     pub const RADIANS_120_DEGREE: f64 = 2.0 * std::f64::consts::PI / 3.0;
 
+    use std::f64::INFINITY;
+
     use itertools::Itertools;
 
     use crate::Point;
 
+    #[derive(Debug, Clone)]
+    pub struct Bounds {
+        pub min_x: f64,
+        pub max_x: f64,
+        pub min_y: f64,
+        pub max_y: f64,
+    }
+
+    impl Default for Bounds {
+        fn default() -> Self {
+            Self {
+                min_x: INFINITY,
+                max_x: 0.0,
+                min_y: INFINITY,
+                max_y: 0.0,
+            }
+        }
+    }
+
     pub fn euclidean_distance(a: Point, b: Point) -> f64 {
         ((a.0 - b.0).powf(2.0) + (a.1 - b.1).powf(2.0)).sqrt()
     }
+
+    pub fn overlap(x1: f64, y1: f64, x2: f64, y2: f64, x3: f64, y3: f64, x4: f64, y4: f64) -> bool {
+        !(x2 < x3 || x4 < x1 || y2 < y3 || y4 < y1)
+    }
+
     pub fn segment_segment_intersection(
         x1: f64,
         y1: f64,
@@ -38,11 +69,11 @@ mod geometry {
         let u = ((x1 - x3) * (y1 - y2) - (y1 - y3) * (x1 - x2)) / denom;
 
         let test = if point_overlap {
-            |t,u| 0.0 <= t && t <= 1.0 && 0.0 <= u && u <= 1.0
+            |t, u| 0.0 <= t && t <= 1.0 && 0.0 <= u && u <= 1.0
         } else {
-            |t,u| 0.0 < t && t < 1.0 && 0.0 < u && u < 1.0 
+            |t, u| 0.0 < t && t < 1.0 && 0.0 < u && u < 1.0
         };
-        if test(t,u) {
+        if test(t, u) {
             let p = (x1 + t * (x2 - x1), y1 + t * (y2 - y1));
             if point_overlap {
                 return Some(p);
@@ -64,7 +95,7 @@ mod geometry {
         point_overlap: bool,
     ) -> Vec<Point> {
         let mut result = Vec::new();
-        for i in -1..(polygon.len()-1) as i32 {
+        for i in -1..(polygon.len() - 1) as i32 {
             let (x3, y3) = polygon[if i == -1 {
                 polygon.len() - 1
             } else {
@@ -95,8 +126,7 @@ mod geometry {
             .collect()
     }
 
-
-    pub fn ray_segment_intersection(
+    pub fn _ray_segment_intersection(
         px1: f64,
         py1: f64,
         px2: f64,
@@ -147,7 +177,7 @@ mod geometry {
         (x1 + dx / 2.0, y1 + dy / 2.0)
     }
 
-    pub fn point_in_polygon(x1: f64, y1: f64, polygon: &[Point], bounds: &(f64,f64,f64,f64)) -> bool {
+    pub fn point_in_polygon(x1: f64, y1: f64, polygon: &[Point], bounds: &Bounds) -> bool {
         // let mut intersections = 0;
         // for i in -1..(polygon.len() as i32 - 1) {
         //     let (x2, y2) = (polygon[if i == -1 {polygon.len() - 1} else {i as usize}].0,polygon[if i == -1 {polygon.len() - 1} else {i as usize}].1);
@@ -158,20 +188,26 @@ mod geometry {
         // }
         // return intersections % 2 == 1;
 
-        let (bx1,_,bx2,_) = bounds;
-        let intersections = segment_polygon_intersection(bx1-1.0, y1, bx2+1.0, y1, polygon, true);
+        let intersections = segment_polygon_intersection(
+            bounds.min_x - 1.0,
+            y1,
+            bounds.max_x + 1.0,
+            y1,
+            polygon,
+            true,
+        );
         // println!("point at {:?}", (x1,y1));
         // println!("intersections at {:?}", intersections);
-        let (mut left, mut right) = (0,0);
+        let (mut left, mut right) = (0, 0);
         for cut in intersections {
             if cut.0 < x1 {
-                left+=1;
+                left += 1;
             }
             if cut.0 > x1 {
-                right+=1;
+                right += 1;
             }
         }
-        return left%2==1 && right%2==1;
+        return left % 2 == 1 && right % 2 == 1;
 
         // let (bx1,by1,bx2,by2) = bounds;
         // let intersections1 = segment_polygon_intersection(bx1-1.0, y1, bx2+1.0, y1, polygon, true);
@@ -194,7 +230,14 @@ mod geometry {
         // return left%2==1 && right%2==1 && above%2==1 && below%2==1;
     }
 
-    pub fn intersection_length(x1: f64, y1: f64, x2: f64, y2: f64, polygon: &[Point], bounds: &(f64,f64,f64,f64)) -> f64 {
+    pub fn intersection_length(
+        x1: f64,
+        y1: f64,
+        x2: f64,
+        y2: f64,
+        polygon: &[Point],
+        bounds: &Bounds,
+    ) -> f64 {
         let mut cuts = segment_polygon_intersection(x1, y1, x2, y2, polygon, true);
         cuts.push((x2, y2));
         cuts.insert(0, (x1, y1));
@@ -274,14 +317,14 @@ mod geometry {
         let x4 = vc.x;
         let y4 = vc.y;
 
-        segment_segment_intersection(x1, y1, x2, y2, x3, y3, x4, y4, true).unwrap()
+        match segment_segment_intersection(x1, y1, x2, y2, x3, y3, x4, y4, true) {
+            Some(x) => x,
+            None => (x1, y1),
+        }
     }
 }
 
-use std::{
-    collections::{HashSet},
-    rc::Rc
-};
+use std::{collections::HashSet, rc::Rc};
 
 type Point = (f64, f64);
 
@@ -295,7 +338,7 @@ struct SteinerProblem {
     obstacles: Vec<Obstacle>,
     obstacle_corners: Vec<Point>,
     centroids: Vec<Point>,
-    bounds: (f64, f64, f64, f64),
+    bounds: Bounds,
     average_terminal_distance: f64,
 }
 
@@ -341,19 +384,24 @@ impl SteinerProblem {
             ));
         }
 
-        let mut bounds = (INF, 0.0, INF, 0.0);
+        let mut bounds = Bounds {
+            min_x: INF,
+            max_x: 0.0,
+            min_y: INF,
+            max_y: 0.0,
+        };
         for point in terminals.iter().chain(obstacle_corners.iter()) {
-            if point.0 < bounds.0 {
-                bounds.0 = point.0
+            if point.0 < bounds.min_x {
+                bounds.min_x = point.0
             }
-            if point.1 < bounds.2 {
-                bounds.2 = point.1
+            if point.1 < bounds.min_y {
+                bounds.min_y = point.1
             }
-            if point.0 > bounds.1 {
-                bounds.1 = point.0
+            if point.0 > bounds.max_x {
+                bounds.max_x = point.0
             }
-            if point.1 > bounds.3 {
-                bounds.3 = point.1
+            if point.1 > bounds.max_y {
+                bounds.max_y = point.1
             }
         }
         let mut average_terminal_distance = 0.0;
@@ -382,7 +430,12 @@ impl SteinerProblem {
     fn coordinates_in_solid_obstacle(&self, coordinates: Point) -> bool {
         for obstacle in self.obstacles.iter() {
             if obstacle.weight == INF {
-                if geometry::point_in_polygon(coordinates.0, coordinates.1, &obstacle.points, &obstacle.bounds) {
+                if geometry::point_in_polygon(
+                    coordinates.0,
+                    coordinates.1,
+                    &obstacle.points,
+                    &obstacle.bounds,
+                ) {
                     return true;
                 }
             }
@@ -399,9 +452,16 @@ struct Chromosome {
 
 impl std::fmt::Debug for Chromosome {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let string = format!("{:?}",self.included_corners);
+        let string = format!("{:?}", self.included_corners);
         let len = string.len();
-        f.write_str(format!("Chromosome(steinerPoints={:?}, includedObstacleCornersIndices=set([{}]))", self.steiner_points, string.chars().skip(1).take(len-2).collect::<String>()).as_str())
+        f.write_str(
+            format!(
+                "Chromosome(steinerPoints={:?}, includedObstacleCornersIndices=set([{}]))",
+                self.steiner_points,
+                string.chars().skip(1).take(len - 2).collect::<String>()
+            )
+            .as_str(),
+        )
     }
 }
 
@@ -410,7 +470,7 @@ struct MinimumSpanningTree {
     // edge_weights: Vec<f64>,
     total_weight: f64,
     // mst: Vec<(usize, usize)>,
-    graph: petgraph::graph::UnGraph<Point,f64,u32>,
+    graph: petgraph::graph::UnGraph<Point, f64, u32>,
 }
 
 #[derive(Clone)]
@@ -430,8 +490,8 @@ struct StOBGA {
 
 impl StOBGA {
     fn crossover(&mut self, parent_1_index: usize, parent_2_index: usize) {
-        let min_x = self.problem.bounds.0;
-        let max_x = self.problem.bounds.1;
+        let min_x = self.problem.bounds.min_x;
+        let max_x = self.problem.bounds.max_x;
         let random_x_value = self.random_generator.gen_range(min_x..max_x);
 
         let mut steiner_points_1 = Vec::new();
@@ -530,10 +590,10 @@ impl StOBGA {
 
         let k = problem.obstacle_corners.len();
         let n = problem.terminals.len();
-        let min_x = problem.bounds.0;
-        let max_x = problem.bounds.1;
-        let min_y = problem.bounds.2;
-        let max_y = problem.bounds.3;
+        let min_x = problem.bounds.min_x;
+        let max_x = problem.bounds.max_x;
+        let min_y = problem.bounds.min_y;
+        let max_y = problem.bounds.max_y;
         let x_dist = Uniform::new(min_x, max_x);
         let y_dist = Uniform::new(min_y, max_y);
         for _ in 0..t2 {
@@ -671,7 +731,6 @@ impl StOBGA {
 impl Instance {
     fn get_mst(&mut self) -> &MinimumSpanningTree {
         if self.minimum_spanning_tree.is_none() {
-
             let mut graph = petgraph::Graph::new_undirected();
             let vertices = self
                 .problem
@@ -690,27 +749,57 @@ impl Instance {
             for vertex in vertices.iter() {
                 graph.add_node((*vertex).clone());
             }
-            for i1 in 0..(vertices.len()-1) {
+            for i1 in 0..(vertices.len() - 1) {
                 let t1 = vertices[i1];
-                for i2 in (i1+1)..vertices.len() {
+                for i2 in (i1 + 1)..vertices.len() {
                     let t2 = vertices[i2];
                     let mut length = geometry::euclidean_distance(t1, t2);
+                    let line_bounds = Bounds {
+                        min_x: t1.0.min(t2.0),
+                        min_y: t1.1.min(t2.1),
+                        max_x: t1.0.max(t2.0),
+                        max_y: t1.1.max(t2.1),
+                    };
                     for obstacle in &self.problem.obstacles {
-                        let il =
-                            geometry::intersection_length(t1.0, t1.1, t2.0, t2.1, &obstacle.points, &obstacle.bounds);
-                        if il > 0.0 {
-                            if obstacle.weight == INF {
-                                length = INF;
-                            } else {
-                                length -= il;
-                                length += il * obstacle.weight;
+                        let bounds = &obstacle.bounds;
+                        if overlap(
+                            line_bounds.min_x,
+                            line_bounds.min_y,
+                            line_bounds.max_x,
+                            line_bounds.max_y,
+                            bounds.min_x,
+                            bounds.min_y,
+                            bounds.max_x,
+                            bounds.max_y,
+                        ) {
+                            let intersection_len = geometry::intersection_length(
+                                t1.0,
+                                t1.1,
+                                t2.0,
+                                t2.1,
+                                &obstacle.points,
+                                &obstacle.bounds,
+                            );
+                            if intersection_len > 0.0 {
+                                if obstacle.weight == INF {
+                                    length = INF;
+                                } else {
+                                    length -= intersection_len;
+                                    length += intersection_len * obstacle.weight;
+                                }
                             }
                         }
                     }
-                    graph.add_edge(petgraph::graph::NodeIndex::new(i1), petgraph::graph::NodeIndex::new(i2), length);
+                    graph.add_edge(
+                        petgraph::graph::NodeIndex::new(i1),
+                        petgraph::graph::NodeIndex::new(i2),
+                        length,
+                    );
                 }
             }
-            let mst = petgraph::graph::UnGraph::<_, _>::from_elements(petgraph::algo::min_spanning_tree(&graph));
+            let mst = petgraph::graph::UnGraph::<_, _>::from_elements(
+                petgraph::algo::min_spanning_tree(&graph),
+            );
             let total_distance = mst.edge_weights().sum::<f64>();
             let mst = MinimumSpanningTree {
                 total_weight: total_distance,
@@ -744,16 +833,28 @@ impl Instance {
 
         let graph = &self.minimum_spanning_tree.as_ref().unwrap().graph;
         for steiner_point in &self.chromosome.steiner_points {
-            let id = graph.node_indices().find(|id|graph[*id].0==steiner_point.0 && graph[*id].1 == steiner_point.1).unwrap();
+            let id = graph
+                .node_indices()
+                .find(|id| graph[*id].0 == steiner_point.0 && graph[*id].1 == steiner_point.1)
+                .unwrap();
             let edges = graph.edges(id);
             if edges.count() <= 2 {
-                candidate_steiner_points.push(self.chromosome.steiner_points.iter().position(|i|i.0==steiner_point.0 && i.1 == steiner_point.1).unwrap());
+                candidate_steiner_points.push(
+                    self.chromosome
+                        .steiner_points
+                        .iter()
+                        .position(|i| i.0 == steiner_point.0 && i.1 == steiner_point.1)
+                        .unwrap(),
+                );
             }
         }
         let mut candidate_corners = Vec::new();
         for index_corner in &self.chromosome.included_corners {
             let steiner_point = self.problem.obstacle_corners[*index_corner];
-            let id = graph.node_indices().find(|id|graph[*id].0==steiner_point.0 && graph[*id].1 == steiner_point.1).unwrap();
+            let id = graph
+                .node_indices()
+                .find(|id| graph[*id].0 == steiner_point.0 && graph[*id].1 == steiner_point.1)
+                .unwrap();
             let edges = graph.edges(id);
             if edges.count() <= 2 {
                 candidate_corners.push(index_corner.clone());
@@ -813,10 +914,10 @@ impl Instance {
         }
         if candidates.len() == 0 {
             // add random steiner point
-            let min_x = self.problem.bounds.0;
-            let max_x = self.problem.bounds.1;
-            let min_y = self.problem.bounds.2;
-            let max_y = self.problem.bounds.3;
+            let min_x = self.problem.bounds.min_x;
+            let max_x = self.problem.bounds.max_x;
+            let min_y = self.problem.bounds.min_y;
+            let max_y = self.problem.bounds.max_y;
             let mut new_steiner = (rng.gen_range(min_x..max_x), rng.gen_range(min_y..max_y));
             while self.problem.coordinates_in_solid_obstacle(new_steiner) {
                 new_steiner = (rng.gen_range(min_x..max_x), rng.gen_range(min_y..max_y));
@@ -880,35 +981,43 @@ impl Instance {
 #[derive(Clone)]
 struct Obstacle {
     weight: f64,
-    bounds : (f64,f64,f64,f64),
+    bounds: Bounds,
     points: Vec<Point>,
 }
 
 impl std::fmt::Debug for Obstacle {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("Obstacle").field("weight", &self.weight).field("bounds", &self.bounds).field("points", &self.points).finish()
+        f.debug_struct("Obstacle")
+            .field("weight", &self.weight)
+            .field("bounds", &self.bounds)
+            .field("points", &self.points)
+            .finish()
     }
 }
 
 impl Obstacle {
     fn new(weight: f64, points: Vec<Point>) -> Self {
-        Self { weight, points, bounds:(0.0,INF,0.0,INF) }
+        Self {
+            weight,
+            points,
+            bounds: Bounds::default(),
+        }
     }
 
     pub(crate) fn compute_bounds(mut self) -> Obstacle {
-        let mut bounds = (INF, 0.0, INF, 0.0);
+        let mut bounds = Bounds::default();
         for point in &self.points {
-            if point.0 < bounds.0 {
-                bounds.0 = point.0
+            if point.0 < bounds.min_x {
+                bounds.min_x = point.0
             }
-            if point.1 < bounds.2 {
-                bounds.2 = point.1
+            if point.1 < bounds.min_y {
+                bounds.min_y = point.1
             }
-            if point.0 > bounds.1 {
-                bounds.1 = point.0
+            if point.0 > bounds.max_x {
+                bounds.max_x = point.0
             }
-            if point.1 > bounds.3 {
-                bounds.3 = point.1
+            if point.1 > bounds.max_y {
+                bounds.max_y = point.1
             }
         }
         self.bounds = bounds;
@@ -919,17 +1028,26 @@ impl Obstacle {
 fn main() {
     std::env::set_var("RUST_BACKTRACE", "full");
     let mut terminals = Vec::new();
-    for line in std::fs::read_to_string("SolidObstacles/terminals10.csv").unwrap().lines().skip(1) {
-        let coords = line.split(",").map(|c|c.parse().unwrap()).collect::<Vec<_>>();
+    for line in std::fs::read_to_string(std::env::args().nth(1).expect("please specify terminal file"))
+        .unwrap()
+        .lines()
+        .skip(1)
+    {
+        let coords = line
+            .split(",")
+            .map(|c| c.parse().unwrap())
+            .collect::<Vec<_>>();
         terminals.push((coords[0], coords[1]));
     }
 
     let mut obstacles = Vec::new();
     {
         let mut current_obstacle = Obstacle::new(0.0, vec![]);
-        for line in std::fs::read_to_string("SolidObstacles/obstacles10.csv").unwrap().lines()
+        for line in std::fs::read_to_string(std::env::args().nth(2).expect("please specify obstacle file"))
+            .unwrap()
+            .lines()
         {
-            if line == "" {
+            if line == "" || line == "," {
                 obstacles.push(current_obstacle.compute_bounds());
                 current_obstacle = Obstacle::new(0.0, vec![]);
             } else if line.starts_with("max") {
@@ -939,64 +1057,63 @@ fn main() {
                 if fields.get(1) == Some(&"") || fields.len() < 2 {
                     current_obstacle.weight = fields[0].parse().unwrap();
                 } else {
-                    current_obstacle.points.push((fields[0].parse().unwrap(), fields[1].parse().unwrap()));
+                    current_obstacle
+                        .points
+                        .push((fields[0].parse().unwrap(), fields[1].parse().unwrap()));
                 }
             }
-            
-
-            // if line == "\n" {
-            //     obstacles.push(current_obstacle.compute_bounds());
-            //     current_obstacle = Obstacle::new(0.0, vec![]);
-            // } else if line.split(",").nth(1) == Some("") || line.split(",").nth(1) == None {
-            //     if line.starts_with("max") {
-            //         current_obstacle.weight = INF;
-            //     } else {
-            //         current_obstacle.weight = (&line.split(",").nth(0).unwrap()).parse().expect("bad csv");
-            //     }
-            // } else {
-            //     current_obstacle.points.push((
-            //         (&line.split(",").nth(0)).unwrap().parse().expect("bad csv"),
-            //         (&line.split(",").nth(1)).unwrap().parse().expect("bad csv")
-            //     ));
-            // }
         }
         obstacles.push(current_obstacle.compute_bounds());
-        println!("{:?}", obstacles);
+        // println!("{:?}", obstacles);
     }
     // return;
     let problem = SteinerProblem::new(terminals.clone(), obstacles.clone());
     let mut stobga = StOBGA::new(Rc::new(problem), 500, 166, 166, 166);
-    
-    // let mut streak = (0, f64::INFINITY);
-    // println!("generation;average;best;chromosome");
-    // while stobga.current_generation < 1500 {
-    //     stobga.step();
-    //     // stobga.population[0].chromosome = Chromosome{steiner_points:vec![],included_corners:stobga.problem.obstacle_corners.iter().enumerate().map(|(a,b)|a).collect()};
-    //     // stobga.population[0].get_mst();
-    //     let graph = &stobga.population[0].minimum_spanning_tree.as_ref().unwrap().graph;
-    //     if stobga.population[0].get_mst().total_weight < (streak.1 - 1e-6) {
-    //         streak = (0, stobga.population[0].get_mst().total_weight);
 
-    //         println!(
-    //             "{};{};{};{:?}",
-    //             stobga.current_generation,
-    //             {
-    //                 let mut avg = 0.0;
-    //                 for i in stobga.population.iter_mut() {
-    //                     avg += i.get_mst().total_weight;
-    //                 }
-    //                 avg / 500.0
-    //             },
-    //             { stobga.population[0].get_mst().total_weight },
-    //             stobga.population[0].chromosome
-    //         );
-    //     } else {
-    //         streak.0 += 1
-    //     }
-    //     if streak.0 == 200 {
-    //         break;
-    //     }
-    // }
+    let mut streak = (0, f64::INFINITY);
+    println!("generation;average;best;chromosome");
+    while stobga.current_generation < 1500 {
+        stobga.step();
+        // stobga.population[0].chromosome = Chromosome{steiner_points:vec![],included_corners:stobga.problem.obstacle_corners.iter().enumerate().map(|(a,b)|a).collect()};
+        // stobga.population[0].get_mst();
+        // let graph = &stobga.population[0].minimum_spanning_tree.as_ref().unwrap().graph;
+        if stobga.population[0].get_mst().total_weight < streak.1-1e-6 {
+            streak = (0, stobga.population[0].get_mst().total_weight);
+
+            println!(
+                "{};{};{};{:?}",
+                stobga.current_generation,
+                {
+                    let mut avg = 0.0;
+                    for i in stobga.population.iter_mut() {
+                        avg += i.get_mst().total_weight;
+                    }
+                    avg / 500.0
+                },
+                { stobga.population[0].get_mst().total_weight },
+                stobga.population[0].chromosome
+            );
+        } else {
+            streak.0 += 1
+        }
+        if streak.0 == 200 {
+            break;
+        }
+    }
+    println!(
+        "{};{};{};{:?}",
+        stobga.current_generation,
+        {
+            let mut avg = 0.0;
+            for i in stobga.population.iter_mut() {
+                avg += i.get_mst().total_weight;
+            }
+            avg / 500.0
+        },
+        { stobga.population[0].get_mst().total_weight },
+        stobga.population[0].chromosome
+    );
+
     // let mut i = Instance{chromosome:Chromosome { steiner_points: vec![(0.7891687313029053, 0.253945198380253)], included_corners: HashSet::from([3]) },minimum_spanning_tree:None,problem:Rc::new(problem)};
     // println!("{}", i.get_mst().total_weight);
 
@@ -1018,46 +1135,76 @@ fn main() {
     //     step += 1;
     // }
 
-    ContextBuilder::new("Rosenberg", 500, 500)
-        .build()
-        .expect("err")
-        .run(|_| Ok(GameState { stobga, shapes:Vec::new() }));
+    // ContextBuilder::new("Rosenberg", 500, 500)
+    //     .build()
+    //     .expect("err")
+    //     .run(|_| {
+    //         Ok(GameState {
+    //             stobga,
+    //             shapes: Vec::new(),
+    //         })
+    //     });
 }
 
 struct GameState {
     stobga: StOBGA,
-    shapes : Vec<Mesh>
+    shapes: Vec<Mesh>,
 }
 
 impl State for GameState {
     fn update(&mut self, ctx: &mut Context) -> Result<()> {
         self.stobga.step();
         self.shapes.clear();
-        println!("{} - {}", self.stobga.current_generation, self.stobga.population[0].get_mst().total_weight);
+        println!(
+            "{} - {}",
+            self.stobga.current_generation,
+            self.stobga.population[0].get_mst().total_weight
+        );
 
         for obstacle in &self.stobga.population[0].problem.obstacles {
-            let mut points = obstacle.points.iter()
-            .map(|v| Vec2::new((v.0 * 400.0) as f32, (v.1 * 400.0) as f32))
-            .collect::<Vec<_>>();
+            let mut points = obstacle
+                .points
+                .iter()
+                .map(|v| Vec2::new((v.0 * 400.0) as f32, (v.1 * 400.0) as f32))
+                .collect::<Vec<_>>();
             points.push(points[0].clone());
+            self.shapes.push(
+                GeometryBuilder::new()
+                    .set_color(Color::rgba(1.0, 1.0, 0.5, 0.5))
+                    .rectangle(
+                        graphics::mesh::ShapeStyle::Fill,
+                        graphics::Rectangle {
+                            x: (obstacle.bounds.min_x * 400.0) as f32,
+                            y: (obstacle.bounds.min_y * 400.0) as f32,
+                            width: ((obstacle.bounds.max_x - obstacle.bounds.min_x) * 400.0) as f32,
+                            height: ((obstacle.bounds.max_y - obstacle.bounds.min_y) * 400.0)
+                                as f32,
+                        },
+                    )
+                    .unwrap()
+                    .build_mesh(ctx)
+                    .unwrap(),
+            );
             self.shapes.push(
                 GeometryBuilder::new()
                     .set_color(Color::rgb(1.0, 1.0, 0.5))
                     .polygon(graphics::mesh::ShapeStyle::Fill, points.as_slice())
                     .unwrap()
                     .build_mesh(ctx)
-                    .unwrap()
+                    .unwrap(),
             );
         }
-        let graph = &self.stobga.population[0].minimum_spanning_tree.as_ref().unwrap().graph;
+        let graph = &self.stobga.population[0]
+            .minimum_spanning_tree
+            .as_ref()
+            .unwrap()
+            .graph;
 
-        for id in graph.node_indices()
-        {
+        for id in graph.node_indices() {
             let terminal = graph[id];
             self.shapes.push(
                 GeometryBuilder::new()
-                    .set_color(
-                        Color::rgb(0.0, 0.0, 0.0))
+                    .set_color(Color::rgb(0.0, 0.0, 0.0))
                     .circle(
                         graphics::mesh::ShapeStyle::Fill,
                         Vec2::new((terminal.0 * 400.0) as f32, (terminal.1 * 400.0) as f32),
@@ -1065,21 +1212,24 @@ impl State for GameState {
                     )
                     .unwrap()
                     .build_mesh(ctx)
-                    .unwrap()
+                    .unwrap(),
             );
         }
         for edge in graph.edge_references() {
             let start = graph[edge.source()];
             let end = graph[edge.target()];
-            let line = [Vec2::new((start.0 * 400.0) as f32, (start.1 * 400.0) as f32), Vec2::new((end.0 * 400.0) as f32, (end.1 * 400.0) as f32)];
+            let line = [
+                Vec2::new((start.0 * 400.0) as f32, (start.1 * 400.0) as f32),
+                Vec2::new((end.0 * 400.0) as f32, (end.1 * 400.0) as f32),
+            ];
             self.shapes.push(
-                            GeometryBuilder::new()
-                                .set_color(Color::rgb(0.0, 0.0, 0.0))
-                                .polyline(2.0, line.as_slice())
-                                .unwrap()
-                                .build_mesh(ctx)
-                                .unwrap(),
-                        );
+                GeometryBuilder::new()
+                    .set_color(Color::rgb(0.0, 0.0, 0.0))
+                    .polyline(2.0, line.as_slice())
+                    .unwrap()
+                    .build_mesh(ctx)
+                    .unwrap(),
+            );
         }
         Ok(())
     }
@@ -1095,17 +1245,20 @@ impl State for GameState {
 
 #[cfg(test)]
 mod test {
-    use petgraph::{data::FromElements, prelude::UnGraph};
     use crate::geometry::*;
+    use petgraph::{data::FromElements, prelude::UnGraph};
 
     #[test]
     fn test_geometry() {
-        assert_eq!(crate::geometry::point_in_polygon(
-            0.0,
-            0.0,
-            &[(-1.0, -1.0), (1.0, 1.0), (0.0, 2.0)],
-            &(-1.0, -1.0, 1.0, 2.0)
-        ),false)
+        assert_eq!(
+            crate::geometry::point_in_polygon(
+                0.0,
+                0.0,
+                &[(-1.0, -1.0), (1.0, 1.0), (0.0, 2.0)],
+                &(-1.0, -1.0, 1.0, 2.0)
+            ),
+            false
+        )
     }
 
     #[test]
@@ -1122,84 +1275,124 @@ mod test {
             vec![(1.0, 0.0)]
         );
         assert_eq!(
-            crate::geometry::intersection_length(0.0, 0.0, 2.0, 0.0, &[(1.0, 0.0), (1.0, -1.0), (-1.0, -1.0)], &(-1.0,0.0,1.0,1.0)),
+            crate::geometry::intersection_length(
+                0.0,
+                0.0,
+                2.0,
+                0.0,
+                &[(1.0, 0.0), (1.0, -1.0), (-1.0, -1.0)],
+                &(-1.0, 0.0, 1.0, 1.0)
+            ),
             0.0
         );
     }
 
     #[test]
     fn test_geometry3() {
-        assert_eq!(crate::geometry::segment_polygon_intersection(
-            0.0,0.0,
-            1.0,1.0,
-            &[(0.0, 0.0), (1.0, 1.0), (1.0, -1.0)], true
-        ),Vec::new())
+        assert_eq!(
+            crate::geometry::segment_polygon_intersection(
+                0.0,
+                0.0,
+                1.0,
+                1.0,
+                &[(0.0, 0.0), (1.0, 1.0), (1.0, -1.0)],
+                true
+            ),
+            Vec::new()
+        )
     }
 
     #[test]
     fn test_geometry4() {
-        assert_eq!(crate::geometry::intersection_length(
-            3.0,1.0,
-            4.0,5.0,
-            &[(0.0, 0.0), (3.0, 1.0), (4.0, 5.0)],
-            &(-1.0, -1.0, 4.0, 2.0)
-        ),0.0)
+        assert_eq!(
+            crate::geometry::intersection_length(
+                3.0,
+                1.0,
+                4.0,
+                5.0,
+                &[(0.0, 0.0), (3.0, 1.0), (4.0, 5.0)],
+                &(-1.0, -1.0, 4.0, 2.0)
+            ),
+            0.0
+        )
     }
 
     #[test]
     fn test_geometry5() {
-        assert_eq!(crate::geometry::segment_polygon_intersection(
-            3.0,1.0,
-            4.0,5.0,
-            &[(0.0, 0.0), (3.0, 1.0), (4.0, 5.0)], true
-        ),Vec::new())
+        assert_eq!(
+            crate::geometry::segment_polygon_intersection(
+                3.0,
+                1.0,
+                4.0,
+                5.0,
+                &[(0.0, 0.0), (3.0, 1.0), (4.0, 5.0)],
+                true
+            ),
+            Vec::new()
+        )
     }
 
     #[test]
     fn test_geometry6() {
-        let middle = middle(3.0,1.0,
-            4.0,5.0,);
+        let middle = middle(3.0, 1.0, 4.0, 5.0);
         assert!(!point_in_polygon(
-            middle.0, middle.1, &[(0.0, 0.0), (3.0, 1.0), (4.0, 5.0)],&(0.0,0.0,4.0,5.0)))
+            middle.0,
+            middle.1,
+            &[(0.0, 0.0), (3.0, 1.0), (4.0, 5.0)],
+            &(0.0, 0.0, 4.0, 5.0)
+        ))
     }
 
     #[test]
     fn test_geometry7() {
-        let middle = middle(0.0,0.0,
-            4.0,5.0,);
+        let middle = middle(0.0, 0.0, 4.0, 5.0);
         assert!(!point_in_polygon(
-            middle.0, middle.1, &[(0.0, 0.0), (3.0, 1.0), (4.0, 5.0)],&(0.0,0.0,4.0,5.0)))
+            middle.0,
+            middle.1,
+            &[(0.0, 0.0), (3.0, 1.0), (4.0, 5.0)],
+            &(0.0, 0.0, 4.0, 5.0)
+        ))
     }
 
     #[test]
     fn test_geometry8() {
-        let middle = middle(0.0,0.0,
-            3.0,1.0,);
+        let middle = middle(0.0, 0.0, 3.0, 1.0);
         assert!(!point_in_polygon(
-            middle.0, middle.1, &[(0.0, 0.0), (3.0, 1.0), (4.0, 5.0)], &(0.0,0.0,4.0,5.0)))
+            middle.0,
+            middle.1,
+            &[(0.0, 0.0), (3.0, 1.0), (4.0, 5.0)],
+            &(0.0, 0.0, 4.0, 5.0)
+        ))
     }
 
     #[test]
     fn test_geometry9() {
-        assert_eq!(crate::geometry::intersection_length(
-            0.0,1.0,
-            1.0,1.0,
-            &[(0.0, 0.0), (1.0, 0.0), (0.5, -1.0)],
-            &(0.0, 0.0, 1.0, 0.0)
-        ),0.0)
+        assert_eq!(
+            crate::geometry::intersection_length(
+                0.0,
+                1.0,
+                1.0,
+                1.0,
+                &[(0.0, 0.0), (1.0, 0.0), (0.5, -1.0)],
+                &(0.0, 0.0, 1.0, 0.0)
+            ),
+            0.0
+        )
     }
 
     #[test]
     fn test_geometry10() {
         assert!(
             crate::geometry::intersection_length(
-                0.845641974,0.904959172,
-                0.753467217,0.42431886,
+                0.845641974,
+                0.904959172,
+                0.753467217,
+                0.42431886,
                 &[
-                    (0.796,0.898),
-                    (0.804,0.784),
-                    (0.906,0.792),
-                    (0.908,0.886),
+                    (0.796, 0.898),
+                    (0.804, 0.784),
+                    (0.906, 0.792),
+                    (0.908, 0.886),
                 ],
                 &(0.0, 0.0, 1.0, 0.0)
             ) > 0.0
@@ -1208,26 +1401,33 @@ mod test {
 
     #[test]
     fn test_geometry11() {
-        println!("{}",crate::geometry::intersection_length(
-            0.936640447,0.706594727,
-            0.753467217,0.42431886,
-            &[
-                (0.784,0.522),
-                (0.798,0.44799999999999995),
-                (0.906,0.45199999999999996),
-                (0.9,0.534),
-            ],
-            &(0.0, 0.0, 1.0, 0.0)
-        ));
+        println!(
+            "{}",
+            crate::geometry::intersection_length(
+                0.936640447,
+                0.706594727,
+                0.753467217,
+                0.42431886,
+                &[
+                    (0.784, 0.522),
+                    (0.798, 0.44799999999999995),
+                    (0.906, 0.45199999999999996),
+                    (0.9, 0.534),
+                ],
+                &(0.0, 0.0, 1.0, 0.0)
+            )
+        );
         assert!(
             crate::geometry::intersection_length(
-                0.936640447,0.706594727,
-                0.753467217,0.42431886,
+                0.936640447,
+                0.706594727,
+                0.753467217,
+                0.42431886,
                 &[
-                    (0.784,0.522),
-                    (0.798,0.44799999999999995),
-                    (0.906,0.45199999999999996),
-                    (0.9,0.534),
+                    (0.784, 0.522),
+                    (0.798, 0.44799999999999995),
+                    (0.906, 0.45199999999999996),
+                    (0.9, 0.534),
                 ],
                 &(0.0, 0.0, 1.0, 0.0)
             ) > 0.0
@@ -1237,8 +1437,8 @@ mod test {
     #[test]
     fn using_petgraph() {
         let mut graph = petgraph::Graph::new_undirected();
-        let i1 = graph.add_node((1.0,1.0));
-        let i2 = graph.add_node((2.0,2.0));
+        let i1 = graph.add_node((1.0, 1.0));
+        let i2 = graph.add_node((2.0, 2.0));
         graph.add_edge(i1, i2, 1.0);
         let g2 = UnGraph::<_, _>::from_elements(petgraph::algo::min_spanning_tree(&graph));
         assert!(g2.edge_weights().sum::<f64>() == 1.0)
