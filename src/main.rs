@@ -5,14 +5,6 @@ use petgraph::data::FromElements;
 use petgraph::visit::EdgeRef;
 
 use rand::{distributions::Uniform, prelude::Distribution, Rng, SeedableRng};
-use tetra::{
-    graphics::{
-        mesh::{GeometryBuilder, Mesh},
-        Color,
-    },
-    math::Vec2,
-    *,
-};
 
 mod geometry {
     pub const RADIANS_120_DEGREE: f64 = 2.0 * std::f64::consts::PI / 3.0;
@@ -1074,9 +1066,6 @@ fn main() {
     println!("generation;average;best;chromosome");
     while stobga.current_generation < 1500 {
         stobga.step();
-        // stobga.population[0].chromosome = Chromosome{steiner_points:vec![],included_corners:stobga.problem.obstacle_corners.iter().enumerate().map(|(a,b)|a).collect()};
-        // stobga.population[0].get_mst();
-        // let graph = &stobga.population[0].minimum_spanning_tree.as_ref().unwrap().graph;
         if stobga.population[0].get_mst().total_weight < streak.1-1e-6 {
             streak = (0, stobga.population[0].get_mst().total_weight);
 
@@ -1113,134 +1102,6 @@ fn main() {
         { stobga.population[0].get_mst().total_weight },
         stobga.population[0].chromosome
     );
-
-    // let mut i = Instance{chromosome:Chromosome { steiner_points: vec![(0.7891687313029053, 0.253945198380253)], included_corners: HashSet::from([3]) },minimum_spanning_tree:None,problem:Rc::new(problem)};
-    // println!("{}", i.get_mst().total_weight);
-
-    // let mut step = 0;
-    // loop {
-    //     stobga.step();
-    //     println!("generation {}", step);
-    //     println!(
-    //         "best {} - mean {}",
-    //         stobga.population[0].get_mst().total_weight.clone(),
-    //         stobga
-    //             .population
-    //             .iter_mut()
-    //             .map(|i| i.get_mst().total_weight)
-    //             .sum::<f64>()
-    //             / 500.0
-    //     );
-    //     println!("{:?}", stobga.population[0].chromosome);
-    //     step += 1;
-    // }
-
-    // ContextBuilder::new("Rosenberg", 500, 500)
-    //     .build()
-    //     .expect("err")
-    //     .run(|_| {
-    //         Ok(GameState {
-    //             stobga,
-    //             shapes: Vec::new(),
-    //         })
-    //     });
-}
-
-struct GameState {
-    stobga: StOBGA,
-    shapes: Vec<Mesh>,
-}
-
-impl State for GameState {
-    fn update(&mut self, ctx: &mut Context) -> Result<()> {
-        self.stobga.step();
-        self.shapes.clear();
-        println!(
-            "{} - {}",
-            self.stobga.current_generation,
-            self.stobga.population[0].get_mst().total_weight
-        );
-
-        for obstacle in &self.stobga.population[0].problem.obstacles {
-            let mut points = obstacle
-                .points
-                .iter()
-                .map(|v| Vec2::new((v.0 * 400.0) as f32, (v.1 * 400.0) as f32))
-                .collect::<Vec<_>>();
-            points.push(points[0].clone());
-            self.shapes.push(
-                GeometryBuilder::new()
-                    .set_color(Color::rgba(1.0, 1.0, 0.5, 0.5))
-                    .rectangle(
-                        graphics::mesh::ShapeStyle::Fill,
-                        graphics::Rectangle {
-                            x: (obstacle.bounds.min_x * 400.0) as f32,
-                            y: (obstacle.bounds.min_y * 400.0) as f32,
-                            width: ((obstacle.bounds.max_x - obstacle.bounds.min_x) * 400.0) as f32,
-                            height: ((obstacle.bounds.max_y - obstacle.bounds.min_y) * 400.0)
-                                as f32,
-                        },
-                    )
-                    .unwrap()
-                    .build_mesh(ctx)
-                    .unwrap(),
-            );
-            self.shapes.push(
-                GeometryBuilder::new()
-                    .set_color(Color::rgb(1.0, 1.0, 0.5))
-                    .polygon(graphics::mesh::ShapeStyle::Fill, points.as_slice())
-                    .unwrap()
-                    .build_mesh(ctx)
-                    .unwrap(),
-            );
-        }
-        let graph = &self.stobga.population[0]
-            .minimum_spanning_tree
-            .as_ref()
-            .unwrap()
-            .graph;
-
-        for id in graph.node_indices() {
-            let terminal = graph[id];
-            self.shapes.push(
-                GeometryBuilder::new()
-                    .set_color(Color::rgb(0.0, 0.0, 0.0))
-                    .circle(
-                        graphics::mesh::ShapeStyle::Fill,
-                        Vec2::new((terminal.0 * 400.0) as f32, (terminal.1 * 400.0) as f32),
-                        5.0,
-                    )
-                    .unwrap()
-                    .build_mesh(ctx)
-                    .unwrap(),
-            );
-        }
-        for edge in graph.edge_references() {
-            let start = graph[edge.source()];
-            let end = graph[edge.target()];
-            let line = [
-                Vec2::new((start.0 * 400.0) as f32, (start.1 * 400.0) as f32),
-                Vec2::new((end.0 * 400.0) as f32, (end.1 * 400.0) as f32),
-            ];
-            self.shapes.push(
-                GeometryBuilder::new()
-                    .set_color(Color::rgb(0.0, 0.0, 0.0))
-                    .polyline(2.0, line.as_slice())
-                    .unwrap()
-                    .build_mesh(ctx)
-                    .unwrap(),
-            );
-        }
-        Ok(())
-    }
-    fn draw(&mut self, ctx: &mut Context) -> tetra::Result {
-        // Cornflower blue, as is tradition
-        graphics::clear(ctx, graphics::Color::rgb(1.0, 1.0, 1.0));
-        for shape in &self.shapes {
-            shape.draw(ctx, Vec2::new(64.0, 64.0));
-        }
-        Ok(())
-    }
 }
 
 #[cfg(test)]
