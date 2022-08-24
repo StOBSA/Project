@@ -11,3 +11,4 @@ rand        = "0.8.5"  # random number generation
 nalgebra    = "*"      # linear algebra library
 itertools   = "0.10.3" # simplifications for iterations
 petgraph    = "0.6.2"  # Graph library used to compute MST
+tetra       = "0.7.0"
