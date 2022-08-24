@@ -329,6 +329,8 @@ use std::thread;
 use std::time::Duration;
 use std::{collections::HashSet};
 
+use crate::geometry::RADIANS_120_DEGREE;
+
 type Point = (f64, f64);
 
 const M_RANGE_MIN: f64 = 0.01;
@@ -795,16 +797,15 @@ impl Instance {
                     .included_corners
                     .iter()
                     .map(|c| &self.problem.obstacle_corners[*c]),
-            )
-            .map(|&c| c);
+            );
             
             for vertex in source_vertices.clone() {
                 graph.add_node(vertex.clone());
             }
-            for (i1, t1) in source_vertices.enumerate() {
+            for (i1, &t1) in source_vertices.clone().enumerate() {
 
-                for (i2, t2) in self.problem.terminals.iter().enumerate() {
-                    let mut length = geometry::euclidean_distance(t1, *t2);
+                for (i2, &t2) in self.problem.terminals.iter().chain(source_vertices.clone()).enumerate() {
+                    let mut length = geometry::euclidean_distance(t1, t2);
                     let line_bounds = Bounds {
                         min_x: t1.0.min(t2.0),
                         min_y: t1.1.min(t2.1),
@@ -983,7 +984,7 @@ impl Instance {
             let p1 = graph[random_triple.0];
             let p2 = graph[random_triple.1];
             let p3 = graph[random_triple.2];
-            let p4 = geometry::fermat_point(p1, p2, p3, 1e-9);
+            let p4 = geometry::fermat_point(p1, p2, p3, 1e-6);
             if !self.problem.coordinates_in_solid_obstacle(p4) {
                 self.chromosome.steiner_points.push(p4);
             }
@@ -1251,7 +1252,7 @@ impl State for GameState {
             // );
             self.shapes.push(
                 GeometryBuilder::new()
-                    .set_color(Color::rgb(1.0, 1.0, 0.5))
+                    .set_color(if obstacle.weight < INF {Color::rgb(1.0, 1.0, 0.5)} else {Color::rgb(1.0, 0.0, 0.1)})
                     .polygon(graphics::mesh::ShapeStyle::Fill, points.as_slice())
                     .unwrap()
                     .build_mesh(ctx)
