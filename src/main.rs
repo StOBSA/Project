@@ -713,7 +713,8 @@ impl StOBGA {
             stobga.crossover(parents[2 * i], parents[2 * i + 1]);
         }
         for (child_index, population_index) in children.iter().enumerate() {
-            stobga.population[*population_index] = stobga.child_buffer[child_index].clone();
+            stobga.population[*population_index].chromosome = stobga.child_buffer[child_index].chromosome.clone();
+            stobga.population[*population_index].minimum_spanning_tree = None;
         }
         stobga.population.append(&mut save);
         stobga.child_buffer.clear();
