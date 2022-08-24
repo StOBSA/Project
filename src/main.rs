@@ -1042,7 +1042,7 @@ fn main() {
             if line == "" || line == "," {
                 obstacles.push(current_obstacle.compute_bounds());
                 current_obstacle = Obstacle::new(0.0, vec![]);
-            } else if line.starts_with("max") {
+            } else if line.to_lowercase().starts_with("max") {
                 current_obstacle.weight = INF
             } else {
                 let fields = line.split(",").collect::<Vec<_>>();
