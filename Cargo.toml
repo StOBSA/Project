@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 geos        = "8.1.0"  # delaunay triangulation
 rand        = "0.8.5"  # random number generation
-nalgebra    = "*"      # linear algebra library
+rand_pcg    = "0.3.1"  
+nalgebra    = "0.31.1" # linear algebra
 itertools   = "0.10.3" # simplifications for iterations
 petgraph    = "0.6.2"  # Graph library used to compute MST
-tetra       = "0.7.0"
