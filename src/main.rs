@@ -1159,178 +1159,178 @@ mod test {
         )
     }
 
-    // #[test]
-    // fn test_geometry2() {
-    //     assert_eq!(
-    //         crate::geometry::segment_polygon_intersection(
-    //             0.0,
-    //             0.0,
-    //             2.0,
-    //             0.0,
-    //             &[(1.0, 0.0), (1.0, -1.0), (-1.0, -1.0)],
-    //             true
-    //         ),
-    //         vec![(1.0, 0.0)]
-    //     );
-    //     assert_eq!(
-    //         crate::geometry::intersection_length(
-    //             0.0,
-    //             0.0,
-    //             2.0,
-    //             0.0,
-    //             &[(1.0, 0.0), (1.0, -1.0), (-1.0, -1.0)],
-    //             &(-1.0, 0.0, 1.0, 1.0)
-    //         ),
-    //         0.0
-    //     );
-    // }
+    #[test]
+    fn test_geometry2() {
+        assert_eq!(
+            crate::geometry::segment_polygon_intersection(
+                0.0,
+                0.0,
+                2.0,
+                0.0,
+                &[(1.0, 0.0), (1.0, -1.0), (-1.0, -1.0)],
+                true
+            ),
+            vec![(1.0, 0.0)]
+        );
+        assert_eq!(
+            crate::geometry::intersection_length(
+                0.0,
+                0.0,
+                2.0,
+                0.0,
+                &[(1.0, 0.0), (1.0, -1.0), (-1.0, -1.0)],
+                &geometry::Bounds{min_x:-1.0, max_x:1.0, min_y:-1.0,max_y:0.0}
+            ),
+            0.0
+        );
+    }
 
-    // #[test]
-    // fn test_geometry3() {
-    //     assert_eq!(
-    //         crate::geometry::segment_polygon_intersection(
-    //             0.0,
-    //             0.0,
-    //             1.0,
-    //             1.0,
-    //             &[(0.0, 0.0), (1.0, 1.0), (1.0, -1.0)],
-    //             true
-    //         ),
-    //         Vec::new()
-    //     )
-    // }
+    #[test]
+    fn test_geometry3() {
+        assert_eq!(
+            crate::geometry::segment_polygon_intersection(
+                0.0,
+                0.0,
+                1.0,
+                1.0,
+                &[(0.0, 0.0), (1.0, 1.0), (1.0, -1.0)],
+                true
+            ),
+            Vec::new()
+        )
+    }
 
-    // #[test]
-    // fn test_geometry4() {
-    //     assert_eq!(
-    //         crate::geometry::intersection_length(
-    //             3.0,
-    //             1.0,
-    //             4.0,
-    //             5.0,
-    //             &[(0.0, 0.0), (3.0, 1.0), (4.0, 5.0)],
-    //             &(-1.0, -1.0, 4.0, 2.0)
-    //         ),
-    //         0.0
-    //     )
-    // }
+    #[test]
+    fn test_geometry4() {
+        assert_eq!(
+            crate::geometry::intersection_length(
+                3.0,
+                1.0,
+                4.0,
+                5.0,
+                &[(0.0, 0.0), (3.0, 1.0), (4.0, 5.0)],
+                &geometry::Bounds{min_x:0.0, max_x:4.0, min_y:0.0,max_y:5.0}
+            ),
+            0.0
+        )
+    }
 
-    // #[test]
-    // fn test_geometry5() {
-    //     assert_eq!(
-    //         crate::geometry::segment_polygon_intersection(
-    //             3.0,
-    //             1.0,
-    //             4.0,
-    //             5.0,
-    //             &[(0.0, 0.0), (3.0, 1.0), (4.0, 5.0)],
-    //             true
-    //         ),
-    //         Vec::new()
-    //     )
-    // }
+    #[test]
+    fn test_geometry5() {
+        assert_eq!(
+            crate::geometry::segment_polygon_intersection(
+                3.0,
+                1.0,
+                4.0,
+                5.0,
+                &[(0.0, 0.0), (3.0, 1.0), (4.0, 5.0)],
+                true
+            ),
+            Vec::new()
+        )
+    }
 
-    // #[test]
-    // fn test_geometry6() {
-    //     let middle = middle(3.0, 1.0, 4.0, 5.0);
-    //     assert!(!point_in_polygon(
-    //         middle.0,
-    //         middle.1,
-    //         &[(0.0, 0.0), (3.0, 1.0), (4.0, 5.0)],
-    //         &(0.0, 0.0, 4.0, 5.0)
-    //     ))
-    // }
+    #[test]
+    fn test_geometry6() {
+        let middle = middle(3.0, 1.0, 4.0, 5.0);
+        assert!(!point_in_polygon(
+            middle.0,
+            middle.1,
+            &[(0.0, 0.0), (3.0, 1.0), (4.0, 5.0)],
+            &geometry::Bounds{min_x:0.0, max_x:4.0, min_y:0.0,max_y:5.0}
+        ))
+    }
 
-    // #[test]
-    // fn test_geometry7() {
-    //     let middle = middle(0.0, 0.0, 4.0, 5.0);
-    //     assert!(!point_in_polygon(
-    //         middle.0,
-    //         middle.1,
-    //         &[(0.0, 0.0), (3.0, 1.0), (4.0, 5.0)],
-    //         &(0.0, 0.0, 4.0, 5.0)
-    //     ))
-    // }
+    #[test]
+    fn test_geometry7() {
+        let middle = middle(0.0, 0.0, 4.0, 5.0);
+        assert!(!point_in_polygon(
+            middle.0,
+            middle.1,
+            &[(0.0, 0.0), (3.0, 1.0), (4.0, 5.0)],
+            &geometry::Bounds{min_x:0.0, max_x:4.0, min_y:0.0,max_y:5.0}
+        ))
+    }
 
-    // #[test]
-    // fn test_geometry8() {
-    //     let middle = middle(0.0, 0.0, 3.0, 1.0);
-    //     assert!(!point_in_polygon(
-    //         middle.0,
-    //         middle.1,
-    //         &[(0.0, 0.0), (3.0, 1.0), (4.0, 5.0)],
-    //         &(0.0, 0.0, 4.0, 5.0)
-    //     ))
-    // }
+    #[test]
+    fn test_geometry8() {
+        let middle = middle(0.0, 0.0, 3.0, 1.0);
+        assert!(!point_in_polygon(
+            middle.0,
+            middle.1,
+            &[(0.0, 0.0), (3.0, 1.0), (4.0, 5.0)],
+            &geometry::Bounds{min_x:0.0, max_x:4.0, min_y:0.0,max_y:5.0}
+        ))
+    }
 
-    // #[test]
-    // fn test_geometry9() {
-    //     assert_eq!(
-    //         crate::geometry::intersection_length(
-    //             0.0,
-    //             1.0,
-    //             1.0,
-    //             1.0,
-    //             &[(0.0, 0.0), (1.0, 0.0), (0.5, -1.0)],
-    //             &(0.0, 0.0, 1.0, 0.0)
-    //         ),
-    //         0.0
-    //     )
-    // }
+    #[test]
+    fn test_geometry9() {
+        assert_eq!(
+            crate::geometry::intersection_length(
+                0.0,
+                1.0,
+                1.0,
+                1.0,
+                &[(0.0, 0.0), (1.0, 0.0), (0.5, -1.0)],
+                &geometry::Bounds{min_x:0.0, max_x:1.0, min_y:-1.0,max_y:0.0}
+            ),
+            0.0
+        )
+    }
 
-    // #[test]
-    // fn test_geometry10() {
-    //     assert!(
-    //         crate::geometry::intersection_length(
-    //             0.845641974,
-    //             0.904959172,
-    //             0.753467217,
-    //             0.42431886,
-    //             &[
-    //                 (0.796, 0.898),
-    //                 (0.804, 0.784),
-    //                 (0.906, 0.792),
-    //                 (0.908, 0.886),
-    //             ],
-    //             &(0.0, 0.0, 1.0, 0.0)
-    //         ) > 0.0
-    //     )
-    // }
+    #[test]
+    fn test_geometry10() {
+        assert!(
+            crate::geometry::intersection_length(
+                0.845641974,
+                0.904959172,
+                0.753467217,
+                0.42431886,
+                &[
+                    (0.796, 0.898),
+                    (0.804, 0.784),
+                    (0.906, 0.792),
+                    (0.908, 0.886),
+                ],
+                &geometry::Bounds{min_x:0.0, max_x:1.0, min_y:0.0,max_y:1.0}
+            ) > 0.0
+        )
+    }
 
-    // #[test]
-    // fn test_geometry11() {
-    //     println!(
-    //         "{}",
-    //         crate::geometry::intersection_length(
-    //             0.936640447,
-    //             0.706594727,
-    //             0.753467217,
-    //             0.42431886,
-    //             &[
-    //                 (0.784, 0.522),
-    //                 (0.798, 0.44799999999999995),
-    //                 (0.906, 0.45199999999999996),
-    //                 (0.9, 0.534),
-    //             ],
-    //             &(0.0, 0.0, 1.0, 0.0)
-    //         )
-    //     );
-    //     assert!(
-    //         crate::geometry::intersection_length(
-    //             0.936640447,
-    //             0.706594727,
-    //             0.753467217,
-    //             0.42431886,
-    //             &[
-    //                 (0.784, 0.522),
-    //                 (0.798, 0.44799999999999995),
-    //                 (0.906, 0.45199999999999996),
-    //                 (0.9, 0.534),
-    //             ],
-    //             &(0.0, 0.0, 1.0, 0.0)
-    //         ) > 0.0
-    //     )
-    // }
+    #[test]
+    fn test_geometry11() {
+        println!(
+            "{}",
+            crate::geometry::intersection_length(
+                0.936640447,
+                0.706594727,
+                0.753467217,
+                0.42431886,
+                &[
+                    (0.784, 0.522),
+                    (0.798, 0.44799999999999995),
+                    (0.906, 0.45199999999999996),
+                    (0.9, 0.534),
+                ],
+                &geometry::Bounds{min_x:0.0, max_x:1.0, min_y:0.0,max_y:1.0}
+            )
+        );
+        assert!(
+            crate::geometry::intersection_length(
+                0.936640447,
+                0.706594727,
+                0.753467217,
+                0.42431886,
+                &[
+                    (0.784, 0.522),
+                    (0.798, 0.44799999999999995),
+                    (0.906, 0.45199999999999996),
+                    (0.9, 0.534),
+                ],
+                &geometry::Bounds{min_x:0.0, max_x:1.0, min_y:0.0,max_y:1.0}
+            ) > 0.0
+        )
+    }
 
     #[test]
     fn using_petgraph() {
