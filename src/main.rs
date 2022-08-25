@@ -760,16 +760,14 @@ impl Instance {
                     .included_corners
                     .iter()
                     .map(|c| &self.problem.obstacle_corners[*c]),
-            )
-            .map(|&c| c);
+            );
             
             for vertex in source_vertices.clone() {
                 graph.add_node(vertex.clone());
             }
-            for (i1, t1) in source_vertices.enumerate() {
-
-                for (i2, t2) in self.problem.terminals.iter().enumerate() {
-                    let mut length = geometry::euclidean_distance(t1, *t2);
+            for (i1, &t1) in source_vertices.clone().enumerate() {
+                for (i2, &t2) in self.problem.terminals.iter().enumerate() {
+                    let mut length = geometry::euclidean_distance(t1, t2);
                     let line_bounds = Bounds {
                         min_x: t1.0.min(t2.0),
                         min_y: t1.1.min(t2.1),
@@ -812,6 +810,53 @@ impl Instance {
                         length,
                     );
                 }
+            }
+            for pair in source_vertices.enumerate().combinations(2) {
+                let (i1, &v1) = pair[0];
+                let (i2, &v2) = pair[1];
+                let mut length = geometry::euclidean_distance(v1, v2);
+                let line_bounds = Bounds {
+                    min_x: v1.0.min(v2.0),
+                    min_y: v1.1.min(v2.1),
+                    max_x: v1.0.max(v2.0),
+                    max_y: v1.1.max(v2.1),
+                };
+                for obstacle in &self.problem.obstacles {
+                    let bounds = &obstacle.bounds;
+                    if overlap(
+                        line_bounds.min_x,
+                        line_bounds.min_y,
+                        line_bounds.max_x,
+                        line_bounds.max_y,
+                        bounds.min_x,
+                        bounds.min_y,
+                        bounds.max_x,
+                        bounds.max_y,
+                    ) {
+                        let intersection_len = geometry::intersection_length(
+                            v1.0,
+                            v1.1,
+                            v2.0,
+                            v2.1,
+                            &obstacle.points,
+                            &obstacle.bounds,
+                        );
+                        if intersection_len > 0.0 {
+                            if obstacle.weight == INF {
+                                length = INF;
+                            } else {
+                                length -= intersection_len;
+                                length += intersection_len * obstacle.weight;
+                            }
+                        }
+                    }
+                }
+                graph.add_edge(
+                    petgraph::graph::NodeIndex::new(i1+self.problem.base_graph.node_count()),
+                    petgraph::graph::NodeIndex::new(i2+self.problem.base_graph.node_count()),
+                    length,
+                );
+                
             }
             let mst = petgraph::graph::UnGraph::<_, _>::from_elements(
                 petgraph::algo::min_spanning_tree(&graph),
