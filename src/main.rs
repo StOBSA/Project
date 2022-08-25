@@ -97,7 +97,6 @@ mod geometry {
             let intersection =
                 segment_segment_intersection(x1, y1, x2, y2, x3, y3, x4, y4, point_overlap);
             if intersection.is_some() {
-                // println!("line {:?} and line {:?} intersect at {:?}", (x1, y1, x2, y2), (x3, y3, x4, y4), intersection);
                 if !result.contains(&intersection.unwrap()) {
                     result.push(intersection.unwrap())
                 }
@@ -170,16 +169,6 @@ mod geometry {
     }
 
     pub fn point_in_polygon(x1: f64, y1: f64, polygon: &[Point], bounds: &Bounds) -> bool {
-        // let mut intersections = 0;
-        // for i in -1..(polygon.len() as i32 - 1) {
-        //     let (x2, y2) = (polygon[if i == -1 {polygon.len() - 1} else {i as usize}].0,polygon[if i == -1 {polygon.len() - 1} else {i as usize}].1);
-        //     let (x3, y3) = (polygon[(i + 1) as usize].0, polygon[(i + 1) as usize].1);
-        //     if ray_segment_intersection(x1, y1, x2, y2, x3, y3, 1e-6) {
-        //         intersections += 1
-        //     }
-        // }
-        // return intersections % 2 == 1;
-
         let intersections = segment_polygon_intersection(
             bounds.min_x - 1.0,
             y1,
@@ -188,8 +177,6 @@ mod geometry {
             polygon,
             true,
         );
-        // println!("point at {:?}", (x1,y1));
-        // println!("intersections at {:?}", intersections);
         let (mut left, mut right) = (0, 0);
         for cut in intersections {
             if cut.0 < x1 {
@@ -200,26 +187,6 @@ mod geometry {
             }
         }
         return left % 2 == 1 && right % 2 == 1;
-
-        // let (bx1,by1,bx2,by2) = bounds;
-        // let intersections1 = segment_polygon_intersection(bx1-1.0, y1, bx2+1.0, y1, polygon, true);
-        // let intersections2 = segment_polygon_intersection(x1, by1-1.0, x1, by2+1.0, polygon, true);
-        // let (mut left, mut right, mut above, mut below) = (0,0,0,0);
-        // for cut in intersections1.iter().chain(intersections2.iter()) {
-        //     if cut.0 < x1 {
-        //         left+=1;
-        //     }
-        //     if cut.0 > x1 {
-        //         right+=1;
-        //     }
-        //     if cut.1 < y1 {
-        //         below+=1;
-        //     }
-        //     if cut.1 > y1 {
-        //         above+=1;
-        //     }
-        // }
-        // return left%2==1 && right%2==1 && above%2==1 && below%2==1;
     }
 
     pub fn intersection_length(
@@ -1113,16 +1080,14 @@ fn main() {
             }
         }
         obstacles.push(current_obstacle.compute_bounds());
-        // println!("{:?}", obstacles);
     }
-    // return;
     let rng = rand_pcg::Pcg32::seed_from_u64(0);
     let problem = SteinerProblem::new(terminals.clone(), obstacles.clone());
     let mut stobga = StOBGA::new(rng, Rc::new(problem), 500, 166, 166, 166);
 
     let mut streak = (0, f64::INFINITY);
-    println!("generation;average;best;chromosome;function_evaluations;");
-    while stobga.current_generation < 1500 {
+    println!("generation;average;best;chromosome;function_evaluations;runtime in seconds");
+    loop {
         stobga.step();
         // stobga.population[0].chromosome = Chromosome{steiner_points:vec![],included_corners:stobga.problem.obstacle_corners.iter().enumerate().map(|(a,b)|a).collect()};
         // stobga.population[0].get_mst();
@@ -1173,46 +1138,6 @@ fn main() {
             Err(_) => format!("NA"),
         }
     );
-
-    // let mut i = Instance{chromosome:Chromosome { steiner_points: vec![(0.7891687313029053, 0.253945198380253)], included_corners: HashSet::from([3]) },minimum_spanning_tree:None,problem:Rc::new(problem)};
-    // println!("{}", i.get_mst().total_weight);
-
-    // let mut step = 0;
-    // loop {
-    //     stobga.step();
-    //     println!("generation {}", step);
-    //     println!(
-    //         "best {} - mean {}",
-    //         stobga.population[0].get_mst().total_weight.clone(),
-    //         stobga
-    //             .population
-    //             .iter_mut()
-    //             .map(|i| i.get_mst().total_weight)
-    //             .sum::<f64>()
-    //             / 500.0
-    //     );
-    //     println!("{:?}", stobga.population[0].chromosome);
-    //     step += 1;
-    // }
-
-    // let stobga = Rc::new(std::sync::RwLock::new(stobga));
-    // let clone = Rc::clone(&stobga);
-    // thread::spawn(move || {
-    //     loop {
-    //         clone.write().unwrap().step();
-    //         thread::sleep(Duration::from_millis(10));
-    //     }
-    // }
-    // );
-    // ContextBuilder::new("StOBGA", 500, 500)
-    //     .build()
-    //     .expect("err")
-    //     .run(|_| {
-    //         Ok(GameState {
-    //             stobga: Rc::clone(&stobga),
-    //             shapes: Vec::new(),
-    //         })
-    //     }).unwrap();
 }
 
 #[cfg(test)]
@@ -1222,17 +1147,17 @@ mod test {
     use rand::{SeedableRng, Rng};
 
     #[test]
-    // fn test_geometry() {
-    //     assert_eq!(
-    //         crate::geometry::point_in_polygon(
-    //             0.0,
-    //             0.0,
-    //             &[(-1.0, -1.0), (1.0, 1.0), (0.0, 2.0)],
-    //             geometry::
-    //         ),
-    //         false
-    //     )
-    // }
+    fn test_geometry() {
+        assert_eq!(
+            crate::geometry::point_in_polygon(
+                0.0,
+                0.0,
+                &[(-1.0, -1.0), (1.0, 1.0), (0.0, 2.0)],
+                &geometry::Bounds{min_x:-1.0, max_x:1.0, min_y:-1.0,max_y:2.0}
+            ),
+            false
+        )
+    }
 
     // #[test]
     // fn test_geometry2() {
