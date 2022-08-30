@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-geos        = "8.1.0"  # delaunay triangulation
+delaunator  = "1.0.1"  # delaunay triangulation
 rand        = "0.8.5"  # random number generation
 rand_pcg    = "0.3.1"  
 nalgebra    = "0.31.1" # linear algebra
