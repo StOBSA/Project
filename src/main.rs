@@ -1,3 +1,4 @@
+use geometry::fermat_point;
 use geometry::overlap;
 use geometry::Bounds;
 use itertools::Itertools;
@@ -582,8 +583,32 @@ impl<R: Rng> StOBGA<R> {
             minimum_spanning_tree: None,
             problem: self.problem.clone(),
         });
-    }
 
+    }
+    
+    fn finalize(&mut self) {
+        let best = &mut self.population[0];
+        let mut best_copy = best.clone();
+        let mst = best_copy.get_mst();
+        let mut rem_add_list = Vec::new();
+        for node in mst.graph.node_indices() {
+            let n_edges = mst.graph.edges(node).count();
+            if n_edges == 3 {
+                let mut all = mst.graph.edges(node);
+                let a = all.next().unwrap();
+                let b = all.next().unwrap();
+                let c = all.next().unwrap();
+                rem_add_list.push((node, fermat_point(mst.graph[a.target()], mst.graph[b.target()], mst.graph[c.target()], 1e-6)));
+            }
+        }
+        for (index, value) in rem_add_list {
+            best_copy.minimum_spanning_tree.as_mut().unwrap().graph[index] = value;
+        }
+        if best_copy.get_mst().total_weight < best.get_mst().total_weight {
+            self.population[0] = best_copy;
+        }
+    }
+    
     fn new(
         mut rng: R,
         problem: Rc<SteinerProblem>,
@@ -1175,6 +1200,7 @@ fn main() {
             break;
         }
     }
+    stobga.finalize();
     println!(
         "{};{};{};{:?};{};{}",
         stobga.current_generation,
