@@ -27,10 +27,10 @@ mod geometry {
     impl Default for Bounds {
         fn default() -> Self {
             Self {
-                min_x: INFINITY,
-                max_x: 0.0,
-                min_y: INFINITY,
-                max_y: 0.0,
+                min_x:  INFINITY,
+                max_x: -INFINITY,
+                min_y:  INFINITY,
+                max_y: -INFINITY,
             }
         }
     }
