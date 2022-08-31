@@ -12,7 +12,7 @@ for (path, folders, files) in chain(os.walk("SolidObstacles"),os.walk("SoftObsta
         finds = pattern.findall(file)
         if finds != []:
             for run in range(1,repetitions+1):
-                print(f"make.target.{counter}:\n\tcargo run --release -- {path/pathlib.Path('terminals'+finds[0])}.csv {path/pathlib.Path('obstacles'+finds[0])}.csv > {pathlib.Path('experiments')/path/pathlib.Path(f'Instance{finds[0]}Run{run}.csv')}")
+                print(f"make.target.{counter}:\n\tcargo run --release -- {path/pathlib.Path('terminals'+finds[0])}.csv {path/pathlib.Path('obstacles'+finds[0])}.csv {run} > {pathlib.Path('experiments')/path/pathlib.Path(f'Instance{finds[0]}Run{run}.csv')}")
                 counter += 1
             ins = [f"make.target.{counter-i} " for i in range(1, repetitions+1)]
             affix = "Solid" if "Solid" in path else "Soft"
