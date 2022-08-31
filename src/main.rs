@@ -1,5 +1,5 @@
-use geometry::Bounds;
 use geometry::overlap;
+use geometry::Bounds;
 use itertools::Itertools;
 use petgraph::data::FromElements;
 use petgraph::visit::EdgeRef;
@@ -285,7 +285,6 @@ mod geometry {
 
 use std::rc::Rc;
 use std::time::SystemTime;
-use std::{collections::HashSet};
 
 type Point = (f64, f64);
 
@@ -301,7 +300,7 @@ struct SteinerProblem {
     centroids: Vec<Point>,
     bounds: Bounds,
     average_terminal_distance: f64,
-    base_graph : petgraph::graph::UnGraph<Point, f64, u32>
+    base_graph: petgraph::graph::UnGraph<Point, f64, u32>,
 }
 
 impl SteinerProblem {
@@ -439,7 +438,7 @@ impl SteinerProblem {
             centroids,
             bounds,
             average_terminal_distance,
-            base_graph : graph
+            base_graph: graph,
         }
     }
 
@@ -463,7 +462,7 @@ impl SteinerProblem {
 #[derive(Clone)]
 struct Chromosome {
     steiner_points: Vec<Point>,
-    included_corners: HashSet<usize>,
+    included_corners: indexmap::IndexSet<usize>,
 }
 
 impl std::fmt::Debug for Chromosome {
@@ -496,17 +495,17 @@ struct Instance {
     minimum_spanning_tree: Option<MinimumSpanningTree>,
 }
 
-struct StOBGA<R:Rng> {
+struct StOBGA<R: Rng> {
     problem: Rc<SteinerProblem>,
     population: Vec<Instance>,
     random_generator: R,
     current_generation: usize,
     child_buffer: Vec<Instance>,
-    function_evaluations : u64,
-    start_time: SystemTime
+    function_evaluations: u64,
+    start_time: SystemTime,
 }
 
-impl<R:Rng> StOBGA<R> {
+impl<R: Rng> StOBGA<R> {
     fn crossover(&mut self, parent_1_index: usize, parent_2_index: usize) {
         let min_x = self.problem.bounds.min_x;
         let max_x = self.problem.bounds.max_x;
@@ -515,8 +514,8 @@ impl<R:Rng> StOBGA<R> {
         let mut steiner_points_1 = Vec::new();
         let mut steiner_points_2 = Vec::new();
 
-        let mut obstacle_corners_1 = HashSet::new();
-        let mut obstacle_corners_2 = HashSet::new();
+        let mut obstacle_corners_1 = indexmap::IndexSet::new();
+        let mut obstacle_corners_2 = indexmap::IndexSet::new();
 
         for point in self.population[parent_1_index]
             .chromosome
@@ -586,7 +585,7 @@ impl<R:Rng> StOBGA<R> {
     }
 
     fn new(
-        mut rng : R,
+        mut rng: R,
         problem: Rc<SteinerProblem>,
         population_size: usize,
         t1: usize,
@@ -599,7 +598,7 @@ impl<R:Rng> StOBGA<R> {
                 problem: Rc::clone(&problem),
                 chromosome: Chromosome {
                     steiner_points: problem.centroids.clone(),
-                    included_corners: HashSet::new(),
+                    included_corners: indexmap::IndexSet::new(),
                 },
                 minimum_spanning_tree: Option::None,
             });
@@ -623,7 +622,7 @@ impl<R:Rng> StOBGA<R> {
                 problem: Rc::clone(&problem),
                 chromosome: Chromosome {
                     steiner_points: steiner_points,
-                    included_corners: HashSet::new(),
+                    included_corners: indexmap::IndexSet::new(),
                 },
                 minimum_spanning_tree: Option::None,
             });
@@ -633,7 +632,7 @@ impl<R:Rng> StOBGA<R> {
             let distribution = Uniform::new(0, k + 1);
             let amount = rng.sample(distribution);
             let draws = rand::seq::index::sample(&mut rng, k, amount);
-            let mut corners = HashSet::new();
+            let mut corners = indexmap::IndexSet::new();
             for elem in draws {
                 corners.insert(elem);
             }
@@ -655,7 +654,7 @@ impl<R:Rng> StOBGA<R> {
             current_generation: 0,
             child_buffer: Vec::new(),
             function_evaluations: 0,
-            start_time: SystemTime::now()
+            start_time: SystemTime::now(),
         };
 
         let mut parents = Vec::new();
@@ -672,7 +671,8 @@ impl<R:Rng> StOBGA<R> {
             stobga.crossover(parents[2 * i], parents[2 * i + 1]);
         }
         for (child_index, population_index) in children.iter().enumerate() {
-            stobga.population[*population_index].chromosome = stobga.child_buffer[child_index].chromosome.clone();
+            stobga.population[*population_index].chromosome =
+                stobga.child_buffer[child_index].chromosome.clone();
             stobga.population[*population_index].minimum_spanning_tree = None;
         }
         stobga.population.append(&mut save);
@@ -761,7 +761,7 @@ impl Instance {
                     .iter()
                     .map(|c| &self.problem.obstacle_corners[*c]),
             );
-            
+
             for vertex in source_vertices.clone() {
                 graph.add_node(vertex.clone());
             }
@@ -805,7 +805,7 @@ impl Instance {
                         }
                     }
                     graph.add_edge(
-                        petgraph::graph::NodeIndex::new(i1+self.problem.base_graph.node_count()),
+                        petgraph::graph::NodeIndex::new(i1 + self.problem.base_graph.node_count()),
                         petgraph::graph::NodeIndex::new(i2),
                         length,
                     );
@@ -852,11 +852,10 @@ impl Instance {
                     }
                 }
                 graph.add_edge(
-                    petgraph::graph::NodeIndex::new(i1+self.problem.base_graph.node_count()),
-                    petgraph::graph::NodeIndex::new(i2+self.problem.base_graph.node_count()),
+                    petgraph::graph::NodeIndex::new(i1 + self.problem.base_graph.node_count()),
+                    petgraph::graph::NodeIndex::new(i2 + self.problem.base_graph.node_count()),
                     length,
                 );
-                
             }
             let mst = petgraph::graph::UnGraph::<_, _>::from_elements(
                 petgraph::algo::min_spanning_tree(&graph),
@@ -872,12 +871,7 @@ impl Instance {
         return self.minimum_spanning_tree.as_ref().unwrap();
     }
 
-    fn mutate<R:Rng>(
-        &mut self,
-        rng: &mut R,
-        probability_flip_move: f64,
-        generation: usize,
-    ) {
+    fn mutate<R: Rng>(&mut self, rng: &mut R, probability_flip_move: f64, generation: usize) {
         if rng.gen_bool(probability_flip_move) {
             self.mutation_flip_move(rng, generation);
         }
@@ -888,7 +882,7 @@ impl Instance {
         }
     }
 
-    fn mutation_remove_steiner<R:Rng>(&mut self, rng: &mut R) {
+    fn mutation_remove_steiner<R: Rng>(&mut self, rng: &mut R) {
         let _ = self.get_mst();
         let mut candidate_steiner_points = Vec::new();
 
@@ -948,7 +942,7 @@ impl Instance {
         self.minimum_spanning_tree = None;
     }
 
-    fn mutation_add_steiner<R:Rng>(&mut self, rng: &mut R) {
+    fn mutation_add_steiner<R: Rng>(&mut self, rng: &mut R) {
         self.get_mst(); // making sure the mst is present
         let mut candidates = Vec::new();
         let graph = &self.minimum_spanning_tree.as_ref().unwrap().graph;
@@ -1001,7 +995,7 @@ impl Instance {
         self.minimum_spanning_tree = None;
     }
 
-    fn mutation_flip_move<R:Rng>(&mut self, rng: &mut R, generation: usize) {
+    fn mutation_flip_move<R: Rng>(&mut self, rng: &mut R, generation: usize) {
         let s = self.chromosome.steiner_points.len();
         let k = self.problem.obstacle_corners.len();
         let p_gene = if s + k == 0 {
@@ -1089,10 +1083,14 @@ impl Obstacle {
 fn main() {
     std::env::set_var("RUST_BACKTRACE", "full");
     let mut terminals = Vec::new();
-    for line in std::fs::read_to_string(std::env::args().nth(1).expect("please specify terminal file"))
-        .unwrap()
-        .lines()
-        .skip(1)
+    for line in std::fs::read_to_string(
+        std::env::args()
+            .nth(1)
+            .expect("please specify terminal file"),
+    )
+    .unwrap()
+    .lines()
+    .skip(1)
     {
         let coords = line
             .split(",")
@@ -1104,9 +1102,13 @@ fn main() {
     let mut obstacles = Vec::new();
     {
         let mut current_obstacle = Obstacle::new(0.0, vec![]);
-        for line in std::fs::read_to_string(std::env::args().nth(2).expect("please specify obstacle file"))
-            .unwrap()
-            .lines()
+        for line in std::fs::read_to_string(
+            std::env::args()
+                .nth(2)
+                .expect("please specify obstacle file"),
+        )
+        .unwrap()
+        .lines()
         {
             if line == "" || line == "," {
                 obstacles.push(current_obstacle.compute_bounds());
@@ -1126,18 +1128,26 @@ fn main() {
         }
         obstacles.push(current_obstacle.compute_bounds());
     }
-    let rng = rand_pcg::Pcg32::seed_from_u64(0);
+
+    let seed = match std::env::args().nth(3) {
+        Some(a) => a.parse().expect("could not parse seed"),
+        None => {
+            0
+        }
+    };
+
+    let rng = rand_pcg::Pcg32::seed_from_u64(seed);
     let problem = SteinerProblem::new(terminals.clone(), obstacles.clone());
     let mut stobga = StOBGA::new(rng, Rc::new(problem), 500, 166, 166, 166);
 
     let mut streak = (0, f64::INFINITY);
-    println!("generation;average;best;chromosome;function_evaluations;runtime in seconds");
+    println!("generation;average;best;chromosome;function_evaluations;runtime in seconds;seed={}", seed);
     loop {
         stobga.step();
         // stobga.population[0].chromosome = Chromosome{steiner_points:vec![],included_corners:stobga.problem.obstacle_corners.iter().enumerate().map(|(a,b)|a).collect()};
         // stobga.population[0].get_mst();
         // let graph = &stobga.population[0].minimum_spanning_tree.as_ref().unwrap().graph;
-        if stobga.population[0].get_mst().total_weight < streak.1-1e-6 {
+        if stobga.population[0].get_mst().total_weight < streak.1 - 1e-6 {
             streak = (0, stobga.population[0].get_mst().total_weight);
 
             println!(
@@ -1154,7 +1164,7 @@ fn main() {
                 stobga.population[0].chromosome,
                 stobga.function_evaluations,
                 match SystemTime::now().duration_since(stobga.start_time) {
-                    Ok(s) => format!("{}",s.as_secs_f32()),
+                    Ok(s) => format!("{}", s.as_secs_f32()),
                     Err(_) => format!("NA"),
                 }
             );
@@ -1179,7 +1189,7 @@ fn main() {
         stobga.population[0].chromosome,
         stobga.function_evaluations,
         match SystemTime::now().duration_since(stobga.start_time) {
-            Ok(s) => format!("{}",s.as_secs_f32()),
+            Ok(s) => format!("{}", s.as_secs_f32()),
             Err(_) => format!("NA"),
         }
     );
@@ -1187,9 +1197,9 @@ fn main() {
 
 #[cfg(test)]
 mod test {
-    use crate::geometry::{*, self};
+    use crate::geometry::{self, *};
     use petgraph::{data::FromElements, prelude::UnGraph};
-    use rand::{SeedableRng, Rng};
+    use rand::{Rng, SeedableRng};
 
     #[test]
     fn test_geometry() {
@@ -1198,7 +1208,12 @@ mod test {
                 0.0,
                 0.0,
                 &[(-1.0, -1.0), (1.0, 1.0), (0.0, 2.0)],
-                &geometry::Bounds{min_x:-1.0, max_x:1.0, min_y:-1.0,max_y:2.0}
+                &geometry::Bounds {
+                    min_x: -1.0,
+                    max_x: 1.0,
+                    min_y: -1.0,
+                    max_y: 2.0
+                }
             ),
             false
         )
@@ -1224,7 +1239,12 @@ mod test {
                 2.0,
                 0.0,
                 &[(1.0, 0.0), (1.0, -1.0), (-1.0, -1.0)],
-                &geometry::Bounds{min_x:-1.0, max_x:1.0, min_y:-1.0,max_y:0.0}
+                &geometry::Bounds {
+                    min_x: -1.0,
+                    max_x: 1.0,
+                    min_y: -1.0,
+                    max_y: 0.0
+                }
             ),
             0.0
         );
@@ -1254,7 +1274,12 @@ mod test {
                 4.0,
                 5.0,
                 &[(0.0, 0.0), (3.0, 1.0), (4.0, 5.0)],
-                &geometry::Bounds{min_x:0.0, max_x:4.0, min_y:0.0,max_y:5.0}
+                &geometry::Bounds {
+                    min_x: 0.0,
+                    max_x: 4.0,
+                    min_y: 0.0,
+                    max_y: 5.0
+                }
             ),
             0.0
         )
@@ -1282,7 +1307,12 @@ mod test {
             middle.0,
             middle.1,
             &[(0.0, 0.0), (3.0, 1.0), (4.0, 5.0)],
-            &geometry::Bounds{min_x:0.0, max_x:4.0, min_y:0.0,max_y:5.0}
+            &geometry::Bounds {
+                min_x: 0.0,
+                max_x: 4.0,
+                min_y: 0.0,
+                max_y: 5.0
+            }
         ))
     }
 
@@ -1293,7 +1323,12 @@ mod test {
             middle.0,
             middle.1,
             &[(0.0, 0.0), (3.0, 1.0), (4.0, 5.0)],
-            &geometry::Bounds{min_x:0.0, max_x:4.0, min_y:0.0,max_y:5.0}
+            &geometry::Bounds {
+                min_x: 0.0,
+                max_x: 4.0,
+                min_y: 0.0,
+                max_y: 5.0
+            }
         ))
     }
 
@@ -1304,7 +1339,12 @@ mod test {
             middle.0,
             middle.1,
             &[(0.0, 0.0), (3.0, 1.0), (4.0, 5.0)],
-            &geometry::Bounds{min_x:0.0, max_x:4.0, min_y:0.0,max_y:5.0}
+            &geometry::Bounds {
+                min_x: 0.0,
+                max_x: 4.0,
+                min_y: 0.0,
+                max_y: 5.0
+            }
         ))
     }
 
@@ -1317,7 +1357,12 @@ mod test {
                 1.0,
                 1.0,
                 &[(0.0, 0.0), (1.0, 0.0), (0.5, -1.0)],
-                &geometry::Bounds{min_x:0.0, max_x:1.0, min_y:-1.0,max_y:0.0}
+                &geometry::Bounds {
+                    min_x: 0.0,
+                    max_x: 1.0,
+                    min_y: -1.0,
+                    max_y: 0.0
+                }
             ),
             0.0
         )
@@ -1337,7 +1382,12 @@ mod test {
                     (0.906, 0.792),
                     (0.908, 0.886),
                 ],
-                &geometry::Bounds{min_x:0.0, max_x:1.0, min_y:0.0,max_y:1.0}
+                &geometry::Bounds {
+                    min_x: 0.0,
+                    max_x: 1.0,
+                    min_y: 0.0,
+                    max_y: 1.0
+                }
             ) > 0.0
         )
     }
@@ -1357,7 +1407,12 @@ mod test {
                     (0.906, 0.45199999999999996),
                     (0.9, 0.534),
                 ],
-                &geometry::Bounds{min_x:0.0, max_x:1.0, min_y:0.0,max_y:1.0}
+                &geometry::Bounds {
+                    min_x: 0.0,
+                    max_x: 1.0,
+                    min_y: 0.0,
+                    max_y: 1.0
+                }
             )
         );
         assert!(
@@ -1372,7 +1427,12 @@ mod test {
                     (0.906, 0.45199999999999996),
                     (0.9, 0.534),
                 ],
-                &geometry::Bounds{min_x:0.0, max_x:1.0, min_y:0.0,max_y:1.0}
+                &geometry::Bounds {
+                    min_x: 0.0,
+                    max_x: 1.0,
+                    min_y: 0.0,
+                    max_y: 1.0
+                }
             ) > 0.0
         )
     }
