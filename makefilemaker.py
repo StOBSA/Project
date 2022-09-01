@@ -18,5 +18,5 @@ for (path, folders, files) in chain(os.walk("SolidObstacles"),os.walk("SoftObsta
             affix = "Solid" if "Solid" in path else "Soft"
             print(f"{affix}Instance{finds[0]}: {reduce(lambda x,y: x+y, ins,'')}")
             targets.append(f"{affix}Instance{finds[0]} ")
-
+targets.sort(key=lambda s:int(re.findall(r"(\d+)",s)[0]))
 print("experiments: " + reduce(lambda x,y: x+y, targets,""))
