@@ -326,37 +326,6 @@ impl SteinerProblem {
         for [a,b,c] in triangles {
             centroids.push(geometry::fermat_point(a, b, c, 1e-6));
         }
-        // let v = v.iter().map(|p| [p.0, p.1]).collect::<Vec<[f64; 2]>>();
-        // use geos::Geom;
-        // let seq = geos::CoordSeq::new_from_vec(&v).expect("failed to create CoordSeq");
-        // let geo = geos::Geometry::delaunay_triangulation(
-        //     &seq.create_line_string()
-        //         .expect("could not create line string"),
-        //     0.0001,
-        //     false,
-        // )
-        // .expect("could not triangulate");
-
-        // for n in 0..geo.get_num_geometries().expect("failed to get n") {
-        //     let geometry = geo.get_geometry_n(n);
-        //     if geometry.is_err() {
-        //         break;
-        //     }
-        //     let mut triangle = Vec::new();
-        //     let geometry = geometry.unwrap();
-        //     let ring = geometry.get_exterior_ring().unwrap();
-        //     for i in 0..3 {
-        //         let coord_seq = ring.get_coord_seq().unwrap();
-        //         triangle.push([coord_seq.get_x(i).unwrap(), coord_seq.get_y(i).unwrap()]);
-        //     }
-        //     centroids.push(geometry::fermat_point(
-        //         (triangle[0][0], triangle[0][1]),
-        //         (triangle[1][0], triangle[1][1]),
-        //         (triangle[2][0], triangle[2][1]),
-        //         1e-6,
-        //     ));
-        // }
-
 
         let mut bounds = Bounds {
             min_x: INF,
