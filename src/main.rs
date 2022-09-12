@@ -27,9 +27,9 @@ mod geometry {
     impl Default for Bounds {
         fn default() -> Self {
             Self {
-                min_x:  INFINITY,
+                min_x: INFINITY,
                 max_x: -INFINITY,
-                min_y:  INFINITY,
+                min_y: INFINITY,
                 max_y: -INFINITY,
             }
         }
@@ -313,17 +313,24 @@ impl SteinerProblem {
             }
         }
         let mut centroids = Vec::new();
-        let vertices = terminals.iter().chain(obstacle_corners.iter()).map(|(x,y)|delaunator::Point{x:*x,y:*y}).collect::<Vec<_>>();
+        let vertices = terminals
+            .iter()
+            .chain(obstacle_corners.iter())
+            .map(|(x, y)| delaunator::Point { x: *x, y: *y })
+            .collect::<Vec<_>>();
         let mut triangles = Vec::new();
-        for triple in delaunator::triangulate(&vertices).triangles.as_slice().windows(3) {
-            triangles.push(
-                [
-                (vertices[triple[0]].x,vertices[triple[0]].y),
-                (vertices[triple[1]].x,vertices[triple[1]].y),
-                (vertices[triple[2]].x,vertices[triple[2]].y)
-                ]);
+        for triple in delaunator::triangulate(&vertices)
+            .triangles
+            .as_slice()
+            .windows(3)
+        {
+            triangles.push([
+                (vertices[triple[0]].x, vertices[triple[0]].y),
+                (vertices[triple[1]].x, vertices[triple[1]].y),
+                (vertices[triple[2]].x, vertices[triple[2]].y),
+            ]);
         }
-        for [a,b,c] in triangles {
+        for [a, b, c] in triangles {
             centroids.push(geometry::fermat_point(a, b, c, 1e-6));
         }
 
@@ -564,9 +571,8 @@ impl<R: Rng> StOBGA<R> {
             minimum_spanning_tree: None,
             problem: self.problem.clone(),
         });
-
     }
-    
+
     fn finalize(&mut self) {
         let best = &mut self.population[0];
         let mut best_copy = best.clone();
@@ -579,7 +585,15 @@ impl<R: Rng> StOBGA<R> {
                 let a = all.next().unwrap();
                 let b = all.next().unwrap();
                 let c = all.next().unwrap();
-                rem_add_list.push((node, fermat_point(mst.graph[a.target()], mst.graph[b.target()], mst.graph[c.target()], 1e-6)));
+                rem_add_list.push((
+                    node,
+                    fermat_point(
+                        mst.graph[a.target()],
+                        mst.graph[b.target()],
+                        mst.graph[c.target()],
+                        1e-6,
+                    ),
+                ));
             }
         }
         for (index, value) in rem_add_list {
@@ -589,7 +603,7 @@ impl<R: Rng> StOBGA<R> {
             self.population[0] = best_copy;
         }
     }
-    
+
     fn new(
         mut rng: R,
         problem: Rc<SteinerProblem>,
@@ -1137,9 +1151,7 @@ fn main() {
 
     let seed = match std::env::args().nth(3) {
         Some(a) => a.parse().expect("could not parse seed"),
-        None => {
-            0
-        }
+        None => 0,
     };
 
     let rng = rand_pcg::Pcg32::seed_from_u64(seed);
@@ -1147,7 +1159,10 @@ fn main() {
     let mut stobga = StOBGA::new(rng, Rc::new(problem), 500, 166, 166, 166);
 
     let mut streak = (0, f64::INFINITY);
-    println!("generation;average;best;chromosome;function_evaluations;runtime in seconds;seed={}", seed);
+    println!(
+        "generation;average;best;chromosome;function_evaluations;runtime in seconds;seed={}",
+        seed
+    );
     loop {
         stobga.step();
         // stobga.population[0].chromosome = Chromosome{steiner_points:vec![],included_corners:stobga.problem.obstacle_corners.iter().enumerate().map(|(a,b)|a).collect()};
