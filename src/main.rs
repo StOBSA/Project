@@ -12,12 +12,12 @@ use util::to_graph;
 use util::to_point;
 
 mod util {
-    use ordered_float::*;
     use crate::{OPoint, Point};
+    use ordered_float::*;
     pub fn to_graph(point: crate::Point) -> OPoint {
         (OrderedFloat(point.0), OrderedFloat(point.1))
     }
-    pub fn to_point(point : OPoint) -> Point {
+    pub fn to_point(point: OPoint) -> Point {
         (*point.0, *point.1)
     }
 }
@@ -299,6 +299,7 @@ mod geometry {
     }
 }
 
+use std::collections::HashMap;
 use std::rc::Rc;
 use std::time::SystemTime;
 
@@ -477,7 +478,10 @@ impl std::fmt::Debug for Chromosome {
         f.write_str(
             format!(
                 "Chromosome(steinerPoints={:?}, includedObstacleCornersIndices=set([{}]))",
-                self.steiner_points.iter().map(|p|to_point(*p)).collect::<Vec<Point>>(),
+                self.steiner_points
+                    .iter()
+                    .map(|p| to_point(*p))
+                    .collect::<Vec<Point>>(),
                 string.chars().skip(1).take(len - 2).collect::<String>()
             )
             .as_str(),
@@ -507,6 +511,7 @@ struct StOBGA<R: Rng> {
     current_generation: usize,
     child_buffer: Vec<Instance>,
     function_evaluations: u64,
+    edge_db: HashMap<(OPoint, OPoint), f64>,
     start_time: SystemTime,
 }
 
@@ -633,7 +638,7 @@ impl<R: Rng> StOBGA<R> {
             population.push(Instance {
                 problem: Rc::clone(&problem),
                 chromosome: Chromosome {
-                    steiner_points: problem.centroids.iter().map(|&p|to_graph(p)).collect(),
+                    steiner_points: problem.centroids.iter().map(|&p| to_graph(p)).collect(),
                     included_corners: indexmap::IndexSet::new(),
                 },
                 minimum_spanning_tree: Option::None,
@@ -689,6 +694,7 @@ impl<R: Rng> StOBGA<R> {
             random_generator: rng,
             current_generation: 0,
             child_buffer: Vec::new(),
+            edge_db: HashMap::new(),
             function_evaluations: 0,
             start_time: SystemTime::now(),
         };
@@ -758,6 +764,7 @@ impl<R: Rng> StOBGA<R> {
             P_FLIP_MOVE_MIN,
         );
         self.child_buffer.clear();
+        self.build_msts();
         for pair in parents.iter().as_slice().windows(2) {
             self.crossover(pair[0], pair[1]);
         }
@@ -785,13 +792,111 @@ impl<R: Rng> StOBGA<R> {
         });
         self.current_generation += 1;
     }
+    fn get_distance(&mut self, from: OPoint, to: OPoint) -> f64 {
+        match self.edge_db.get(&(from, to)) {
+            Some(&distance) => distance,
+            None => self.compute_distance(from, to),
+        }
+    }
+    fn compute_distance(&mut self, from: OPoint, to: OPoint) -> f64 {
+        let p1 = to_point(from);
+        let p2 = to_point(to);
+        let mut length = geometry::euclidean_distance(p1, p2);
+        let line_bounds = Bounds {
+            min_x: p1.0.min(p2.0),
+            min_y: p1.1.min(p2.1),
+            max_x: p1.0.max(p2.0),
+            max_y: p1.1.max(p2.1),
+        };
+        for obstacle in &self.problem.obstacles {
+            let bounds = &obstacle.bounds;
+            if overlap(
+                line_bounds.min_x,
+                line_bounds.min_y,
+                line_bounds.max_x,
+                line_bounds.max_y,
+                bounds.min_x,
+                bounds.min_y,
+                bounds.max_x,
+                bounds.max_y,
+            ) {
+                let intersection_len = geometry::intersection_length(
+                    *from.0,
+                    *from.1,
+                    *to.0,
+                    *to.1,
+                    &obstacle.points,
+                    &obstacle.bounds,
+                );
+                if intersection_len > 0.0 {
+                    if obstacle.weight == INF {
+                        length = INF;
+                    } else {
+                        length -= intersection_len;
+                        length += intersection_len * obstacle.weight;
+                    }
+                }
+            }
+        }
+        self.edge_db.insert((from, to), length);
+        self.edge_db.insert((to, from), length);
+        length
+    }
+
+    fn build_single_mst(&mut self, individual : &mut Instance) {
+        if individual.minimum_spanning_tree.is_none() {
+            let mut graph = petgraph::graph::UnGraph::new_undirected();
+            let source_vertices = individual
+                .chromosome
+                .steiner_points
+                .iter()
+                .map(|&p| p)
+                .chain(
+                    individual
+                        .chromosome
+                        .included_corners
+                        .iter()
+                        .map(|&c| util::to_graph(individual.problem.obstacle_corners[c])),
+                )
+                .chain(individual.problem.terminals.iter().map(|p| to_graph(*p)));
+
+            for vertex in source_vertices.clone() {
+                graph.add_node(to_point(vertex));
+            }
+            for pair in source_vertices.clone().enumerate().combinations(2) {
+                let (i1, t1) = pair[0];
+                let (i2, t2) = pair[1];
+                let length = self.get_distance(t1, t2);
+                graph.add_edge(petgraph::graph::NodeIndex::new(i1), petgraph::graph::NodeIndex::new(i2), length);
+                
+                let mst = petgraph::graph::UnGraph::<_, _>::from_elements(
+                    petgraph::algo::min_spanning_tree(&graph),
+                );
+                let total_distance = mst.edge_weights().sum::<f64>();
+                let mst = MinimumSpanningTree {
+                    total_weight: total_distance,
+                    graph: mst,
+                };
+
+                individual.minimum_spanning_tree = Option::Some(mst);
+            }
+        }
+    }
+
+    fn build_msts(&mut self) {
+        let mut pop = self.population.clone();
+        for i in 0..pop.len() {
+            self.build_single_mst(&mut pop[i]);
+        }
+        self.population = pop;
+    }
 }
 
 impl Instance {
     fn get_mst(&mut self) -> &MinimumSpanningTree {
         if self.minimum_spanning_tree.is_none() {
             let mut graph = self.problem.base_graph.clone();
-            let source_vertices = self.chromosome.steiner_points.iter().map(|&p|p).chain(
+            let source_vertices = self.chromosome.steiner_points.iter().map(|&p| p).chain(
                 self.chromosome
                     .included_corners
                     .iter()
@@ -933,8 +1038,7 @@ impl Instance {
                 .unwrap();
             let edges = graph.edges(id);
             if edges.count() <= 2 {
-                candidate_steiner_points.push(
-                    *steiner_point);
+                candidate_steiner_points.push(*steiner_point);
             }
         }
         let mut candidate_corners = Vec::new();
@@ -1049,12 +1153,18 @@ impl Instance {
                 to_remove.push(steiner_point);
                 if m_range > M_RANGE_MIN {
                     let dist = Uniform::new(M_RANGE_MIN, m_range);
-                    to_add.push((OrderedFloat(dist.sample(rng) * x_sign),OrderedFloat(dist.sample(rng) * y_sign)));
+                    to_add.push((
+                        OrderedFloat(dist.sample(rng) * x_sign),
+                        OrderedFloat(dist.sample(rng) * y_sign),
+                    ));
                     // self.chromosome.steiner_points.remove(stei)
                     // self.chromosome.steiner_points[i].0 = OrderedFloat(dist.sample(rng) * x_sign);
                     // self.chromosome.steiner_points[i].1 = OrderedFloat(dist.sample(rng) * y_sign);
                 } else {
-                    to_add.push((OrderedFloat(M_RANGE_MIN * x_sign),OrderedFloat(M_RANGE_MIN * y_sign)));
+                    to_add.push((
+                        OrderedFloat(M_RANGE_MIN * x_sign),
+                        OrderedFloat(M_RANGE_MIN * y_sign),
+                    ));
                     // self.chromosome.steiner_points[i].0 = OrderedFloat(M_RANGE_MIN * x_sign);
                     // self.chromosome.steiner_points[i].1 = OrderedFloat(M_RANGE_MIN * y_sign);
                 }
