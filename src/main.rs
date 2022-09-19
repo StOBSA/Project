@@ -299,6 +299,7 @@ mod geometry {
     }
 }
 
+use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 use std::time::SystemTime;
@@ -511,7 +512,7 @@ struct StOBGA<R: Rng> {
     current_generation: usize,
     child_buffer: Vec<Instance>,
     function_evaluations: u64,
-    edge_db: HashMap<(OPoint, OPoint), f64>,
+    edge_db: RefCell<HashMap<(OPoint, OPoint), f64>>,
     start_time: SystemTime,
 }
 
@@ -694,7 +695,7 @@ impl<R: Rng> StOBGA<R> {
             random_generator: rng,
             current_generation: 0,
             child_buffer: Vec::new(),
-            edge_db: HashMap::new(),
+            edge_db: RefCell::new(HashMap::new()),
             function_evaluations: 0,
             start_time: SystemTime::now(),
         };
@@ -792,13 +793,21 @@ impl<R: Rng> StOBGA<R> {
         });
         self.current_generation += 1;
     }
-    fn get_distance(&mut self, from: OPoint, to: OPoint) -> f64 {
-        match self.edge_db.get(&(from, to)) {
+
+    fn get_distance(&self, from: OPoint, to: OPoint) -> f64 {
+        let mut borrow = self.edge_db.borrow_mut();
+        match borrow.get(&(from, to)) {
             Some(&distance) => distance,
-            None => self.compute_distance(from, to),
+            None => {
+                let length = self.compute_distance(from, to);
+                borrow.insert((from, to), length);
+                borrow.insert((to, from), length);
+                length
+            }
         }
     }
-    fn compute_distance(&mut self, from: OPoint, to: OPoint) -> f64 {
+
+    fn compute_distance(&self, from: OPoint, to: OPoint) -> f64 {
         let p1 = to_point(from);
         let p2 = to_point(to);
         let mut length = geometry::euclidean_distance(p1, p2);
@@ -838,12 +847,10 @@ impl<R: Rng> StOBGA<R> {
                 }
             }
         }
-        self.edge_db.insert((from, to), length);
-        self.edge_db.insert((to, from), length);
         length
     }
 
-    fn build_single_mst(&mut self, individual : &mut Instance) {
+    fn build_single_mst(&self, individual: &Instance) -> Option<MinimumSpanningTree> {
         if individual.minimum_spanning_tree.is_none() {
             let mut graph = petgraph::graph::UnGraph::new_undirected();
             let source_vertices = individual
@@ -867,28 +874,39 @@ impl<R: Rng> StOBGA<R> {
                 let (i1, t1) = pair[0];
                 let (i2, t2) = pair[1];
                 let length = self.get_distance(t1, t2);
-                graph.add_edge(petgraph::graph::NodeIndex::new(i1), petgraph::graph::NodeIndex::new(i2), length);
-                
-                let mst = petgraph::graph::UnGraph::<_, _>::from_elements(
-                    petgraph::algo::min_spanning_tree(&graph),
+                graph.add_edge(
+                    petgraph::graph::NodeIndex::new(i1),
+                    petgraph::graph::NodeIndex::new(i2),
+                    length,
                 );
-                let total_distance = mst.edge_weights().sum::<f64>();
-                let mst = MinimumSpanningTree {
-                    total_weight: total_distance,
-                    graph: mst,
-                };
-
-                individual.minimum_spanning_tree = Option::Some(mst);
             }
+
+            let mst = petgraph::graph::UnGraph::<_, _>::from_elements(
+                petgraph::algo::min_spanning_tree(&graph),
+            );
+            let total_distance = mst.edge_weights().sum::<f64>();
+            let mst = MinimumSpanningTree {
+                total_weight: total_distance,
+                graph: mst,
+            };
+
+            Option::Some(mst)
+        } else {
+            Option::None
         }
     }
 
     fn build_msts(&mut self) {
-        let mut pop = self.population.clone();
-        for i in 0..pop.len() {
-            self.build_single_mst(&mut pop[i]);
+        // let mut pop = self.population.clone();
+        // for i in 0..pop.len() {
+        //     self.build_single_mst(&mut pop[i]);
+        // }
+        // self.population = pop;
+        let mst = self.population.iter().map(|i|self.build_single_mst(i)).enumerate().filter(|(i,o)|o.is_some()).collect::<Vec<_>>();
+        
+        for (i, o) in mst {
+            self.population[i].minimum_spanning_tree = o;
         }
-        self.population = pop;
     }
 }
 
