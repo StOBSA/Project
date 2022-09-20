@@ -761,6 +761,7 @@ impl<R: Rng> StOBGA<R> {
     }
 
     fn step(&mut self) {
+        // self.build_msts();
         let mut parents = Vec::new();
         let mut children = Vec::new();
         for _ in 0..NUMBER_OFFSPRING {
@@ -772,7 +773,6 @@ impl<R: Rng> StOBGA<R> {
             P_FLIP_MOVE_MIN,
         );
         self.child_buffer.clear();
-        self.build_msts();
         for pair in parents.iter().as_slice().windows(2) {
             self.crossover(pair[0], pair[1]);
         }
@@ -785,12 +785,14 @@ impl<R: Rng> StOBGA<R> {
             self.population[*population_index] = self.child_buffer[child_index].clone();
         }
         self.child_buffer.clear();
-        for instance in self.population.iter_mut() {
-            if instance.minimum_spanning_tree.is_none() {
-                self.function_evaluations += 1;
-            }
-            let _ = instance.get_mst();
-        }
+        
+        self.build_msts();
+        // for instance in self.population.iter_mut() {
+        //     if instance.minimum_spanning_tree.is_none() {
+        //         self.function_evaluations += 1;
+        //     }
+        //     let _ = instance.get_mst();
+        // }
         self.population.sort_unstable_by(|i1, i2| {
             i1.minimum_spanning_tree
                 .as_ref()
