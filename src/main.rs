@@ -761,7 +761,7 @@ impl<R: Rng> StOBGA<R> {
     }
 
     fn step(&mut self) {
-        // self.build_msts();
+        self.build_msts();
         let mut parents = Vec::new();
         let mut children = Vec::new();
         for _ in 0..NUMBER_OFFSPRING {
