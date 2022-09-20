@@ -22,6 +22,11 @@ mod util {
     }
 }
 
+struct Counter {
+    hits : u64,
+    misses : u64
+}
+
 mod geometry {
     pub const RADIANS_120_DEGREE: f64 = 2.0 * std::f64::consts::PI / 3.0;
 
@@ -513,6 +518,7 @@ struct StOBGA<R: Rng> {
     child_buffer: Vec<Instance>,
     function_evaluations: u64,
     edge_db: RefCell<HashMap<(OPoint, OPoint), f64>>,
+    counter : RefCell<Counter>,
     start_time: SystemTime,
 }
 
@@ -696,6 +702,7 @@ impl<R: Rng> StOBGA<R> {
             current_generation: 0,
             child_buffer: Vec::new(),
             edge_db: RefCell::new(HashMap::new()),
+            counter : RefCell::new(Counter { hits: 0, misses: 0 }),
             function_evaluations: 0,
             start_time: SystemTime::now(),
         };
@@ -797,11 +804,15 @@ impl<R: Rng> StOBGA<R> {
     fn get_distance(&self, from: OPoint, to: OPoint) -> f64 {
         let mut borrow = self.edge_db.borrow_mut();
         match borrow.get(&(from, to)) {
-            Some(&distance) => distance,
+            Some(&distance) => {
+                self.counter.borrow_mut().hits += 1;
+                distance
+            },
             None => {
                 let length = self.compute_distance(from, to);
                 borrow.insert((from, to), length);
                 borrow.insert((to, from), length);
+                self.counter.borrow_mut().misses += 1;
                 length
             }
         }
@@ -902,7 +913,7 @@ impl<R: Rng> StOBGA<R> {
         //     self.build_single_mst(&mut pop[i]);
         // }
         // self.population = pop;
-        let mst = self.population.iter().map(|i|self.build_single_mst(i)).enumerate().filter(|(i,o)|o.is_some()).collect::<Vec<_>>();
+        let mst = self.population.iter().map(|i|self.build_single_mst(i)).enumerate().filter(|(_i,o)|o.is_some()).collect::<Vec<_>>();
         
         for (i, o) in mst {
             self.population[i].minimum_spanning_tree = o;
@@ -1369,6 +1380,7 @@ fn main() {
             Err(_) => format!("NA"),
         }
     );
+    println!("hits: {} | misses: {}", stobga.counter.borrow().hits, stobga.counter.borrow().misses);
 }
 
 #[cfg(test)]
