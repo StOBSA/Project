@@ -1,3 +1,4 @@
+use geometry::euclidean_distance;
 use geometry::fermat_point;
 use geometry::overlap;
 use geometry::Bounds;
@@ -378,67 +379,11 @@ impl SteinerProblem {
         let mut counter = 0;
         for i in 0..terminals.len() {
             for j in (i + 1)..terminals.len() {
-                average_terminal_distance +=
-                    (nalgebra::Vector2::new(terminals[i].0, terminals[i].1)
-                        - nalgebra::Vector2::new(terminals[j].0, terminals[j].1))
-                    .norm();
+                average_terminal_distance += euclidean_distance(terminals[i], terminals[j]);
                 counter += 1;
             }
         }
         average_terminal_distance /= counter as f64;
-
-        let mut graph = petgraph::Graph::new_undirected();
-        for terminal in terminals.iter() {
-            graph.add_node((*terminal).clone());
-        }
-        for i1 in 0..(terminals.len() - 1) {
-            let t1 = terminals[i1];
-            for i2 in (i1 + 1)..terminals.len() {
-                let t2 = terminals[i2];
-                let mut length = geometry::euclidean_distance(t1, t2);
-                let line_bounds = Bounds {
-                    min_x: t1.0.min(t2.0),
-                    min_y: t1.1.min(t2.1),
-                    max_x: t1.0.max(t2.0),
-                    max_y: t1.1.max(t2.1),
-                };
-                for obstacle in &obstacles {
-                    let bounds = &obstacle.bounds;
-                    if overlap(
-                        line_bounds.min_x,
-                        line_bounds.min_y,
-                        line_bounds.max_x,
-                        line_bounds.max_y,
-                        bounds.min_x,
-                        bounds.min_y,
-                        bounds.max_x,
-                        bounds.max_y,
-                    ) {
-                        let intersection_len = geometry::intersection_length(
-                            t1.0,
-                            t1.1,
-                            t2.0,
-                            t2.1,
-                            &obstacle.points,
-                            &obstacle.bounds,
-                        );
-                        if intersection_len > 0.0 {
-                            if obstacle.weight == INF {
-                                length = INF;
-                            } else {
-                                length -= intersection_len;
-                                length += intersection_len * obstacle.weight;
-                            }
-                        }
-                    }
-                }
-                graph.add_edge(
-                    petgraph::graph::NodeIndex::new(i1),
-                    petgraph::graph::NodeIndex::new(i2),
-                    length,
-                );
-            }
-        }
 
         SteinerProblem {
             terminals,
@@ -604,13 +549,17 @@ impl<R: Rng> StOBGA<R> {
     }
 
     fn mutate_add_steiner(&mut self, index: usize) {
-        self.build_mst(index);
+        if self.population[index].minimum_spanning_tree.is_none() {
+            self.build_mst(index);
+        }
         self.population[index].mutation_add_steiner(&mut self.random_generator);
         self.build_mst(index);
     }
 
     fn mutate_remove_steiner(&mut self, index: usize) {
-        self.build_mst(index);
+        if self.population[index].minimum_spanning_tree.is_none() {
+            self.build_mst(index);
+        }
         self.population[index].mutation_remove_steiner(&mut self.random_generator);
         self.build_mst(index);
     }
@@ -813,7 +762,6 @@ impl<R: Rng> StOBGA<R> {
     }
 
     fn step(&mut self) {
-        // self.build_MSTs();
         let mut parents = Vec::new();
         let mut children = Vec::new();
         for _ in 0..NUMBER_OFFSPRING {
@@ -873,6 +821,7 @@ impl<R: Rng> StOBGA<R> {
                 if intersection_len > 0.0 {
                     if obstacle.weight == INF {
                         length = INF;
+                        break;
                     } else {
                         length -= intersection_len;
                         length += intersection_len * obstacle.weight;
@@ -884,63 +833,61 @@ impl<R: Rng> StOBGA<R> {
     }
 
     fn build_mst(&mut self, index: usize) {
-        if self.population[index].minimum_spanning_tree.is_none() {
-            let mut graph = petgraph::graph::UnGraph::new_undirected();
-            let source_vertices = self.population[index]
-                .chromosome
-                .steiner_points
-                .iter()
-                .map(|&p| p)
-                .chain(
-                    self.population[index]
-                        .chromosome
-                        .included_corners
-                        .iter()
-                        .map(|&c| {
-                            util::to_graph(self.population[index].problem.obstacle_corners[c])
-                        }),
-                )
-                .chain(
-                    self.population[index]
-                        .problem
-                        .terminals
-                        .iter()
-                        .map(|p| to_graph(*p)),
-                );
-
-            for vertex in source_vertices.clone() {
-                graph.add_node(to_point(vertex));
-            }
-            for pair in source_vertices.clone().enumerate().combinations(2) {
-                let (i1, t1) = pair[0];
-                let (i2, t2) = pair[1];
-                // let length = self.get_distance(t1, t2);
-                let length = match self.edge_db.get(&(t1, t2)) {
-                    Some(&x) => x,
-                    None => {
-                        let d = self.compute_distance(t1, t2);
-                        self.edge_db.insert((t1, t2), d);
-                        d
-                    }
-                };
-                graph.add_edge(
-                    petgraph::graph::NodeIndex::new(i1),
-                    petgraph::graph::NodeIndex::new(i2),
-                    length,
-                );
-            }
-
-            let mst = petgraph::graph::UnGraph::<_, _>::from_elements(
-                petgraph::algo::min_spanning_tree(&graph),
+        let mut graph = petgraph::graph::UnGraph::new_undirected();
+        let source_vertices = self.population[index]
+            .chromosome
+            .steiner_points
+            .iter()
+            .map(|&p| p)
+            .chain(
+                self.population[index]
+                    .chromosome
+                    .included_corners
+                    .iter()
+                    .map(|&c| {
+                        util::to_graph(self.population[index].problem.obstacle_corners[c])
+                    }),
+            )
+            .chain(
+                self.population[index]
+                    .problem
+                    .terminals
+                    .iter()
+                    .map(|p| to_graph(*p)),
             );
-            let total_distance = mst.edge_weights().sum::<f64>();
-            let mst = MinimumSpanningTree {
-                total_weight: total_distance,
-                graph: mst,
-            };
-            self.population[index].minimum_spanning_tree = Some(mst);
-            self.function_evaluations += 1;
+
+        for vertex in source_vertices.clone() {
+            graph.add_node(to_point(vertex));
         }
+        for pair in source_vertices.clone().enumerate().combinations(2) {
+            let (i1, t1) = pair[0];
+            let (i2, t2) = pair[1];
+            // let length = self.get_distance(t1, t2);
+            let length = match self.edge_db.get(&(t1, t2)) {
+                Some(&x) => x,
+                None => {
+                    let d = self.compute_distance(t1, t2);
+                    self.edge_db.insert((t1, t2), d);
+                    d
+                }
+            };
+            graph.add_edge(
+                petgraph::graph::NodeIndex::new(i1),
+                petgraph::graph::NodeIndex::new(i2),
+                length,
+            );
+        }
+
+        let mst = petgraph::graph::UnGraph::<_, _>::from_elements(
+            petgraph::algo::min_spanning_tree(&graph),
+        );
+        let total_distance = mst.edge_weights().sum::<f64>();
+        let mst = MinimumSpanningTree {
+            total_weight: total_distance,
+            graph: mst,
+        };
+        self.population[index].minimum_spanning_tree = Some(mst);
+        self.function_evaluations += 1;
     }
 
     fn build_msts(&mut self) {
@@ -953,9 +900,7 @@ impl<R: Rng> StOBGA<R> {
 }
 
 impl Instance {
-
     fn mutation_remove_steiner<R: Rng>(&mut self, rng: &mut R) {
-        let _ = self.minimum_spanning_tree.as_ref().unwrap();
         let mut candidate_steiner_points = Vec::new();
 
         let graph = &self.minimum_spanning_tree.as_ref().unwrap().graph;
@@ -1009,7 +954,6 @@ impl Instance {
     }
 
     fn mutation_add_steiner<R: Rng>(&mut self, rng: &mut R) {
-        self.minimum_spanning_tree.as_ref().unwrap(); // making sure the mst is present
         let mut candidates = Vec::new();
         let graph = &self.minimum_spanning_tree.as_ref().unwrap().graph;
         for i1 in graph.node_indices() {
