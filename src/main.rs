@@ -304,6 +304,7 @@ mod geometry {
     }
 }
 
+use std::borrow::Borrow;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
@@ -602,9 +603,10 @@ impl<R: Rng> StOBGA<R> {
     }
 
     fn finalize(&mut self) {
+        self.build_msts();
         let best = &mut self.population[0];
         let mut best_copy = best.clone();
-        let mst = best_copy.get_mst();
+        let mst = best_copy.minimum_spanning_tree.as_ref().unwrap();
         let mut rem_add_list = Vec::new();
         for node in mst.graph.node_indices() {
             let n_edges = mst.graph.edges(node).count();
@@ -627,7 +629,7 @@ impl<R: Rng> StOBGA<R> {
         for (index, value) in rem_add_list {
             best_copy.minimum_spanning_tree.as_mut().unwrap().graph[index] = value;
         }
-        if best_copy.get_mst().total_weight < best.get_mst().total_weight {
+        if best_copy.minimum_spanning_tree.as_ref().unwrap().total_weight < best.minimum_spanning_tree.as_ref().unwrap().total_weight {
             self.population[0] = best_copy;
         }
     }
@@ -919,6 +921,7 @@ impl<R: Rng> StOBGA<R> {
         
         for (i, o) in mst {
             self.population[i].minimum_spanning_tree = o;
+            self.function_evaluations+=1;
         }
     }
 }
@@ -1330,6 +1333,7 @@ fn main() {
         "generation;average;best;chromosome;function_evaluations;runtime in seconds;seed={}",
         seed
     );
+    stobga.build_msts();
     loop {
         stobga.step();
         // stobga.population[0].chromosome = Chromosome{steiner_points:vec![],included_corners:stobga.problem.obstacle_corners.iter().enumerate().map(|(a,b)|a).collect()};
@@ -1382,7 +1386,7 @@ fn main() {
             Err(_) => format!("NA"),
         }
     );
-    println!("hits: {} | misses: {}", stobga.counter.borrow().hits, stobga.counter.borrow().misses);
+    // println!("hits: {} | misses: {}", stobga.counter.borrow().hits, stobga.counter.borrow().misses);
 }
 
 #[cfg(test)]
