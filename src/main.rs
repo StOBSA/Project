@@ -22,10 +22,10 @@ mod util {
     }
 }
 
-struct Counter {
-    hits : u64,
-    misses : u64
-}
+// struct Counter {
+//     hits: u64,
+//     misses: u64,
+// }
 
 mod geometry {
     pub const RADIANS_120_DEGREE: f64 = 2.0 * std::f64::consts::PI / 3.0;
@@ -304,8 +304,6 @@ mod geometry {
     }
 }
 
-use std::borrow::Borrow;
-use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 use std::time::SystemTime;
@@ -324,7 +322,6 @@ struct SteinerProblem {
     centroids: Vec<Point>,
     bounds: Bounds,
     average_terminal_distance: f64,
-    base_graph: petgraph::graph::UnGraph<Point, f64, u32>,
 }
 
 impl SteinerProblem {
@@ -450,7 +447,6 @@ impl SteinerProblem {
             centroids,
             bounds,
             average_terminal_distance,
-            base_graph: graph,
         }
     }
 
@@ -518,8 +514,7 @@ struct StOBGA<R: Rng> {
     current_generation: usize,
     child_buffer: Vec<Instance>,
     function_evaluations: u64,
-    edge_db: RefCell<HashMap<(OPoint, OPoint), f64>>,
-    counter : RefCell<Counter>,
+    edge_db: HashMap<(OPoint, OPoint), f64>,
     start_time: SystemTime,
 }
 
@@ -602,6 +597,40 @@ impl<R: Rng> StOBGA<R> {
         });
     }
 
+    fn mutate_flip_move(&mut self, index: usize) {
+        self.population[index]
+            .mutation_flip_move(&mut self.random_generator, self.current_generation);
+        self.build_mst(index);
+    }
+
+    fn mutate_add_steiner(&mut self, index: usize) {
+        self.build_mst(index);
+        self.population[index].mutation_add_steiner(&mut self.random_generator);
+        self.build_mst(index);
+    }
+
+    fn mutate_remove_steiner(&mut self, index: usize) {
+        self.build_mst(index);
+        self.population[index].mutation_remove_steiner(&mut self.random_generator);
+        self.build_mst(index);
+    }
+
+    fn mutate(&mut self, index: usize) {
+        let p_flip_move = f64::max(
+            1.0 - (self.current_generation as f64) / 1000.0,
+            P_FLIP_MOVE_MIN,
+        );
+        if self.random_generator.gen_bool(p_flip_move) {
+            self.mutate_flip_move(index);
+        } else {
+            if self.random_generator.gen_bool(0.5) {
+                self.mutate_add_steiner(index);
+            } else {
+                self.mutate_remove_steiner(index);
+            }
+        }
+    }
+
     fn finalize(&mut self) {
         self.build_msts();
         let best = &mut self.population[0];
@@ -629,7 +658,13 @@ impl<R: Rng> StOBGA<R> {
         for (index, value) in rem_add_list {
             best_copy.minimum_spanning_tree.as_mut().unwrap().graph[index] = value;
         }
-        if best_copy.minimum_spanning_tree.as_ref().unwrap().total_weight < best.minimum_spanning_tree.as_ref().unwrap().total_weight {
+        if best_copy
+            .minimum_spanning_tree
+            .as_ref()
+            .unwrap()
+            .total_weight
+            < best.minimum_spanning_tree.as_ref().unwrap().total_weight
+        {
             self.population[0] = best_copy;
         }
     }
@@ -703,12 +738,11 @@ impl<R: Rng> StOBGA<R> {
             random_generator: rng,
             current_generation: 0,
             child_buffer: Vec::new(),
-            edge_db: RefCell::new(HashMap::new()),
-            counter : RefCell::new(Counter { hits: 0, misses: 0 }),
+            edge_db: HashMap::new(),
             function_evaluations: 0,
             start_time: SystemTime::now(),
         };
-
+        stobga.build_msts();
         let mut parents = Vec::new();
         let mut children = Vec::new();
         for _ in 0..(population_size - (t1 + t2 + t3)) {
@@ -741,8 +775,16 @@ impl<R: Rng> StOBGA<R> {
             )
             .iter()
             .max_by(|i1, i2| {
-                let w1 = self.population[*i1].get_mst().total_weight;
-                let w2 = self.population[*i2].get_mst().total_weight;
+                let w1 = self.population[*i1]
+                    .minimum_spanning_tree
+                    .as_ref()
+                    .unwrap()
+                    .total_weight;
+                let w2 = self.population[*i2]
+                    .minimum_spanning_tree
+                    .as_ref()
+                    .unwrap()
+                    .total_weight;
                 w1.total_cmp(&w2)
             })
             .unwrap();
@@ -754,8 +796,16 @@ impl<R: Rng> StOBGA<R> {
             )
             .iter()
             .min_by(|i1, i2| {
-                let w1 = self.population[*i1].get_mst().total_weight;
-                let w2 = self.population[*i2].get_mst().total_weight;
+                let w1 = self.population[*i1]
+                    .minimum_spanning_tree
+                    .as_ref()
+                    .unwrap()
+                    .total_weight;
+                let w2 = self.population[*i2]
+                    .minimum_spanning_tree
+                    .as_ref()
+                    .unwrap()
+                    .total_weight;
                 w1.total_cmp(&w2)
             })
             .unwrap();
@@ -763,38 +813,23 @@ impl<R: Rng> StOBGA<R> {
     }
 
     fn step(&mut self) {
-        self.build_msts();
+        // self.build_MSTs();
         let mut parents = Vec::new();
         let mut children = Vec::new();
         for _ in 0..NUMBER_OFFSPRING {
             parents.push(self.tournament_select(5, false));
             children.push(self.tournament_select(5, true));
         }
-        let p_flip_move = f64::max(
-            1.0 - (self.current_generation as f64) / 1000.0,
-            P_FLIP_MOVE_MIN,
-        );
         self.child_buffer.clear();
         for pair in parents.iter().as_slice().windows(2) {
             self.crossover(pair[0], pair[1]);
         }
         for (child_index, population_index) in children.iter().enumerate() {
-            self.child_buffer[child_index].mutate(
-                &mut self.random_generator,
-                p_flip_move,
-                self.current_generation,
-            );
             self.population[*population_index] = self.child_buffer[child_index].clone();
+            self.mutate(*population_index);
         }
         self.child_buffer.clear();
-        
-        self.build_msts();
-        // for instance in self.population.iter_mut() {
-        //     if instance.minimum_spanning_tree.is_none() {
-        //         self.function_evaluations += 1;
-        //     }
-        //     let _ = instance.get_mst();
-        // }
+    
         self.population.sort_unstable_by(|i1, i2| {
             i1.minimum_spanning_tree
                 .as_ref()
@@ -803,23 +838,6 @@ impl<R: Rng> StOBGA<R> {
                 .total_cmp(&i2.minimum_spanning_tree.as_ref().unwrap().total_weight)
         });
         self.current_generation += 1;
-    }
-
-    fn get_distance(&self, from: OPoint, to: OPoint) -> f64 {
-        let mut borrow = self.edge_db.borrow_mut();
-        match borrow.get(&(from, to)) {
-            Some(&distance) => {
-                self.counter.borrow_mut().hits += 1;
-                distance
-            },
-            None => {
-                let length = self.compute_distance(from, to);
-                borrow.insert((from, to), length);
-                borrow.insert((to, from), length);
-                self.counter.borrow_mut().misses += 1;
-                length
-            }
-        }
     }
 
     fn compute_distance(&self, from: OPoint, to: OPoint) -> f64 {
@@ -865,22 +883,30 @@ impl<R: Rng> StOBGA<R> {
         length
     }
 
-    fn build_single_mst(&self, individual: &Instance) -> Option<MinimumSpanningTree> {
-        if individual.minimum_spanning_tree.is_none() {
+    fn build_mst(&mut self, index: usize) {
+        if self.population[index].minimum_spanning_tree.is_none() {
             let mut graph = petgraph::graph::UnGraph::new_undirected();
-            let source_vertices = individual
+            let source_vertices = self.population[index]
                 .chromosome
                 .steiner_points
                 .iter()
                 .map(|&p| p)
                 .chain(
-                    individual
+                    self.population[index]
                         .chromosome
                         .included_corners
                         .iter()
-                        .map(|&c| util::to_graph(individual.problem.obstacle_corners[c])),
+                        .map(|&c| {
+                            util::to_graph(self.population[index].problem.obstacle_corners[c])
+                        }),
                 )
-                .chain(individual.problem.terminals.iter().map(|p| to_graph(*p)));
+                .chain(
+                    self.population[index]
+                        .problem
+                        .terminals
+                        .iter()
+                        .map(|p| to_graph(*p)),
+                );
 
             for vertex in source_vertices.clone() {
                 graph.add_node(to_point(vertex));
@@ -888,7 +914,15 @@ impl<R: Rng> StOBGA<R> {
             for pair in source_vertices.clone().enumerate().combinations(2) {
                 let (i1, t1) = pair[0];
                 let (i2, t2) = pair[1];
-                let length = self.get_distance(t1, t2);
+                // let length = self.get_distance(t1, t2);
+                let length = match self.edge_db.get(&(t1, t2)) {
+                    Some(&x) => x,
+                    None => {
+                        let d = self.compute_distance(t1, t2);
+                        self.edge_db.insert((t1, t2), d);
+                        d
+                    }
+                };
                 graph.add_edge(
                     petgraph::graph::NodeIndex::new(i1),
                     petgraph::graph::NodeIndex::new(i2),
@@ -904,164 +938,24 @@ impl<R: Rng> StOBGA<R> {
                 total_weight: total_distance,
                 graph: mst,
             };
-
-            Option::Some(mst)
-        } else {
-            Option::None
+            self.population[index].minimum_spanning_tree = Some(mst);
+            self.function_evaluations += 1;
         }
     }
 
     fn build_msts(&mut self) {
-        // let mut pop = self.population.clone();
-        // for i in 0..pop.len() {
-        //     self.build_single_mst(&mut pop[i]);
-        // }
-        // self.population = pop;
-        let mst = self.population.iter().map(|i|self.build_single_mst(i)).enumerate().filter(|(_i,o)|o.is_some()).collect::<Vec<_>>();
-        
-        for (i, o) in mst {
-            self.population[i].minimum_spanning_tree = o;
-            self.function_evaluations+=1;
+        for index in 0..self.population.len() {
+            if self.population[index].minimum_spanning_tree.is_none() {
+                self.build_mst(index);
+            }
         }
     }
 }
 
 impl Instance {
-    fn get_mst(&mut self) -> &MinimumSpanningTree {
-        if self.minimum_spanning_tree.is_none() {
-            let mut graph = self.problem.base_graph.clone();
-            let source_vertices = self.chromosome.steiner_points.iter().map(|&p| p).chain(
-                self.chromosome
-                    .included_corners
-                    .iter()
-                    .map(|&c| util::to_graph(self.problem.obstacle_corners[c])),
-            );
-
-            for vertex in source_vertices.clone() {
-                graph.add_node(to_point(vertex));
-            }
-            for (i1, t1) in source_vertices.clone().enumerate() {
-                let t1 = to_point(t1);
-                for (i2, &t2) in self.problem.terminals.iter().enumerate() {
-                    let mut length = geometry::euclidean_distance(t1, t2);
-                    let line_bounds = Bounds {
-                        min_x: t1.0.min(t2.0),
-                        min_y: t1.1.min(t2.1),
-                        max_x: t1.0.max(t2.0),
-                        max_y: t1.1.max(t2.1),
-                    };
-                    for obstacle in &self.problem.obstacles {
-                        let bounds = &obstacle.bounds;
-                        if overlap(
-                            line_bounds.min_x,
-                            line_bounds.min_y,
-                            line_bounds.max_x,
-                            line_bounds.max_y,
-                            bounds.min_x,
-                            bounds.min_y,
-                            bounds.max_x,
-                            bounds.max_y,
-                        ) {
-                            let intersection_len = geometry::intersection_length(
-                                t1.0,
-                                t1.1,
-                                t2.0,
-                                t2.1,
-                                &obstacle.points,
-                                &obstacle.bounds,
-                            );
-                            if intersection_len > 0.0 {
-                                if obstacle.weight == INF {
-                                    length = INF;
-                                } else {
-                                    length -= intersection_len;
-                                    length += intersection_len * obstacle.weight;
-                                }
-                            }
-                        }
-                    }
-                    graph.add_edge(
-                        petgraph::graph::NodeIndex::new(i1 + self.problem.base_graph.node_count()),
-                        petgraph::graph::NodeIndex::new(i2),
-                        length,
-                    );
-                }
-            }
-            for pair in source_vertices.enumerate().combinations(2) {
-                let (i1, v1) = pair[0];
-                let (i2, v2) = pair[1];
-                let v1 = to_point(v1);
-                let v2 = to_point(v2);
-                let mut length = geometry::euclidean_distance(v1, v2);
-                let line_bounds = Bounds {
-                    min_x: v1.0.min(v2.0),
-                    min_y: v1.1.min(v2.1),
-                    max_x: v1.0.max(v2.0),
-                    max_y: v1.1.max(v2.1),
-                };
-                for obstacle in &self.problem.obstacles {
-                    let bounds = &obstacle.bounds;
-                    if overlap(
-                        line_bounds.min_x,
-                        line_bounds.min_y,
-                        line_bounds.max_x,
-                        line_bounds.max_y,
-                        bounds.min_x,
-                        bounds.min_y,
-                        bounds.max_x,
-                        bounds.max_y,
-                    ) {
-                        let intersection_len = geometry::intersection_length(
-                            v1.0,
-                            v1.1,
-                            v2.0,
-                            v2.1,
-                            &obstacle.points,
-                            &obstacle.bounds,
-                        );
-                        if intersection_len > 0.0 {
-                            if obstacle.weight == INF {
-                                length = INF;
-                            } else {
-                                length -= intersection_len;
-                                length += intersection_len * obstacle.weight;
-                            }
-                        }
-                    }
-                }
-                graph.add_edge(
-                    petgraph::graph::NodeIndex::new(i1 + self.problem.base_graph.node_count()),
-                    petgraph::graph::NodeIndex::new(i2 + self.problem.base_graph.node_count()),
-                    length,
-                );
-            }
-            let mst = petgraph::graph::UnGraph::<_, _>::from_elements(
-                petgraph::algo::min_spanning_tree(&graph),
-            );
-            let total_distance = mst.edge_weights().sum::<f64>();
-            let mst = MinimumSpanningTree {
-                total_weight: total_distance,
-                graph: mst,
-            };
-
-            self.minimum_spanning_tree = Option::Some(mst);
-        }
-        return self.minimum_spanning_tree.as_ref().unwrap();
-    }
-
-    fn mutate<R: Rng>(&mut self, rng: &mut R, probability_flip_move: f64, generation: usize) {
-        if rng.gen_bool(probability_flip_move) {
-            self.mutation_flip_move(rng, generation);
-        }
-        if rng.gen_bool(0.5) {
-            self.mutation_add_steiner(rng);
-        } else {
-            self.mutation_remove_steiner(rng)
-        }
-    }
 
     fn mutation_remove_steiner<R: Rng>(&mut self, rng: &mut R) {
-        let _ = self.get_mst();
+        let _ = self.minimum_spanning_tree.as_ref().unwrap();
         let mut candidate_steiner_points = Vec::new();
 
         let graph = &self.minimum_spanning_tree.as_ref().unwrap().graph;
@@ -1115,7 +1009,7 @@ impl Instance {
     }
 
     fn mutation_add_steiner<R: Rng>(&mut self, rng: &mut R) {
-        self.get_mst(); // making sure the mst is present
+        self.minimum_spanning_tree.as_ref().unwrap(); // making sure the mst is present
         let mut candidates = Vec::new();
         let graph = &self.minimum_spanning_tree.as_ref().unwrap().graph;
         for i1 in graph.node_indices() {
@@ -1336,11 +1230,21 @@ fn main() {
     stobga.build_msts();
     loop {
         stobga.step();
-        // stobga.population[0].chromosome = Chromosome{steiner_points:vec![],included_corners:stobga.problem.obstacle_corners.iter().enumerate().map(|(a,b)|a).collect()};
-        // stobga.population[0].get_mst();
-        // let graph = &stobga.population[0].minimum_spanning_tree.as_ref().unwrap().graph;
-        if stobga.population[0].get_mst().total_weight < streak.1 - 1e-6 {
-            streak = (0, stobga.population[0].get_mst().total_weight);
+        if stobga.population[0]
+            .minimum_spanning_tree
+            .as_ref()
+            .unwrap()
+            .total_weight
+            < streak.1
+        {
+            streak = (
+                0,
+                stobga.population[0]
+                    .minimum_spanning_tree
+                    .as_ref()
+                    .unwrap()
+                    .total_weight,
+            );
 
             println!(
                 "{};{};{};{:?};{};{}",
@@ -1348,11 +1252,17 @@ fn main() {
                 {
                     let mut avg = 0.0;
                     for i in stobga.population.iter_mut() {
-                        avg += i.get_mst().total_weight;
+                        avg += i.minimum_spanning_tree.as_ref().unwrap().total_weight;
                     }
                     avg / 500.0
                 },
-                { stobga.population[0].get_mst().total_weight },
+                {
+                    stobga.population[0]
+                        .minimum_spanning_tree
+                        .as_ref()
+                        .unwrap()
+                        .total_weight
+                },
                 stobga.population[0].chromosome,
                 stobga.function_evaluations,
                 match SystemTime::now().duration_since(stobga.start_time) {
@@ -1374,11 +1284,17 @@ fn main() {
         {
             let mut avg = 0.0;
             for i in stobga.population.iter_mut() {
-                avg += i.get_mst().total_weight;
+                avg += i.minimum_spanning_tree.as_ref().unwrap().total_weight;
             }
             avg / 500.0
         },
-        { stobga.population[0].get_mst().total_weight },
+        {
+            stobga.population[0]
+                .minimum_spanning_tree
+                .as_ref()
+                .unwrap()
+                .total_weight
+        },
         stobga.population[0].chromosome,
         stobga.function_evaluations,
         match SystemTime::now().duration_since(stobga.start_time) {
@@ -1386,7 +1302,6 @@ fn main() {
             Err(_) => format!("NA"),
         }
     );
-    // println!("hits: {} | misses: {}", stobga.counter.borrow().hits, stobga.counter.borrow().misses);
 }
 
 #[cfg(test)]
