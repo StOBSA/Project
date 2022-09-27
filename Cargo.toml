@@ -8,10 +8,11 @@ edition = "2021"
 [dependencies]
 delaunator    = "1.0.1"  # delaunay triangulation
 rand          = "0.8.5"  # random number generation
-rand_pcg      = "0.3.1"  
+rand_pcg      = "0.3.1"  # a deterministic random number generator
 nalgebra      = "0.31.1" # linear algebra
 itertools     = "0.10.3" # simplifications for iterations
 petgraph      = "0.6.2"  # Graph library used to compute MST
-indexmap      = "1.9.1"
-ordered-float = "3.0.0"
-lru           = "0.8.0"
+indexmap      = "1.9.1"  # an ordered hashset
+ordered-float = "3.0.0"  # implements hashing on float values
+tetra         = "0.7.0"  # game engine for graphical output
+lru           = "0.8.0"  # a last-recently-used cache for storing edges
