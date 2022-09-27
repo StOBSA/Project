@@ -305,7 +305,6 @@ mod geometry {
     }
 }
 
-use std::collections::HashMap;
 use std::rc::Rc;
 use std::time::SystemTime;
 
@@ -459,7 +458,7 @@ struct StOBGA<R: Rng> {
     current_generation: usize,
     child_buffer: Vec<Instance>,
     function_evaluations: u64,
-    edge_db: HashMap<(OPoint, OPoint), f64>,
+    edge_db: lru::LruCache<(OPoint, OPoint), f64>,
     start_time: SystemTime,
 }
 
@@ -687,7 +686,7 @@ impl<R: Rng> StOBGA<R> {
             random_generator: rng,
             current_generation: 0,
             child_buffer: Vec::new(),
-            edge_db: HashMap::new(),
+            edge_db: lru::LruCache::new(std::num::NonZeroUsize::new(25_000_000).unwrap()),
             function_evaluations: 0,
             start_time: SystemTime::now(),
         };
@@ -867,7 +866,7 @@ impl<R: Rng> StOBGA<R> {
                 Some(&x) => x,
                 None => {
                     let d = self.compute_distance(t1, t2);
-                    self.edge_db.insert((t1, t2), d);
+                    self.edge_db.put((t1, t2), d);
                     d
                 }
             };
@@ -1179,7 +1178,7 @@ fn main() {
             .as_ref()
             .unwrap()
             .total_weight
-            < streak.1
+            < streak.1 - 1e-6
         {
             streak = (
                 0,
