@@ -14,3 +14,4 @@ itertools     = "0.10.3" # simplifications for iterations
 petgraph      = "0.6.2"  # Graph library used to compute MST
 indexmap      = "1.9.1"
 ordered-float = "3.0.0"
+lru           = "0.8.0"
