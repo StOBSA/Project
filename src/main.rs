@@ -686,7 +686,7 @@ impl<R: Rng> StOBGA<R> {
             random_generator: rng,
             current_generation: 0,
             child_buffer: Vec::new(),
-            edge_db: lru::LruCache::new(std::num::NonZeroUsize::new(25_000_000).unwrap()),
+            edge_db: lru::LruCache::new(std::num::NonZeroUsize::new(100_000_000).unwrap()),
             function_evaluations: 0,
             start_time: SystemTime::now(),
         };
@@ -776,7 +776,7 @@ impl<R: Rng> StOBGA<R> {
             self.mutate(*population_index);
         }
         self.child_buffer.clear();
-    
+
         self.population.sort_unstable_by(|i1, i2| {
             i1.minimum_spanning_tree
                 .as_ref()
@@ -843,9 +843,7 @@ impl<R: Rng> StOBGA<R> {
                     .chromosome
                     .included_corners
                     .iter()
-                    .map(|&c| {
-                        util::to_graph(self.population[index].problem.obstacle_corners[c])
-                    }),
+                    .map(|&c| util::to_graph(self.population[index].problem.obstacle_corners[c])),
             )
             .chain(
                 self.population[index]
@@ -862,13 +860,14 @@ impl<R: Rng> StOBGA<R> {
             let (i1, t1) = pair[0];
             let (i2, t2) = pair[1];
             // let length = self.get_distance(t1, t2);
-            let length = match self.edge_db.get(&(t1, t2)) {
-                Some(&x) => x,
-                None => {
-                    let d = self.compute_distance(t1, t2);
-                    self.edge_db.put((t1, t2), d);
-                    d
-                }
+            let length = if let Some(&x) = self.edge_db.get(&(t1, t2)) {
+                x
+            } else if let Some(&x) = self.edge_db.get(&(t2, t1)) {
+                x
+            } else {
+                let d = self.compute_distance(t1, t2);
+                self.edge_db.put((t1, t2), d);
+                d
             };
             graph.add_edge(
                 petgraph::graph::NodeIndex::new(i1),
