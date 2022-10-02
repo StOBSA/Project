@@ -19,24 +19,47 @@ use std::collections::HashMap;
 use std::rc::Rc;
 use std::time::SystemTime;
 
+/// a location in 2D
 type Point = (f64, f64);
 
+/// the minimum multiplier to the average terminal distance by which a Steiner 
+/// point will be moved. In the original paper this value is always used after
+/// 1000 generations have passed.
 const M_RANGE_MIN: f64 = 0.01;
+/// the number of new individuals to create every generation. In the original 
+/// StOBGA this value is fixed at 166.
 const NUMBER_OFFSPRING: i32 = 500 / 3;
+/// the smallest probability by which a flip_move_mutation is going to occur.
 const P_FLIP_MOVE_MIN: f64 = 0.01;
+/// represents an infinitely large value without getting dangerously close to
+/// the limits of this datatype.
 const INF: f64 = 1e10;
+/// a small value, usually utilized to make up for floating point imprecisions.
 const EPSILON : f64 = 1e-6;
 
+/// represents a Steiner Problem instance, consisting of terminals, obstacles 
+/// and their corners, the centroids obtained through Delaunay triangulation,
+/// bounds and the average distance between terminals
 struct SteinerProblem {
+    /// a list of all the terminals to be connected
     terminals: Vec<Point>,
+    /// a list of all the obstacles present on the plane
     obstacles: Vec<Obstacle>,
+    /// a list of all the obstacles' corners
     obstacle_corners: Vec<Point>,
+    /// a list to store the centroids of the triangles, obtained through
+    /// Delaunay triangulation
     centroids: Vec<Point>,
+    /// the left, topmost and right, bottommost coordinates framing all
+    /// terminals and obstacles in a square
     bounds: Bounds,
+    /// the mean distance between terminals
     average_terminal_distance: f64,
 }
 
 impl SteinerProblem {
+    /// constructor taking a vector of terminals (Points) and a list of 
+    /// Obstacles as its arguments.
     fn new(terminals: Vec<Point>, obstacles: Vec<Obstacle>) -> Self {
         let mut obstacle_corners = Vec::new();
         for obstacle in &obstacles {
@@ -106,6 +129,8 @@ impl SteinerProblem {
         }
     }
 
+    /// a function to check whether a given point is located inside a 
+    /// solid obstacle
     fn coordinates_in_solid_obstacle(&self, coordinates: Point) -> bool {
         for obstacle in self.obstacles.iter() {
             if obstacle.weight == INF {
@@ -123,7 +148,17 @@ impl SteinerProblem {
     }
 }
 
+/// an extension to the usual Point data structure. This one can be hashed and
+/// therefore be stored in a HashSet, IndexSet or IndexMap.
 type OPoint = (OrderedFloat<f64>, OrderedFloat<f64>);
+
+/// Chromosomes are one of the two building blocks of Individuals.
+/// Being the genotype, they hold the crucial information to build the
+/// genotype and evaluate its objective function.
+/// 
+/// Genotypes contain all Steiner Points an Individual might have.
+/// Steiner Points can be stored as Points with 2D coordinates,
+/// or through an index for the list of obstacle corners. 
 #[derive(Clone)]
 struct Chromosome {
     steiner_points: IndexSet<OPoint>,
@@ -148,14 +183,21 @@ impl std::fmt::Debug for Chromosome {
     }
 }
 
+/// Small wrapper around a [
+/// petgraph::UnGraph](../petgraph/graph/type.UnGraph.html) 
+/// data structure to cache its summed edge weights. 
 #[derive(Clone)]
 struct MinimumSpanningTree {
     total_weight: f64,
     graph: petgraph::graph::UnGraph<Point, f64, u32>,
 }
 
+/// Together a [Chromosome] and a [SteinerProblem] for an Individual.
+/// An Individual represents a potential solution that can be evaluated.
+/// Individuals are part of [StOBGA]'s population.
+/// Individuals can be mutated and crossed over to create new Individuals
 #[derive(Clone)]
-struct Instance {
+struct Individual {
     problem: Rc<SteinerProblem>,
     chromosome: Chromosome,
     minimum_spanning_tree: Option<MinimumSpanningTree>,
@@ -163,10 +205,10 @@ struct Instance {
 
 struct StOBGA<R: Rng> {
     problem: Rc<SteinerProblem>,
-    population: Vec<Instance>,
+    population: Vec<Individual>,
     random_generator: R,
     current_generation: usize,
-    child_buffer: Vec<Instance>,
+    child_buffer: Vec<Individual>,
     function_evaluations: u64,
     edge_db: HashMap<(OPoint, OPoint), f64>,
     start_time: SystemTime,
@@ -233,7 +275,7 @@ impl<R: Rng> StOBGA<R> {
             }
         }
 
-        self.child_buffer.push(Instance {
+        self.child_buffer.push(Individual {
             chromosome: Chromosome {
                 steiner_points: steiner_points_1,
                 included_corners: obstacle_corners_1,
@@ -241,7 +283,7 @@ impl<R: Rng> StOBGA<R> {
             minimum_spanning_tree: None,
             problem: self.problem.clone(),
         });
-        self.child_buffer.push(Instance {
+        self.child_buffer.push(Individual {
             chromosome: Chromosome {
                 steiner_points: steiner_points_2,
                 included_corners: obstacle_corners_2,
@@ -337,7 +379,7 @@ impl<R: Rng> StOBGA<R> {
     ) -> Self {
         let mut population = vec![];
         for _ in 0..t1 {
-            population.push(Instance {
+            population.push(Individual {
                 problem: Rc::clone(&problem),
                 chromosome: Chromosome {
                     steiner_points: problem.centroids.iter().map(|&p| to_graph(p)).collect(),
@@ -361,7 +403,7 @@ impl<R: Rng> StOBGA<R> {
             for _ in 0..r {
                 steiner_points.insert(to_graph((rng.sample(x_dist), rng.sample(y_dist))));
             }
-            population.push(Instance {
+            population.push(Individual {
                 problem: Rc::clone(&problem),
                 chromosome: Chromosome {
                     steiner_points: steiner_points,
@@ -380,7 +422,7 @@ impl<R: Rng> StOBGA<R> {
                 corners.insert(elem);
             }
 
-            population.push(Instance {
+            population.push(Individual {
                 problem: Rc::clone(&problem),
                 chromosome: Chromosome {
                     steiner_points: IndexSet::new(),
@@ -407,7 +449,7 @@ impl<R: Rng> StOBGA<R> {
             parents.push(stobga.tournament_select(5, false));
             children.push(stobga.tournament_select(5, true));
         }
-        let mut save: Vec<Instance> = children
+        let mut save: Vec<Individual> = children
             .iter()
             .map(|i| stobga.population[*i].clone())
             .collect();
@@ -607,7 +649,7 @@ impl<R: Rng> StOBGA<R> {
     }
 }
 
-impl Instance {
+impl Individual {
     fn mutation_remove_steiner<R: Rng>(&mut self, rng: &mut R) {
         let mut candidate_steiner_points = Vec::new();
 
