@@ -25,6 +25,7 @@ const M_RANGE_MIN: f64 = 0.01;
 const NUMBER_OFFSPRING: i32 = 500 / 3;
 const P_FLIP_MOVE_MIN: f64 = 0.01;
 const INF: f64 = 1e10;
+const EPSILON : f64 = 1e-6;
 
 struct SteinerProblem {
     terminals: Vec<Point>,
@@ -126,7 +127,7 @@ type OPoint = (OrderedFloat<f64>, OrderedFloat<f64>);
 #[derive(Clone)]
 struct Chromosome {
     steiner_points: IndexSet<OPoint>,
-    included_corners: indexmap::IndexSet<usize>,
+    included_corners: IndexSet<usize>,
 }
 
 impl std::fmt::Debug for Chromosome {
@@ -149,9 +150,7 @@ impl std::fmt::Debug for Chromosome {
 
 #[derive(Clone)]
 struct MinimumSpanningTree {
-    // edge_weights: Vec<f64>,
     total_weight: f64,
-    // mst: Vec<(usize, usize)>,
     graph: petgraph::graph::UnGraph<Point, f64, u32>,
 }
 
@@ -182,8 +181,8 @@ impl<R: Rng> StOBGA<R> {
         let mut steiner_points_1 = IndexSet::new();
         let mut steiner_points_2 = IndexSet::new();
 
-        let mut obstacle_corners_1 = indexmap::IndexSet::new();
-        let mut obstacle_corners_2 = indexmap::IndexSet::new();
+        let mut obstacle_corners_1 = IndexSet::new();
+        let mut obstacle_corners_2 = IndexSet::new();
 
         for point in self.population[parent_1_index]
             .chromosome
@@ -342,7 +341,7 @@ impl<R: Rng> StOBGA<R> {
                 problem: Rc::clone(&problem),
                 chromosome: Chromosome {
                     steiner_points: problem.centroids.iter().map(|&p| to_graph(p)).collect(),
-                    included_corners: indexmap::IndexSet::new(),
+                    included_corners: IndexSet::new(),
                 },
                 minimum_spanning_tree: Option::None,
             });
@@ -366,7 +365,7 @@ impl<R: Rng> StOBGA<R> {
                 problem: Rc::clone(&problem),
                 chromosome: Chromosome {
                     steiner_points: steiner_points,
-                    included_corners: indexmap::IndexSet::new(),
+                    included_corners: IndexSet::new(),
                 },
                 minimum_spanning_tree: Option::None,
             });
@@ -376,7 +375,7 @@ impl<R: Rng> StOBGA<R> {
             let distribution = Uniform::new(0, k + 1);
             let amount = rng.sample(distribution);
             let draws = rand::seq::index::sample(&mut rng, k, amount);
-            let mut corners = indexmap::IndexSet::new();
+            let mut corners = IndexSet::new();
             for elem in draws {
                 corners.insert(elem);
             }
@@ -738,16 +737,11 @@ impl Instance {
                         OrderedFloat(dist.sample(rng) * x_sign),
                         OrderedFloat(dist.sample(rng) * y_sign),
                     ));
-                    // self.chromosome.steiner_points.remove(stei)
-                    // self.chromosome.steiner_points[i].0 = OrderedFloat(dist.sample(rng) * x_sign);
-                    // self.chromosome.steiner_points[i].1 = OrderedFloat(dist.sample(rng) * y_sign);
                 } else {
                     to_add.push((
                         OrderedFloat(M_RANGE_MIN * x_sign),
                         OrderedFloat(M_RANGE_MIN * y_sign),
                     ));
-                    // self.chromosome.steiner_points[i].0 = OrderedFloat(M_RANGE_MIN * x_sign);
-                    // self.chromosome.steiner_points[i].1 = OrderedFloat(M_RANGE_MIN * y_sign);
                 }
             }
         }
@@ -888,7 +882,7 @@ fn main() {
             .as_ref()
             .unwrap()
             .total_weight
-            < streak.1 - 1e-6
+            < streak.1 - EPSILON
         {
             streak = (
                 0,
@@ -926,7 +920,7 @@ fn main() {
         } else {
             streak.0 += 1
         }
-        if streak.0 == 200 {
+        if streak.0 == 100 {
             break;
         }
     }
