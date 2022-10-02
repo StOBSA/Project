@@ -776,13 +776,13 @@ impl Individual {
                 if m_range > M_RANGE_MIN {
                     let dist = Uniform::new(M_RANGE_MIN, m_range);
                     to_add.push((
-                        OrderedFloat(dist.sample(rng) * x_sign),
-                        OrderedFloat(dist.sample(rng) * y_sign),
+                        OrderedFloat(*steiner_point.0 + dist.sample(rng) * x_sign),
+                        OrderedFloat(*steiner_point.1 + dist.sample(rng) * y_sign),
                     ));
                 } else {
                     to_add.push((
-                        OrderedFloat(M_RANGE_MIN * x_sign),
-                        OrderedFloat(M_RANGE_MIN * y_sign),
+                        OrderedFloat(*steiner_point.0 + M_RANGE_MIN * x_sign),
+                        OrderedFloat(*steiner_point.1 + M_RANGE_MIN * y_sign),
                     ));
                 }
             }
