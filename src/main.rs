@@ -529,13 +529,13 @@ impl<R: Rng> StOBGA<R> {
         }
         self.child_buffer.clear();
 
-        self.population.sort_unstable_by(|i1, i2| {
-            i1.minimum_spanning_tree
-                .as_ref()
-                .unwrap()
-                .total_weight
-                .total_cmp(&i2.minimum_spanning_tree.as_ref().unwrap().total_weight)
-        });
+        // self.population.sort_unstable_by(|i1, i2| {
+        //     i1.minimum_spanning_tree
+        //         .as_ref()
+        //         .unwrap()
+        //         .total_weight
+        //         .total_cmp(&i2.minimum_spanning_tree.as_ref().unwrap().total_weight)
+        // });
         self.current_generation += 1;
     }
 
@@ -917,18 +917,28 @@ fn main() {
         seed
     );
     stobga.build_msts();
+    #[derive(PartialEq)]
+    enum LoopState {
+        Running,
+        LastGeneration
+    }
+    let mut loop_state = LoopState::Running;
     loop {
         stobga.step();
-        if stobga.population[0]
+        if loop_state == LoopState::LastGeneration {
+            stobga.finalize();
+        }
+        let best = stobga.population.iter().map(|i|i.minimum_spanning_tree.as_ref().unwrap().total_weight).enumerate().min_by(|a,b|if a.1<b.1 {std::cmp::Ordering::Less} else {std::cmp::Ordering::Greater}).unwrap().0;
+        if stobga.population[best]
             .minimum_spanning_tree
             .as_ref()
             .unwrap()
             .total_weight
-            < streak.1 - EPSILON
+            < streak.1 - EPSILON || loop_state == LoopState::LastGeneration
         {
             streak = (
                 0,
-                stobga.population[0]
+                stobga.population[best]
                     .minimum_spanning_tree
                     .as_ref()
                     .unwrap()
@@ -946,13 +956,13 @@ fn main() {
                     avg / 500.0
                 },
                 {
-                    stobga.population[0]
+                    stobga.population[best]
                         .minimum_spanning_tree
                         .as_ref()
                         .unwrap()
                         .total_weight
                 },
-                stobga.population[0].chromosome,
+                stobga.population[best].chromosome,
                 stobga.function_evaluations,
                 match SystemTime::now().duration_since(stobga.start_time) {
                     Ok(s) => format!("{}", s.as_secs_f32()),
@@ -962,35 +972,13 @@ fn main() {
         } else {
             streak.0 += 1
         }
-        if streak.0 == 100 {
+        if loop_state == LoopState::LastGeneration{
             break;
         }
-    }
-    stobga.finalize();
-    println!(
-        "{};{};{};{:?};{};{}",
-        stobga.current_generation,
-        {
-            let mut avg = 0.0;
-            for i in stobga.population.iter_mut() {
-                avg += i.minimum_spanning_tree.as_ref().unwrap().total_weight;
-            }
-            avg / 500.0
-        },
-        {
-            stobga.population[0]
-                .minimum_spanning_tree
-                .as_ref()
-                .unwrap()
-                .total_weight
-        },
-        stobga.population[0].chromosome,
-        stobga.function_evaluations,
-        match SystemTime::now().duration_since(stobga.start_time) {
-            Ok(s) => format!("{}", s.as_secs_f32()),
-            Err(_) => format!("NA"),
+        if streak.0 == 100 {
+            loop_state = LoopState::LastGeneration;
         }
-    );
+    }
 }
 
 #[cfg(test)]
