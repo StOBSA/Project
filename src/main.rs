@@ -1,5 +1,6 @@
 mod geometry;
-mod util; 
+mod util;
+pub mod graph; 
 
 use geometry::euclidean_distance;
 use geometry::fermat_point;
@@ -16,6 +17,8 @@ use util::to_graph;
 use util::to_point;
 
 use std::collections::HashMap;
+use std::collections::HashSet;
+use std::hash::Hash;
 use std::rc::Rc;
 use std::time::SystemTime;
 
@@ -36,6 +39,9 @@ const P_FLIP_MOVE_MIN: f64 = 0.01;
 const INF: f64 = 1e10;
 /// a small value, usually utilized to make up for floating point imprecisions.
 const EPSILON : f64 = 1e-6;
+/// amount of generations the algorithm continues whilst not finding
+/// a better individual before ending
+const RECESSION_DURATION : usize = 500;
 
 /// represents a Steiner Problem instance, consisting of terminals, obstacles 
 /// and their corners, the centroids obtained through Delaunay triangulation,
@@ -86,7 +92,7 @@ impl SteinerProblem {
             ]);
         }
         for [a, b, c] in triangles {
-            centroids.push(geometry::fermat_point(a, b, c, 1e-6));
+            centroids.push(geometry::centroid(a, b, c));
         }
 
         let mut bounds = Bounds {
@@ -397,6 +403,7 @@ impl<R: Rng> StOBGA<R> {
         let max_y = problem.bounds.max_y;
         let x_dist = Uniform::new(min_x, max_x);
         let y_dist = Uniform::new(min_y, max_y);
+        let all_corners = (0..k).collect::<IndexSet<_>>();
         for _ in 0..t2 {
             let mut steiner_points = IndexSet::new();
             let r = rng.gen_range(0..(n + k));
@@ -407,7 +414,7 @@ impl<R: Rng> StOBGA<R> {
                 problem: Rc::clone(&problem),
                 chromosome: Chromosome {
                     steiner_points: steiner_points,
-                    included_corners: IndexSet::new(),
+                    included_corners: all_corners.clone(),
                 },
                 minimum_spanning_tree: Option::None,
             });
@@ -445,7 +452,7 @@ impl<R: Rng> StOBGA<R> {
         stobga.build_msts();
         let mut parents = Vec::new();
         let mut children = Vec::new();
-        for _ in 0..(population_size - (t1 + t2 + t3)) {
+        for _ in 0..(population_size - (t1 + t2 + t3 + 1)) {
             parents.push(stobga.tournament_select(5, false));
             children.push(stobga.tournament_select(5, true));
         }
@@ -460,6 +467,9 @@ impl<R: Rng> StOBGA<R> {
             stobga.population[*population_index].chromosome =
                 stobga.child_buffer[child_index].chromosome.clone();
             stobga.population[*population_index].minimum_spanning_tree = None;
+            if stobga.population.len() + save.len() == 500 {
+                break;
+            }
         }
         stobga.population.append(&mut save);
         stobga.child_buffer.clear();
@@ -909,7 +919,7 @@ fn main() {
 
     let rng = rand_pcg::Pcg32::seed_from_u64(seed);
     let problem = SteinerProblem::new(terminals.clone(), obstacles.clone());
-    let mut stobga = StOBGA::new(rng, Rc::new(problem), 500, 166, 166, 166);
+    let mut stobga = StOBGA::new(rng, Rc::new(problem), 500, 1, 50, 50);
 
     let mut streak = (0, f64::INFINITY);
     println!(
@@ -975,7 +985,7 @@ fn main() {
         if loop_state == LoopState::LastGeneration{
             break;
         }
-        if streak.0 == 100 {
+        if streak.0 == RECESSION_DURATION {
             loop_state = LoopState::LastGeneration;
         }
     }
@@ -983,7 +993,9 @@ fn main() {
 
 #[cfg(test)]
 mod test {
-    use crate::geometry::{self, *};
+    use std::{hash::Hash, collections::{HashSet, HashMap}};
+
+    use crate::{geometry::{self, *}, util::{self, to_graph}, graph::{self, Graph, Edge}};
     use petgraph::{data::FromElements, prelude::UnGraph};
     use rand::{Rng, SeedableRng};
 
@@ -1240,4 +1252,50 @@ mod test {
         let mut rng1 = rand_pcg::Pcg32::seed_from_u64(0);
         assert_eq!(rng1.gen::<u64>(), 18195738587432868099);
     }
+
+    #[test]
+    fn hashing_edges() {
+        let e1 = graph::Edge{start:util::to_graph((0.0,0.0)),end:util::to_graph((1.0,1.0))};
+        let e2 = graph::Edge{end:util::to_graph((0.0,0.0)),start:util::to_graph((1.0,1.0))};
+        let mut set = HashSet::new();
+        set.insert(e1);
+        set.insert(e2);
+        assert!(set.len() == 1);
+    }
+
+    #[test]
+    fn making_a_graph() {
+        let mut graph = graph::Graph::new();
+        graph.add_edge_from_points((0.0,0.0), (1.0,1.0), 1.0);
+        graph.add_edge_from_points((2.0,0.0), (1.0,1.0), 1.0);
+        graph.add_edge_from_points((0.0,0.0), (1.0,0.0), 1.0);
+        println!("{:?}",graph.edges_connected_to_point((1.0,1.0)));
+    }
+
+    #[test]
+    fn trivial_mst() {
+        let mut graph = Graph::new();
+        graph.add_edge_from_points((0.0, 0.0), (0.0,1.0), 1.0);
+        graph.add_edge_from_points((1.0, 1.0), (0.0,1.0), 1.0);
+        let mst = graph.minimum_spanning_tree();
+        assert_eq!(mst.nodes.len(), 3);
+        assert_eq!(mst.edges.len(), 2);
+    }
+
+    #[test]
+    fn advanced_mst() {
+        let mut graph = Graph::new();
+        graph.add_edge_from_points((0.0, 0.0), (0.0,1.0), 1.0);
+        graph.add_edge_from_points((0.0, 0.0), (1.0,1.0), 2.0);
+        graph.add_edge_from_points((0.0, 0.0), (1.0,0.0), 3.0);
+        graph.add_edge_from_points((1.0, 1.0), (0.0,1.0), 4.0);
+        graph.add_edge_from_points((1.0, 1.0), (1.0,0.0), 5.0);
+        graph.add_edge_from_points((1.0, 0.0), (0.0,1.0), 6.0);
+        let mst = graph.minimum_spanning_tree();
+        assert_eq!(mst.nodes.len(), 4);
+        assert_eq!(mst.edges.len(), 3);
+        println!("{:?}", mst);
+        assert_eq!(mst.edges.values().sum::<f64>(), 6.0);
+    }
+
 }
