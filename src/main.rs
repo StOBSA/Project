@@ -17,8 +17,6 @@ use util::to_graph;
 use util::to_point;
 
 use std::collections::HashMap;
-use std::collections::HashSet;
-use std::hash::Hash;
 use std::rc::Rc;
 use std::time::SystemTime;
 

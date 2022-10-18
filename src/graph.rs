@@ -1,8 +1,6 @@
 use std::{hash::Hash, collections::{HashMap, HashSet}, cmp::Ordering};
 
-use itertools::Itertools;
-
-use crate::{OPoint, INF, Point};
+use crate::{OPoint, Point};
 
 #[derive(Debug, Clone, Copy)]
 pub struct Edge {
