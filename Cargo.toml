@@ -14,3 +14,4 @@ itertools     = "0.10.3" # simplifications for iterations
 petgraph      = "0.6.2"  # Graph library used to compute MST
 indexmap      = "1.9.1"  # an ordered hashset
 ordered-float = "3.0.0"  # implements hashing on float values
+rug           = "1.17.0"
