@@ -1,7 +1,7 @@
-mod geometry;
-mod util;
-pub mod graph; 
 pub mod corners;
+mod geometry;
+pub mod graph;
+mod util;
 
 use corners::BinaryCorners;
 use geometry::euclidean_distance;
@@ -22,14 +22,16 @@ use std::collections::HashMap;
 use std::rc::Rc;
 use std::time::SystemTime;
 
+use crate::util::is_improvement_by_factor;
+
 /// a location in 2D
 type Point = (f64, f64);
 
-/// the minimum multiplier to the average terminal distance by which a Steiner 
+/// the minimum multiplier to the average terminal distance by which a Steiner
 /// point will be moved. In the original paper this value is always used after
 /// 1000 generations have passed.
 const M_RANGE_MIN: f64 = 0.01;
-/// the number of new individuals to create every generation. In the original 
+/// the number of new individuals to create every generation. In the original
 /// StOBGA this value is fixed at 166.
 const NUMBER_OFFSPRING: i32 = 500 / 3;
 /// the smallest probability by which a flip_move_mutation is going to occur.
@@ -38,10 +40,10 @@ const P_FLIP_MOVE_MIN: f64 = 0.01;
 /// the limits of this datatype.
 const INF: f64 = 1e10;
 /// a small value, usually utilized to make up for floating point imprecisions.
-const EPSILON : f64 = 1e-6;
+const EPSILON: f64 = 1e-4;
 /// amount of generations the algorithm continues whilst not finding
 /// a better individual before ending
-const RECESSION_DURATION : usize = 500;
+const RECESSION_DURATION: usize = 500;
 
 /// represents a Steiner Problem instance, consisting of terminals, obstacles
 /// and their corners, the centroids obtained through Delaunay triangulation,
@@ -64,7 +66,7 @@ struct SteinerProblem {
 }
 
 impl SteinerProblem {
-    /// constructor taking a vector of terminals (Points) and a list of 
+    /// constructor taking a vector of terminals (Points) and a list of
     /// Obstacles as its arguments.
     fn new(terminals: Vec<Point>, obstacles: Vec<Obstacle>) -> Self {
         let mut obstacle_corners = Vec::new();
@@ -135,7 +137,7 @@ impl SteinerProblem {
         }
     }
 
-    /// a function to check whether a given point is located inside a 
+    /// a function to check whether a given point is located inside a
     /// solid obstacle
     fn coordinates_in_solid_obstacle(&self, coordinates: Point) -> bool {
         for obstacle in self.obstacles.iter() {
@@ -161,10 +163,10 @@ type OPoint = (OrderedFloat<f64>, OrderedFloat<f64>);
 /// Chromosomes are one of the two building blocks of Individuals.
 /// Being the genotype, they hold the crucial information to build the
 /// genotype and evaluate its objective function.
-/// 
+///
 /// Genotypes contain all Steiner Points an Individual might have.
 /// Steiner Points can be stored as Points with 2D coordinates,
-/// or through an index for the list of obstacle corners. 
+/// or through an index for the list of obstacle corners.
 #[derive(Clone)]
 struct Chromosome {
     steiner_points: IndexSet<OPoint>,
@@ -190,8 +192,8 @@ impl std::fmt::Debug for Chromosome {
 }
 
 /// Small wrapper around a [
-/// petgraph::UnGraph](../petgraph/graph/type.UnGraph.html) 
-/// data structure to cache its summed edge weights. 
+/// petgraph::UnGraph](../petgraph/graph/type.UnGraph.html)
+/// data structure to cache its summed edge weights.
 #[derive(Clone)]
 struct MinimumSpanningTree {
     total_weight: f64,
@@ -921,7 +923,6 @@ fn main() {
     let problem = SteinerProblem::new(terminals.clone(), obstacles.clone());
     let mut stobga = StOBGA::new(rng, Rc::new(problem), 500, 1, 50, 50);
 
-    let mut streak = (0, f64::INFINITY);
     println!(
         "generation;average;best;chromosome;function_evaluations;runtime in seconds;seed={}",
         seed
@@ -930,30 +931,41 @@ fn main() {
     #[derive(PartialEq)]
     enum LoopState {
         Running,
-        LastGeneration
+        LastGeneration,
     }
-    let mut loop_state = LoopState::Running;
+    struct LoopData {
+        state : LoopState,
+        streak_length : usize,
+        previous_best_weight : f64
+    }
+    let mut loop_data = LoopData {state:LoopState::Running,previous_best_weight:INF,streak_length:0};
     loop {
         stobga.step();
-        if loop_state == LoopState::LastGeneration {
+        if loop_data.state == LoopState::LastGeneration {
             stobga.finalize();
         }
-        let best = stobga.population.iter().map(|i|i.minimum_spanning_tree.as_ref().unwrap().total_weight).enumerate().min_by(|a,b|if a.1<b.1 {std::cmp::Ordering::Less} else {std::cmp::Ordering::Greater}).unwrap().0;
-        if stobga.population[best]
+        let best = stobga
+            .population
+            .iter()
+            .map(|i| i.minimum_spanning_tree.as_ref().unwrap().total_weight)
+            .enumerate()
+            .min_by(|a, b| {
+                if a.1 < b.1 {
+                    std::cmp::Ordering::Less
+                } else {
+                    std::cmp::Ordering::Greater
+                }
+            })
+            .unwrap()
+            .0;
+        let best_weight = stobga.population[best]
             .minimum_spanning_tree
             .as_ref()
             .unwrap()
-            .total_weight
-            < streak.1 - EPSILON || loop_state == LoopState::LastGeneration
-        {
-            streak = (
-                0,
-                stobga.population[best]
-                    .minimum_spanning_tree
-                    .as_ref()
-                    .unwrap()
-                    .total_weight,
-            );
+            .total_weight;
+        if is_improvement_by_factor(loop_data.previous_best_weight, best_weight, 0.01/100.0) || loop_data.state == LoopState::LastGeneration {
+            loop_data.previous_best_weight = best_weight;
+            loop_data.streak_length = 0;
 
             println!(
                 "{};{};{};{:?};{};{}",
@@ -980,22 +992,26 @@ fn main() {
                 }
             );
         } else {
-            streak.0 += 1
+            loop_data.streak_length += 1
         }
-        if loop_state == LoopState::LastGeneration{
+        if loop_data.state == LoopState::LastGeneration {
             break;
         }
-        if streak.0 == RECESSION_DURATION {
-            loop_state = LoopState::LastGeneration;
+        if loop_data.streak_length == RECESSION_DURATION {
+            loop_data.state = LoopState::LastGeneration;
         }
     }
 }
 
 #[cfg(test)]
 mod test {
-    use std::{collections::{HashSet}};
+    use std::collections::HashSet;
 
-    use crate::{geometry::{self, *}, util::{self}, graph::{self, Graph}};
+    use crate::{
+        geometry::{self, *},
+        graph::{self, Graph},
+        util::{self},
+    };
     use itertools::Itertools;
     use petgraph::{data::FromElements, prelude::UnGraph};
     use rand::{Rng, SeedableRng};
@@ -1256,8 +1272,14 @@ mod test {
 
     #[test]
     fn hashing_edges() {
-        let e1 = graph::Edge{start:util::to_graph((0.0,0.0)),end:util::to_graph((1.0,1.0))};
-        let e2 = graph::Edge{end:util::to_graph((0.0,0.0)),start:util::to_graph((1.0,1.0))};
+        let e1 = graph::Edge {
+            start: util::to_graph((0.0, 0.0)),
+            end: util::to_graph((1.0, 1.0)),
+        };
+        let e2 = graph::Edge {
+            end: util::to_graph((0.0, 0.0)),
+            start: util::to_graph((1.0, 1.0)),
+        };
         let mut set = HashSet::new();
         set.insert(e1);
         set.insert(e2);
@@ -1267,17 +1289,17 @@ mod test {
     #[test]
     fn making_a_graph() {
         let mut graph = graph::Graph::new();
-        graph.add_edge_from_points((0.0,0.0), (1.0,1.0), 1.0);
-        graph.add_edge_from_points((2.0,0.0), (1.0,1.0), 1.0);
-        graph.add_edge_from_points((0.0,0.0), (1.0,0.0), 1.0);
-        println!("{:?}",graph.edges_connected_to_point((1.0,1.0)));
+        graph.add_edge_from_points((0.0, 0.0), (1.0, 1.0), 1.0);
+        graph.add_edge_from_points((2.0, 0.0), (1.0, 1.0), 1.0);
+        graph.add_edge_from_points((0.0, 0.0), (1.0, 0.0), 1.0);
+        println!("{:?}", graph.edges_connected_to_point((1.0, 1.0)));
     }
 
     #[test]
     fn trivial_mst() {
         let mut graph = Graph::new();
-        graph.add_edge_from_points((0.0, 0.0), (0.0,1.0), 1.0);
-        graph.add_edge_from_points((1.0, 1.0), (0.0,1.0), 1.0);
+        graph.add_edge_from_points((0.0, 0.0), (0.0, 1.0), 1.0);
+        graph.add_edge_from_points((1.0, 1.0), (0.0, 1.0), 1.0);
         let mst = graph.minimum_spanning_tree();
         assert_eq!(mst.nodes.len(), 3);
         assert_eq!(mst.edges.len(), 2);
@@ -1286,12 +1308,12 @@ mod test {
     #[test]
     fn advanced_mst() {
         let mut graph = Graph::new();
-        graph.add_edge_from_points((0.0, 0.0), (0.0,1.0), 1.0);
-        graph.add_edge_from_points((0.0, 0.0), (1.0,1.0), 2.0);
-        graph.add_edge_from_points((0.0, 0.0), (1.0,0.0), 3.0);
-        graph.add_edge_from_points((1.0, 1.0), (0.0,1.0), 4.0);
-        graph.add_edge_from_points((1.0, 1.0), (1.0,0.0), 5.0);
-        graph.add_edge_from_points((1.0, 0.0), (0.0,1.0), 6.0);
+        graph.add_edge_from_points((0.0, 0.0), (0.0, 1.0), 1.0);
+        graph.add_edge_from_points((0.0, 0.0), (1.0, 1.0), 2.0);
+        graph.add_edge_from_points((0.0, 0.0), (1.0, 0.0), 3.0);
+        graph.add_edge_from_points((1.0, 1.0), (0.0, 1.0), 4.0);
+        graph.add_edge_from_points((1.0, 1.0), (1.0, 0.0), 5.0);
+        graph.add_edge_from_points((1.0, 0.0), (0.0, 1.0), 6.0);
         let mst = graph.minimum_spanning_tree();
         assert_eq!(mst.nodes.len(), 4);
         assert_eq!(mst.edges.len(), 3);
@@ -1305,7 +1327,6 @@ mod test {
         corners.insert(3);
         corners.insert(4);
         corners.insert(9);
-        assert_eq!(corners.iter().collect_vec(), vec![3,4,9])
+        assert_eq!(corners.iter().collect_vec(), vec![3, 4, 9])
     }
-
 }
