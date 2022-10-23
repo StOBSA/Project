@@ -1011,7 +1011,7 @@ mod test {
     use crate::{
         geometry::{self, *},
         graph::{self, Graph},
-        util::{self},
+        util::{self}, corners::BinaryCorners,
     };
     use itertools::Itertools;
     use petgraph::{data::FromElements, prelude::UnGraph};
@@ -1329,5 +1329,14 @@ mod test {
         corners.insert(4);
         corners.insert(9);
         assert_eq!(corners.iter().collect_vec(), vec![3, 4, 9])
+    }
+ 
+    #[test]
+    fn testing_binary_corners() {
+        let mut corners = (0..3).collect::<BinaryCorners>();
+        assert_eq!(corners.included, 7);
+        corners.remove(&0);
+        corners.remove(&1);
+        assert_eq!(corners.included, 4);
     }
 }
