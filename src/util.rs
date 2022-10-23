@@ -12,6 +12,6 @@ pub fn to_point(point: OPoint) -> Point {
     (*point.0, *point.1)
 }
 
-pub fn is_improvement_by_factor(current_value : f64, new_value : f64, factor : f64) -> bool {
+pub fn is_improvement_by_factor(current_value : f32, new_value : f32, factor : f32) -> bool {
     new_value < (current_value-current_value*factor)
 }

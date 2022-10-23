@@ -1,6 +1,6 @@
-pub const RADIANS_120_DEGREE: f64 = 2.0 * std::f64::consts::PI / 3.0;
+pub const RADIANS_120_DEGREE: f32 = 2.0 * std::f32::consts::PI / 3.0;
 
-use std::f64::INFINITY;
+use std::f32::INFINITY;
 
 use itertools::Itertools;
 
@@ -8,10 +8,10 @@ use crate::Point;
 
 #[derive(Debug, Clone)]
 pub struct Bounds {
-    pub min_x: f64,
-    pub max_x: f64,
-    pub min_y: f64,
-    pub max_y: f64,
+    pub min_x: f32,
+    pub max_x: f32,
+    pub min_y: f32,
+    pub max_y: f32,
 }
 
 impl Default for Bounds {
@@ -25,23 +25,23 @@ impl Default for Bounds {
     }
 }
 
-pub fn euclidean_distance(a: Point, b: Point) -> f64 {
+pub fn euclidean_distance(a: Point, b: Point) -> f32 {
     ((a.0 - b.0).powf(2.0) + (a.1 - b.1).powf(2.0)).sqrt()
 }
 
-pub fn overlap(x1: f64, y1: f64, x2: f64, y2: f64, x3: f64, y3: f64, x4: f64, y4: f64) -> bool {
+pub fn overlap(x1: f32, y1: f32, x2: f32, y2: f32, x3: f32, y3: f32, x4: f32, y4: f32) -> bool {
     !(x2 < x3 || x4 < x1 || y2 < y3 || y4 < y1)
 }
 
 pub fn segment_segment_intersection(
-    x1: f64,
-    y1: f64,
-    x2: f64,
-    y2: f64,
-    x3: f64,
-    y3: f64,
-    x4: f64,
-    y4: f64,
+    x1: f32,
+    y1: f32,
+    x2: f32,
+    y2: f32,
+    x3: f32,
+    y3: f32,
+    x4: f32,
+    y4: f32,
     point_overlap: bool,
 ) -> Option<Point> {
     let denom = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
@@ -70,10 +70,10 @@ pub fn segment_segment_intersection(
 }
 
 pub fn segment_polygon_intersection(
-    x1: f64,
-    y1: f64,
-    x2: f64,
-    y2: f64,
+    x1: f32,
+    y1: f32,
+    x2: f32,
+    y2: f32,
     polygon: &[Point],
     point_overlap: bool,
 ) -> Vec<Point> {
@@ -109,13 +109,13 @@ pub fn segment_polygon_intersection(
 }
 
 pub fn _ray_segment_intersection(
-    px1: f64,
-    py1: f64,
-    px2: f64,
-    py2: f64,
-    px3: f64,
-    py3: f64,
-    epsilon: f64,
+    px1: f32,
+    py1: f32,
+    px2: f32,
+    py2: f32,
+    px3: f32,
+    py3: f32,
+    epsilon: f32,
 ) -> bool {
     let x1 = px1;
     let y1 = py1;
@@ -133,33 +133,33 @@ pub fn _ray_segment_intersection(
     } else {
         y1
     };
-    if (y1 > y3 || y1 < y2) || (x1 > f64::max(x2, x3)) {
+    if (y1 > y3 || y1 < y2) || (x1 > f32::max(x2, x3)) {
         return false;
     }
-    if x1 < f64::min(x2, x3) {
+    if x1 < f32::min(x2, x3) {
         return true;
     } else {
         let m_red = if (x2 - x3).abs() > epsilon {
             (y3 - y2) / (x3 - x2)
         } else {
-            f64::INFINITY
+            f32::INFINITY
         };
         let m_blue = if (x2 - x1).abs() > epsilon {
             (y1 - y2) / (x1 - x2)
         } else {
-            f64::INFINITY
+            f32::INFINITY
         };
         return m_blue >= m_red;
     }
 }
 
-pub fn middle(x1: f64, y1: f64, x2: f64, y2: f64) -> Point {
+pub fn middle(x1: f32, y1: f32, x2: f32, y2: f32) -> Point {
     let dx = x2 - x1;
     let dy = y2 - y1;
     (x1 + dx / 2.0, y1 + dy / 2.0)
 }
 
-pub fn point_in_polygon(x1: f64, y1: f64, polygon: &[Point], bounds: &Bounds) -> bool {
+pub fn point_in_polygon(x1: f32, y1: f32, polygon: &[Point], bounds: &Bounds) -> bool {
     let intersections = segment_polygon_intersection(
         bounds.min_x - 1.0,
         y1,
@@ -181,13 +181,13 @@ pub fn point_in_polygon(x1: f64, y1: f64, polygon: &[Point], bounds: &Bounds) ->
 }
 
 pub fn intersection_length(
-    x1: f64,
-    y1: f64,
-    x2: f64,
-    y2: f64,
+    x1: f32,
+    y1: f32,
+    x2: f32,
+    y2: f32,
     polygon: &[Point],
     bounds: &Bounds,
-) -> f64 {
+) -> f32 {
     let mut cuts = segment_polygon_intersection(x1, y1, x2, y2, polygon, true);
     cuts.push((x2, y2));
     cuts.insert(0, (x1, y1));
@@ -202,7 +202,7 @@ pub fn intersection_length(
     }
     return distance;
 }
-pub fn fermat_point(a: Point, b: Point, c: Point, epsilon: f64) -> Point {
+pub fn fermat_point(a: Point, b: Point, c: Point, epsilon: f32) -> Point {
     use nalgebra::{Matrix2, Vector2};
 
     let va = Vector2::new(a.0, a.1);
@@ -216,7 +216,7 @@ pub fn fermat_point(a: Point, b: Point, c: Point, epsilon: f64) -> Point {
 
     let ang1 = ((ab.dot(&ac)) / (ab.norm() * ac.norm())).acos();
     let ang2 = ((ba.dot(&bc)) / (ba.norm() * bc.norm())).acos();
-    let ang3 = std::f64::consts::PI - (ang1 + ang2);
+    let ang3 = std::f32::consts::PI - (ang1 + ang2);
 
     let deg_lim = RADIANS_120_DEGREE - epsilon;
     if ang1 >= deg_lim {

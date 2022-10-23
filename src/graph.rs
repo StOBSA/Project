@@ -42,7 +42,7 @@ impl Hash for Edge {
 #[derive(Debug)]
 pub struct Graph {
     pub nodes : HashSet<OPoint>,
-    pub edges : HashMap<Edge, f64>
+    pub edges : HashMap<Edge, f32>
 }
 
 impl Graph {
@@ -55,13 +55,13 @@ impl Graph {
     pub fn add_node(&mut self, node : OPoint) {
         self.nodes.insert(node);
     }
-    pub fn add_edge(&mut self, a: OPoint, b: OPoint, weight: f64) {
+    pub fn add_edge(&mut self, a: OPoint, b: OPoint, weight: f32) {
         let edge = Edge { start: a, end: b };
         self.add_node(a);
         self.add_node(b);
         self.edges.insert(edge, weight);
     }
-    pub fn add_edge_from_points(&mut self, a: Point, b: Point, weight: f64) {
+    pub fn add_edge_from_points(&mut self, a: Point, b: Point, weight: f32) {
         let a = crate::util::to_graph(a);
         let b = crate::util::to_graph(b);
         self.add_edge(a, b, weight)

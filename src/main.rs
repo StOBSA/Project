@@ -25,23 +25,23 @@ use std::time::SystemTime;
 use crate::util::is_improvement_by_factor;
 
 /// a location in 2D
-type Point = (f64, f64);
+type Point = (f32, f32);
 
 const POPULATION_SIZE: usize = 500;
 /// the minimum multiplier to the average terminal distance by which a Steiner
 /// point will be moved. In the original paper this value is always used after
 /// 1000 generations have passed.
-const M_RANGE_MIN: f64 = 0.01;
+const M_RANGE_MIN: f32 = 0.01;
 /// the number of new individuals to create every generation. In the original
 /// StOBGA this value is fixed at 166.
 const NUMBER_OFFSPRING: usize = POPULATION_SIZE / 3;
 /// the smallest probability by which a flip_move_mutation is going to occur.
-const P_FLIP_MOVE_MIN: f64 = 0.01;
+const P_FLIP_MOVE_MIN: f32 = 0.01;
 /// represents an infinitely large value without getting dangerously close to
 /// the limits of this datatype.
-const INF: f64 = 1e10;
+const INF: f32 = 1e10;
 /// a small value, usually utilized to make up for floating point imprecisions.
-const EPSILON: f64 = 1e-4;
+const EPSILON: f32 = 1e-6;
 /// amount of generations the algorithm continues whilst not finding
 /// a better individual before ending
 const RECESSION_DURATION: usize = 500;
@@ -63,7 +63,7 @@ struct SteinerProblem {
     /// terminals and obstacles in a square
     bounds: Bounds,
     /// the mean distance between terminals
-    average_terminal_distance: f64,
+    average_terminal_distance: f32,
 }
 
 impl SteinerProblem {
@@ -80,7 +80,7 @@ impl SteinerProblem {
         let vertices = terminals
             .iter()
             .chain(obstacle_corners.iter())
-            .map(|(x, y)| delaunator::Point { x: *x, y: *y })
+            .map(|(x, y)| delaunator::Point { x: *x as f64, y: *y as f64 })
             .collect::<Vec<_>>();
         let mut triangles = Vec::new();
         for triple in delaunator::triangulate(&vertices)
@@ -89,9 +89,9 @@ impl SteinerProblem {
             .windows(3)
         {
             triangles.push([
-                (vertices[triple[0]].x, vertices[triple[0]].y),
-                (vertices[triple[1]].x, vertices[triple[1]].y),
-                (vertices[triple[2]].x, vertices[triple[2]].y),
+                (vertices[triple[0]].x as f32, vertices[triple[0]].y as f32),
+                (vertices[triple[1]].x as f32, vertices[triple[1]].y as f32),
+                (vertices[triple[2]].x as f32, vertices[triple[2]].y as f32),
             ]);
         }
         for [a, b, c] in triangles {
@@ -126,7 +126,7 @@ impl SteinerProblem {
                 counter += 1;
             }
         }
-        average_terminal_distance /= counter as f64;
+        average_terminal_distance /= counter as f32;
 
         SteinerProblem {
             terminals,
@@ -159,7 +159,7 @@ impl SteinerProblem {
 
 /// an extension to the usual Point data structure. This one can be hashed and
 /// therefore be stored in a HashSet, IndexSet or IndexMap.
-type OPoint = (OrderedFloat<f64>, OrderedFloat<f64>);
+type OPoint = (OrderedFloat<f32>, OrderedFloat<f32>);
 
 /// Chromosomes are one of the two building blocks of Individuals.
 /// Being the genotype, they hold the crucial information to build the
@@ -197,8 +197,8 @@ impl std::fmt::Debug for Chromosome {
 /// data structure to cache its summed edge weights.
 #[derive(Clone)]
 struct MinimumSpanningTree {
-    total_weight: f64,
-    graph: petgraph::graph::UnGraph<Point, f64, u32>,
+    total_weight: f32,
+    graph: petgraph::graph::UnGraph<Point, f32, u32>,
 }
 
 /// Together a [Chromosome] and a [SteinerProblem] for an Individual.
@@ -219,7 +219,7 @@ struct StOBGA<R: Rng> {
     current_generation: usize,
     child_buffer: Vec<Individual>,
     function_evaluations: u64,
-    edge_db: HashMap<(OPoint, OPoint), f64>,
+    edge_db: HashMap<(OPoint, OPoint), f32>,
     start_time: SystemTime,
 }
 
@@ -325,11 +325,11 @@ impl<R: Rng> StOBGA<R> {
     }
 
     fn mutate(&mut self, index: usize) {
-        let p_flip_move = f64::max(
-            1.0 - (self.current_generation as f64) / 1000.0,
+        let p_flip_move = f32::max(
+            1.0 - (self.current_generation as f32) / 1000.0,
             P_FLIP_MOVE_MIN,
         );
-        if self.random_generator.gen_bool(p_flip_move) {
+        if self.random_generator.gen_bool(p_flip_move as f64) {
             self.mutate_flip_move(index);
         } else {
             if self.random_generator.gen_bool(0.5) {
@@ -359,7 +359,7 @@ impl<R: Rng> StOBGA<R> {
                         mst.graph[a.target()],
                         mst.graph[b.target()],
                         mst.graph[c.target()],
-                        1e-6,
+                        EPSILON,
                     ),
                 ));
             }
@@ -455,7 +455,7 @@ impl<R: Rng> StOBGA<R> {
         stobga.build_msts();
         let mut parents = Vec::new();
         let mut children = Vec::new();
-        for _ in 0..(population_size - (t1 + t2 + t3 + 1)) {
+        for _ in 0..(population_size - (t1 + t2 + t3)) {
             parents.push(stobga.tournament_select(5, false));
             children.push(stobga.tournament_select(5, true));
         }
@@ -476,6 +476,7 @@ impl<R: Rng> StOBGA<R> {
         }
         stobga.population.append(&mut save);
         stobga.child_buffer.clear();
+        assert_eq!(stobga.population.len(), POPULATION_SIZE);
         stobga
     }
 
@@ -542,17 +543,17 @@ impl<R: Rng> StOBGA<R> {
         }
         self.child_buffer.clear();
 
-        // self.population.sort_unstable_by(|i1, i2| {
-        //     i1.minimum_spanning_tree
-        //         .as_ref()
-        //         .unwrap()
-        //         .total_weight
-        //         .total_cmp(&i2.minimum_spanning_tree.as_ref().unwrap().total_weight)
-        // });
+        self.population.sort_unstable_by(|i1, i2| {
+            i1.minimum_spanning_tree
+                .as_ref()
+                .unwrap()
+                .total_weight
+                .total_cmp(&i2.minimum_spanning_tree.as_ref().unwrap().total_weight)
+        });
         self.current_generation += 1;
     }
 
-    fn compute_distance(&self, from: OPoint, to: OPoint) -> f64 {
+    fn compute_distance(&self, from: OPoint, to: OPoint) -> f32 {
         let p1 = to_point(from);
         let p2 = to_point(to);
         let mut length = geometry::euclidean_distance(p1, p2);
@@ -644,7 +645,7 @@ impl<R: Rng> StOBGA<R> {
         let mst = petgraph::graph::UnGraph::<_, _>::from_elements(
             petgraph::algo::min_spanning_tree(&graph),
         );
-        let total_distance = mst.edge_weights().sum::<f64>();
+        let total_distance = mst.edge_weights().sum::<f32>();
         let mst = MinimumSpanningTree {
             total_weight: total_distance,
             graph: mst,
@@ -702,7 +703,7 @@ impl Individual {
                     .remove(&candidate_steiner_points[if n > 1 { rng.gen_range(0..n) } else { 0 }]);
             }
             (n, m) => {
-                if rng.gen_bool((n as f64 / m as f64).clamp(0.0, 1.0)) {
+                if rng.gen_bool((n as f32 / m as f32).clamp(0.0, 1.0) as f64) {
                     self.chromosome.steiner_points.remove(
                         &candidate_steiner_points[if n > 1 { rng.gen_range(0..n) } else { 0 }],
                     );
@@ -760,7 +761,7 @@ impl Individual {
             let p1 = graph[random_triple.0];
             let p2 = graph[random_triple.1];
             let p3 = graph[random_triple.2];
-            let p4 = geometry::fermat_point(p1, p2, p3, 1e-6);
+            let p4 = geometry::fermat_point(p1, p2, p3, EPSILON);
             if !self.problem.coordinates_in_solid_obstacle(p4) {
                 self.chromosome.steiner_points.insert(to_graph(p4));
             }
@@ -774,14 +775,14 @@ impl Individual {
         let p_gene = if s + k == 0 {
             1.0
         } else {
-            1.0 / ((s + k) as f64)
+            1.0 / ((s + k) as f32)
         };
         let m_range = self.problem.average_terminal_distance
-            * f64::max(1.0 - (generation as f64) / 1000.0, M_RANGE_MIN);
+            * f32::max(1.0 - (generation as f32) / 1000.0, M_RANGE_MIN);
         let mut to_remove = Vec::new();
         let mut to_add = Vec::new();
         for &steiner_point in self.chromosome.steiner_points.iter() {
-            if rng.gen_bool(p_gene) {
+            if rng.gen_bool(p_gene as f64) {
                 let x_sign = if rng.gen_bool(0.5) { 1.0 } else { -1.0 };
                 let y_sign = if rng.gen_bool(0.5) { 1.0 } else { -1.0 };
 
@@ -807,7 +808,7 @@ impl Individual {
             self.chromosome.steiner_points.insert(point);
         }
         for i in 0..k {
-            if rng.gen_bool(p_gene) {
+            if rng.gen_bool(p_gene as f64) {
                 if self.chromosome.included_corners.contains(&i) {
                     self.chromosome.included_corners.remove(&i);
                 } else {
@@ -821,7 +822,7 @@ impl Individual {
 
 #[derive(Clone)]
 struct Obstacle {
-    weight: f64,
+    weight: f32,
     bounds: Bounds,
     points: Vec<Point>,
 }
@@ -837,7 +838,7 @@ impl std::fmt::Debug for Obstacle {
 }
 
 impl Obstacle {
-    fn new(weight: f64, points: Vec<Point>) -> Self {
+    fn new(weight: f32, points: Vec<Point>) -> Self {
         Self {
             weight,
             points,
@@ -937,7 +938,7 @@ fn main() {
     struct LoopData {
         state : LoopState,
         streak_length : usize,
-        previous_best_weight : f64
+        previous_best_weight : f32
     }
     let mut loop_data = LoopData {state:LoopState::Running,previous_best_weight:INF,streak_length:0};
     loop {
@@ -945,20 +946,7 @@ fn main() {
         if loop_data.state == LoopState::LastGeneration {
             stobga.finalize();
         }
-        let best = stobga
-            .population
-            .iter()
-            .map(|i| i.minimum_spanning_tree.as_ref().unwrap().total_weight)
-            .enumerate()
-            .min_by(|a, b| {
-                if a.1 < b.1 {
-                    std::cmp::Ordering::Less
-                } else {
-                    std::cmp::Ordering::Greater
-                }
-            })
-            .unwrap()
-            .0;
+        let best = 0;
         let best_weight = stobga.population[best]
             .minimum_spanning_tree
             .as_ref()
@@ -973,10 +961,21 @@ fn main() {
                 stobga.current_generation,
                 {
                     let mut avg = 0.0;
-                    for i in stobga.population.iter_mut() {
+                    let mut count = 0.0;
+                    for i in stobga.population.iter() { 
                         avg += i.minimum_spanning_tree.as_ref().unwrap().total_weight;
+                        count += 1.0;
                     }
-                    avg / POPULATION_SIZE as f64
+                    avg /= count;
+                    assert_eq!(stobga.population.len(), 500);
+                    assert_eq!(count, 500.0);
+                    if avg < best_weight {
+                        for (index, individual) in stobga.population.iter().enumerate() {
+                            println!("{}: {}", index, individual.minimum_spanning_tree.as_ref().unwrap().total_weight)
+                        }
+                        panic!("This should not have happened.");
+                    }
+                    avg
                 },
                 {
                     stobga.population[best]
@@ -1260,7 +1259,7 @@ mod test {
         let i2 = graph.add_node((2.0, 2.0));
         graph.add_edge(i1, i2, 1.0);
         let g2 = UnGraph::<_, _>::from_elements(petgraph::algo::min_spanning_tree(&graph));
-        assert!(g2.edge_weights().sum::<f64>() == 1.0)
+        assert!(g2.edge_weights().sum::<f32>() == 1.0)
     }
 
     #[test]
@@ -1319,7 +1318,7 @@ mod test {
         assert_eq!(mst.nodes.len(), 4);
         assert_eq!(mst.edges.len(), 3);
         println!("{:?}", mst);
-        assert_eq!(mst.edges.values().sum::<f64>(), 6.0);
+        assert_eq!(mst.edges.values().sum::<f32>(), 6.0);
     }
 
     #[test]
