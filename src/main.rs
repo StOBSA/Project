@@ -963,7 +963,7 @@ fn main() {
             .as_ref()
             .unwrap()
             .total_weight;
-        if is_improvement_by_factor(loop_data.previous_best_weight, best_weight, 0.01/100.0) || loop_data.state == LoopState::LastGeneration {
+        if is_improvement_by_factor(loop_data.previous_best_weight, best_weight, 0.1/100.0) || loop_data.state == LoopState::LastGeneration {
             loop_data.previous_best_weight = best_weight;
             loop_data.streak_length = 0;
 
