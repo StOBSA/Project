@@ -27,13 +27,14 @@ use crate::util::is_improvement_by_factor;
 /// a location in 2D
 type Point = (f64, f64);
 
+const POPULATION_SIZE: usize = 500;
 /// the minimum multiplier to the average terminal distance by which a Steiner
 /// point will be moved. In the original paper this value is always used after
 /// 1000 generations have passed.
 const M_RANGE_MIN: f64 = 0.01;
 /// the number of new individuals to create every generation. In the original
 /// StOBGA this value is fixed at 166.
-const NUMBER_OFFSPRING: i32 = 500 / 3;
+const NUMBER_OFFSPRING: usize = POPULATION_SIZE / 3;
 /// the smallest probability by which a flip_move_mutation is going to occur.
 const P_FLIP_MOVE_MIN: f64 = 0.01;
 /// represents an infinitely large value without getting dangerously close to
@@ -469,7 +470,7 @@ impl<R: Rng> StOBGA<R> {
             stobga.population[*population_index].chromosome =
                 stobga.child_buffer[child_index].chromosome.clone();
             stobga.population[*population_index].minimum_spanning_tree = None;
-            if stobga.population.len() + save.len() == 500 {
+            if stobga.population.len() + save.len() == POPULATION_SIZE {
                 break;
             }
         }
@@ -921,7 +922,7 @@ fn main() {
 
     let rng = rand_pcg::Pcg32::seed_from_u64(seed);
     let problem = SteinerProblem::new(terminals.clone(), obstacles.clone());
-    let mut stobga = StOBGA::new(rng, Rc::new(problem), 500, 1, 50, 50);
+    let mut stobga = StOBGA::new(rng, Rc::new(problem), POPULATION_SIZE, 1, 50, 50);
 
     println!(
         "generation;average;best;chromosome;function_evaluations;runtime in seconds;seed={}",
@@ -975,7 +976,7 @@ fn main() {
                     for i in stobga.population.iter_mut() {
                         avg += i.minimum_spanning_tree.as_ref().unwrap().total_weight;
                     }
-                    avg / 500.0
+                    avg / POPULATION_SIZE as f64
                 },
                 {
                     stobga.population[best]
