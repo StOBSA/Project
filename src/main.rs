@@ -967,14 +967,6 @@ fn main() {
                         count += 1.0;
                     }
                     avg /= count;
-                    assert_eq!(stobga.population.len(), 500);
-                    assert_eq!(count, 500.0);
-                    if avg < best_weight {
-                        for (index, individual) in stobga.population.iter().enumerate() {
-                            println!("{}: {}", index, individual.minimum_spanning_tree.as_ref().unwrap().total_weight)
-                        }
-                        panic!("This should not have happened.");
-                    }
                     avg
                 },
                 {
