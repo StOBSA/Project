@@ -952,7 +952,11 @@ fn main() {
             .as_ref()
             .unwrap()
             .total_weight;
-        if is_improvement_by_factor(loop_data.previous_best_weight, best_weight, 0.1/100.0) || loop_data.state == LoopState::LastGeneration {
+        if is_improvement_by_factor(
+            loop_data.previous_best_weight, 
+            best_weight, 0.1/100.0) 
+            || loop_data.state == LoopState::LastGeneration 
+        {    
             loop_data.previous_best_weight = best_weight;
             loop_data.streak_length = 0;
 
@@ -960,14 +964,15 @@ fn main() {
                 "{};{};{};{:?};{};{}",
                 stobga.current_generation,
                 {
-                    let mut avg = 0.0;
-                    let mut count = 0.0;
-                    for i in stobga.population.iter() { 
-                        avg += i.minimum_spanning_tree.as_ref().unwrap().total_weight;
-                        count += 1.0;
-                    }
-                    avg /= count;
-                    avg
+                    util::average_from_iterator(
+                        stobga.population
+                        .iter()
+                        .map(|individual|
+                            individual
+                            .minimum_spanning_tree
+                            .as_ref()
+                            .unwrap()
+                            .total_weight))
                 },
                 {
                     stobga.population[best]

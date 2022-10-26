@@ -15,3 +15,8 @@ pub fn to_point(point: OPoint) -> Point {
 pub fn is_improvement_by_factor(current_value : f32, new_value : f32, factor : f32) -> bool {
     new_value < (current_value-current_value*factor)
 }
+
+pub fn average_from_iterator<I:Iterator<Item=f32> + Clone>(values : I) -> f32 {
+    let clone = values.clone();
+    values.sum::<f32>() / (clone.count() as f32)
+}
