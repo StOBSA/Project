@@ -17,6 +17,11 @@ pub fn is_improvement_by_factor(current_value : f32, new_value : f32, factor : f
 }
 
 pub fn average_from_iterator<I:Iterator<Item=f32> + Clone>(values : I) -> f32 {
-    let clone = values.clone();
-    values.sum::<f32>() / (clone.count() as f32)
+    let mut len = 0;
+    let mut sum = 0.0;
+    for number in values {
+        sum += number;
+        len += 1;
+    }
+    sum / len as f32
 }
