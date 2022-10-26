@@ -954,7 +954,7 @@ fn main() {
             .total_weight;
         if is_improvement_by_factor(
             loop_data.previous_best_weight, 
-            best_weight, 0.1/100.0) 
+            best_weight, 0.01/100.0) 
             || loop_data.state == LoopState::LastGeneration 
         {    
             loop_data.previous_best_weight = best_weight;
