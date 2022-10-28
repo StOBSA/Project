@@ -66,6 +66,11 @@ struct SteinerProblem {
     average_terminal_distance: f32,
 }
 
+enum Location {
+    ChildBuffer,
+    Population
+}
+
 impl SteinerProblem {
     /// constructor taking a vector of terminals (Points) and a list of
     /// Obstacles as its arguments.
@@ -303,25 +308,31 @@ impl<R: Rng> StOBGA<R> {
     }
 
     fn mutate_flip_move(&mut self, index: usize) {
-        self.population[index]
+        self.child_buffer[index]
             .mutation_flip_move(&mut self.random_generator, self.current_generation);
-        self.build_mst(index);
+        if self.child_buffer[index].minimum_spanning_tree.is_none() {
+            self.build_mst(index, Location::ChildBuffer);
+        }
     }
 
     fn mutate_add_steiner(&mut self, index: usize) {
-        if self.population[index].minimum_spanning_tree.is_none() {
-            self.build_mst(index);
+        if self.child_buffer[index].minimum_spanning_tree.is_none() {
+            self.build_mst(index, Location::ChildBuffer);
         }
-        self.population[index].mutation_add_steiner(&mut self.random_generator);
-        self.build_mst(index);
+        self.child_buffer[index].mutation_add_steiner(&mut self.random_generator);
+        if self.child_buffer[index].minimum_spanning_tree.is_none() {
+            self.build_mst(index, Location::ChildBuffer);
+        }
     }
 
     fn mutate_remove_steiner(&mut self, index: usize) {
-        if self.population[index].minimum_spanning_tree.is_none() {
-            self.build_mst(index);
+        if self.child_buffer[index].minimum_spanning_tree.is_none() {
+            self.build_mst(index, Location::ChildBuffer);
         }
-        self.population[index].mutation_remove_steiner(&mut self.random_generator);
-        self.build_mst(index);
+        self.child_buffer[index].mutation_remove_steiner(&mut self.random_generator);
+        if self.child_buffer[index].minimum_spanning_tree.is_none() {
+            self.build_mst(index, Location::ChildBuffer);
+        }
     }
 
     fn mutate(&mut self, index: usize) {
@@ -528,21 +539,18 @@ impl<R: Rng> StOBGA<R> {
 
     fn step(&mut self) {
         let mut parents = Vec::new();
-        let mut children = Vec::new();
         for _ in 0..NUMBER_OFFSPRING {
             parents.push(self.tournament_select(5, false));
-            children.push(self.tournament_select(5, true));
         }
-        self.child_buffer.clear();
         for pair in parents.iter().as_slice().windows(2) {
             self.crossover(pair[0], pair[1]);
         }
-        for (child_index, population_index) in children.iter().enumerate() {
-            self.population[*population_index] = self.child_buffer[child_index].clone();
-            self.mutate(*population_index);
+        for index in 0..self.child_buffer.len() {
+            self.build_mst(index, Location::ChildBuffer);
+            self.mutate(index);
+            // self.population[*population_index] = self.child_buffer[child_index].clone();
         }
-        self.child_buffer.clear();
-
+        self.population.append(&mut self.child_buffer);
         self.population.sort_unstable_by(|i1, i2| {
             i1.minimum_spanning_tree
                 .as_ref()
@@ -597,22 +605,26 @@ impl<R: Rng> StOBGA<R> {
         length
     }
 
-    fn build_mst(&mut self, index: usize) {
+    fn build_mst(&mut self, index: usize, location : Location) {
         let mut graph = petgraph::graph::UnGraph::new_undirected();
-        let source_vertices = self.population[index]
+        let individual = match location {
+            Location::ChildBuffer => &self.child_buffer[index],
+            Location::Population => &self.population[index],
+        };
+        let source_vertices = individual
             .chromosome
             .steiner_points
             .iter()
             .map(|&p| p)
             .chain(
-                self.population[index]
+                individual
                     .chromosome
                     .included_corners
                     .iter()
-                    .map(|c| util::to_graph(self.population[index].problem.obstacle_corners[c])),
+                    .map(|c| util::to_graph(individual.problem.obstacle_corners[c])),
             )
             .chain(
-                self.population[index]
+                individual
                     .problem
                     .terminals
                     .iter()
@@ -650,14 +662,17 @@ impl<R: Rng> StOBGA<R> {
             total_weight: total_distance,
             graph: mst,
         };
-        self.population[index].minimum_spanning_tree = Some(mst);
+        match location {
+            Location::ChildBuffer => self.child_buffer[index].minimum_spanning_tree = Some(mst),
+            Location::Population => self.population[index].minimum_spanning_tree = Some(mst),
+        }
         self.function_evaluations += 1;
     }
 
     fn build_msts(&mut self) {
         for index in 0..self.population.len() {
             if self.population[index].minimum_spanning_tree.is_none() {
-                self.build_mst(index);
+                self.build_mst(index, Location::Population);
             }
         }
     }
