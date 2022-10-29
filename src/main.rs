@@ -289,7 +289,7 @@ impl<R: Rng> StOBGA<R> {
             }
         }
 
-        self.child_buffer.push(Individual {
+        self.population.push(Individual {
             chromosome: Chromosome {
                 steiner_points: steiner_points_1,
                 included_corners: obstacle_corners_1,
@@ -297,7 +297,7 @@ impl<R: Rng> StOBGA<R> {
             minimum_spanning_tree: None,
             problem: self.problem.clone(),
         });
-        self.child_buffer.push(Individual {
+        self.population.push(Individual {
             chromosome: Chromosome {
                 steiner_points: steiner_points_2,
                 included_corners: obstacle_corners_2,
@@ -308,30 +308,30 @@ impl<R: Rng> StOBGA<R> {
     }
 
     fn mutate_flip_move(&mut self, index: usize) {
-        self.child_buffer[index]
+        self.population[index]
             .mutation_flip_move(&mut self.random_generator, self.current_generation);
-        if self.child_buffer[index].minimum_spanning_tree.is_none() {
-            self.build_mst(index, Location::ChildBuffer);
+        if self.population[index].minimum_spanning_tree.is_none() {
+            self.build_mst(index, Location::Population);
         }
     }
 
     fn mutate_add_steiner(&mut self, index: usize) {
-        if self.child_buffer[index].minimum_spanning_tree.is_none() {
-            self.build_mst(index, Location::ChildBuffer);
+        if self.population[index].minimum_spanning_tree.is_none() {
+            self.build_mst(index, Location::Population);
         }
-        self.child_buffer[index].mutation_add_steiner(&mut self.random_generator);
-        if self.child_buffer[index].minimum_spanning_tree.is_none() {
-            self.build_mst(index, Location::ChildBuffer);
+        self.population[index].mutation_add_steiner(&mut self.random_generator);
+        if self.population[index].minimum_spanning_tree.is_none() {
+            self.build_mst(index, Location::Population);
         }
     }
 
     fn mutate_remove_steiner(&mut self, index: usize) {
-        if self.child_buffer[index].minimum_spanning_tree.is_none() {
-            self.build_mst(index, Location::ChildBuffer);
+        if self.population[index].minimum_spanning_tree.is_none() {
+            self.build_mst(index, Location::Population);
         }
-        self.child_buffer[index].mutation_remove_steiner(&mut self.random_generator);
-        if self.child_buffer[index].minimum_spanning_tree.is_none() {
-            self.build_mst(index, Location::ChildBuffer);
+        self.population[index].mutation_remove_steiner(&mut self.random_generator);
+        if self.population[index].minimum_spanning_tree.is_none() {
+            self.build_mst(index, Location::Population);
         }
     }
 
@@ -464,29 +464,23 @@ impl<R: Rng> StOBGA<R> {
             start_time: SystemTime::now(),
         };
         stobga.build_msts();
-        let mut parents = Vec::new();
-        let mut children = Vec::new();
         for _ in 0..(population_size - (t1 + t2 + t3)) {
-            parents.push(stobga.tournament_select(5, false));
-            children.push(stobga.tournament_select(5, true));
-        }
-        let mut save: Vec<Individual> = children
-            .iter()
-            .map(|i| stobga.population[*i].clone())
-            .collect();
-        for i in 0..(parents.len() / 2) {
-            stobga.crossover(parents[2 * i], parents[2 * i + 1]);
-        }
-        for (child_index, population_index) in children.iter().enumerate() {
-            stobga.population[*population_index].chromosome =
-                stobga.child_buffer[child_index].chromosome.clone();
-            stobga.population[*population_index].minimum_spanning_tree = None;
-            if stobga.population.len() + save.len() == POPULATION_SIZE {
+            let p1 = stobga.tournament_select(5, false);
+            let p2 = stobga.tournament_select(5, false);
+            stobga.crossover(p1, p2);
+            stobga.mutate(stobga.population.len()-1);
+            stobga.mutate(stobga.population.len()-2);
+            stobga.build_mst(stobga.population.len()-1, Location::Population);
+            stobga.build_mst(stobga.population.len()-2, Location::Population);
+            if stobga.population.len() >= 500 {
+                while stobga.population.len()>500 {
+                    stobga.population.pop();
+                }
                 break;
             }
         }
-        stobga.population.append(&mut save);
         stobga.child_buffer.clear();
+        stobga.build_msts();
         assert_eq!(stobga.population.len(), POPULATION_SIZE);
         stobga
     }
@@ -538,19 +532,21 @@ impl<R: Rng> StOBGA<R> {
     }
 
     fn step(&mut self) {
-        let mut parents = Vec::new();
+        let mut base = self.population.len();
         for _ in 0..NUMBER_OFFSPRING {
-            parents.push(self.tournament_select(5, false));
+            let p1 = self.tournament_select(5, false);
+            let p2 = self.tournament_select(5, false);
+            self.crossover(p1, p2);
+            self.mutate(base);
+            self.mutate(base+1);
+            base += 2;
         }
-        for pair in parents.iter().as_slice().windows(2) {
-            self.crossover(pair[0], pair[1]);
+        
+        let to_die = self.population.len() - POPULATION_SIZE;
+        for _ in 0..to_die {
+            let index = self.tournament_select(5, true);
+            self.population.swap_remove(index);
         }
-        for index in 0..self.child_buffer.len() {
-            self.build_mst(index, Location::ChildBuffer);
-            self.mutate(index);
-            // self.population[*population_index] = self.child_buffer[child_index].clone();
-        }
-        self.population.append(&mut self.child_buffer);
         self.population.sort_unstable_by(|i1, i2| {
             i1.minimum_spanning_tree
                 .as_ref()
@@ -559,6 +555,7 @@ impl<R: Rng> StOBGA<R> {
                 .total_cmp(&i2.minimum_spanning_tree.as_ref().unwrap().total_weight)
         });
         self.current_generation += 1;
+        // assert_eq!(self.population.len(), POPULATION_SIZE);
     }
 
     fn compute_distance(&self, from: OPoint, to: OPoint) -> f32 {
@@ -969,7 +966,7 @@ fn main() {
             .total_weight;
         if is_improvement_by_factor(
             loop_data.previous_best_weight, 
-            best_weight, 0.01/100.0) 
+            best_weight, 0.1/100.0) 
             || loop_data.state == LoopState::LastGeneration 
         {    
             loop_data.previous_best_weight = best_weight;
