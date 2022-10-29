@@ -66,11 +66,6 @@ struct SteinerProblem {
     average_terminal_distance: f32,
 }
 
-enum Location {
-    ChildBuffer,
-    Population
-}
-
 impl SteinerProblem {
     /// constructor taking a vector of terminals (Points) and a list of
     /// Obstacles as its arguments.
@@ -311,27 +306,27 @@ impl<R: Rng> StOBGA<R> {
         self.population[index]
             .mutation_flip_move(&mut self.random_generator, self.current_generation);
         if self.population[index].minimum_spanning_tree.is_none() {
-            self.build_mst(index, Location::Population);
+            self.build_mst(index);
         }
     }
 
     fn mutate_add_steiner(&mut self, index: usize) {
         if self.population[index].minimum_spanning_tree.is_none() {
-            self.build_mst(index, Location::Population);
+            self.build_mst(index);
         }
         self.population[index].mutation_add_steiner(&mut self.random_generator);
         if self.population[index].minimum_spanning_tree.is_none() {
-            self.build_mst(index, Location::Population);
+            self.build_mst(index);
         }
     }
 
     fn mutate_remove_steiner(&mut self, index: usize) {
         if self.population[index].minimum_spanning_tree.is_none() {
-            self.build_mst(index, Location::Population);
+            self.build_mst(index);
         }
         self.population[index].mutation_remove_steiner(&mut self.random_generator);
         if self.population[index].minimum_spanning_tree.is_none() {
-            self.build_mst(index, Location::Population);
+            self.build_mst(index);
         }
     }
 
@@ -470,8 +465,8 @@ impl<R: Rng> StOBGA<R> {
             stobga.crossover(p1, p2);
             stobga.mutate(stobga.population.len()-1);
             stobga.mutate(stobga.population.len()-2);
-            stobga.build_mst(stobga.population.len()-1, Location::Population);
-            stobga.build_mst(stobga.population.len()-2, Location::Population);
+            stobga.build_mst(stobga.population.len()-1);
+            stobga.build_mst(stobga.population.len()-2);
             if stobga.population.len() >= 500 {
                 while stobga.population.len()>500 {
                     stobga.population.pop();
@@ -533,7 +528,7 @@ impl<R: Rng> StOBGA<R> {
 
     fn step(&mut self) {
         let mut base = self.population.len();
-        for _ in 0..NUMBER_OFFSPRING {
+        for _ in 0..NUMBER_OFFSPRING/2 {
             let p1 = self.tournament_select(5, false);
             let p2 = self.tournament_select(5, false);
             self.crossover(p1, p2);
@@ -602,12 +597,9 @@ impl<R: Rng> StOBGA<R> {
         length
     }
 
-    fn build_mst(&mut self, index: usize, location : Location) {
+    fn build_mst(&mut self, index: usize) {
         let mut graph = petgraph::graph::UnGraph::new_undirected();
-        let individual = match location {
-            Location::ChildBuffer => &self.child_buffer[index],
-            Location::Population => &self.population[index],
-        };
+        let individual = &self.population[index];
         let source_vertices = individual
             .chromosome
             .steiner_points
@@ -659,17 +651,14 @@ impl<R: Rng> StOBGA<R> {
             total_weight: total_distance,
             graph: mst,
         };
-        match location {
-            Location::ChildBuffer => self.child_buffer[index].minimum_spanning_tree = Some(mst),
-            Location::Population => self.population[index].minimum_spanning_tree = Some(mst),
-        }
+        self.population[index].minimum_spanning_tree = Some(mst);
         self.function_evaluations += 1;
     }
 
     fn build_msts(&mut self) {
         for index in 0..self.population.len() {
             if self.population[index].minimum_spanning_tree.is_none() {
-                self.build_mst(index, Location::Population);
+                self.build_mst(index);
             }
         }
     }
@@ -966,7 +955,7 @@ fn main() {
             .total_weight;
         if is_improvement_by_factor(
             loop_data.previous_best_weight, 
-            best_weight, 0.1/100.0) 
+            best_weight, 0.01/100.0) 
             || loop_data.state == LoopState::LastGeneration 
         {    
             loop_data.previous_best_weight = best_weight;
