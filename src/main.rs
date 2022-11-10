@@ -19,7 +19,6 @@ use util::to_graph;
 use util::to_point;
 
 use std::collections::HashMap;
-use std::rc::Rc;
 use std::time::SystemTime;
 
 use crate::util::is_improvement_by_factor;
@@ -207,13 +206,12 @@ struct MinimumSpanningTree {
 /// Individuals can be mutated and crossed over to create new Individuals
 #[derive(Clone)]
 struct Individual {
-    problem: Rc<SteinerProblem>,
     chromosome: Chromosome,
     minimum_spanning_tree: Option<MinimumSpanningTree>,
 }
 
 struct StOBGA<R: Rng> {
-    problem: Rc<SteinerProblem>,
+    problem: SteinerProblem,
     population: Vec<Individual>,
     random_generator: R,
     current_generation: usize,
@@ -263,7 +261,7 @@ impl<R: Rng> StOBGA<R> {
             .included_corners
             .iter()
         {
-            let point = self.population[parent_1_index].problem.obstacle_corners[index];
+            let point = self.problem.obstacle_corners[index];
             if point.0 < random_x_value {
                 obstacle_corners_1.insert(index);
             } else {
@@ -276,7 +274,7 @@ impl<R: Rng> StOBGA<R> {
             .included_corners
             .iter()
         {
-            let point = self.population[parent_2_index].problem.obstacle_corners[index];
+            let point = self.problem.obstacle_corners[index];
             if point.0 > random_x_value {
                 obstacle_corners_1.insert(index);
             } else {
@@ -290,7 +288,6 @@ impl<R: Rng> StOBGA<R> {
                 included_corners: obstacle_corners_1,
             },
             minimum_spanning_tree: None,
-            problem: self.problem.clone(),
         });
         self.population.push(Individual {
             chromosome: Chromosome {
@@ -298,13 +295,12 @@ impl<R: Rng> StOBGA<R> {
                 included_corners: obstacle_corners_2,
             },
             minimum_spanning_tree: None,
-            problem: self.problem.clone(),
         });
     }
 
     fn mutate_flip_move(&mut self, index: usize) {
         self.population[index]
-            .mutation_flip_move(&mut self.random_generator, self.current_generation);
+            .mutation_flip_move(&self.problem, &mut self.random_generator, self.current_generation);
         if self.population[index].minimum_spanning_tree.is_none() {
             self.build_mst(index);
         }
@@ -314,7 +310,7 @@ impl<R: Rng> StOBGA<R> {
         if self.population[index].minimum_spanning_tree.is_none() {
             self.build_mst(index);
         }
-        self.population[index].mutation_add_steiner(&mut self.random_generator);
+        self.population[index].mutation_add_steiner(&self.problem,&mut self.random_generator);
         if self.population[index].minimum_spanning_tree.is_none() {
             self.build_mst(index);
         }
@@ -324,7 +320,7 @@ impl<R: Rng> StOBGA<R> {
         if self.population[index].minimum_spanning_tree.is_none() {
             self.build_mst(index);
         }
-        self.population[index].mutation_remove_steiner(&mut self.random_generator);
+        self.population[index].mutation_remove_steiner(&self.problem, &mut self.random_generator);
         if self.population[index].minimum_spanning_tree.is_none() {
             self.build_mst(index);
         }
@@ -386,7 +382,7 @@ impl<R: Rng> StOBGA<R> {
 
     fn new(
         mut rng: R,
-        problem: Rc<SteinerProblem>,
+        problem: SteinerProblem,
         population_size: usize,
         t1: usize,
         t2: usize,
@@ -395,7 +391,6 @@ impl<R: Rng> StOBGA<R> {
         let mut population = vec![];
         for _ in 0..t1 {
             population.push(Individual {
-                problem: Rc::clone(&problem),
                 chromosome: Chromosome {
                     steiner_points: problem.centroids.iter().map(|&p| to_graph(p)).collect(),
                     included_corners: BinaryCorners::new(),
@@ -420,7 +415,6 @@ impl<R: Rng> StOBGA<R> {
                 steiner_points.insert(to_graph((rng.sample(x_dist), rng.sample(y_dist))));
             }
             population.push(Individual {
-                problem: Rc::clone(&problem),
                 chromosome: Chromosome {
                     steiner_points: steiner_points,
                     included_corners: all_corners.clone(),
@@ -439,7 +433,6 @@ impl<R: Rng> StOBGA<R> {
             }
 
             population.push(Individual {
-                problem: Rc::clone(&problem),
                 chromosome: Chromosome {
                     steiner_points: IndexSet::new(),
                     included_corners: corners,
@@ -610,10 +603,10 @@ impl<R: Rng> StOBGA<R> {
                     .chromosome
                     .included_corners
                     .iter()
-                    .map(|c| util::to_graph(individual.problem.obstacle_corners[c])),
+                    .map(|c| util::to_graph(self.problem.obstacle_corners[c])),
             )
             .chain(
-                individual
+                self
                     .problem
                     .terminals
                     .iter()
@@ -665,7 +658,7 @@ impl<R: Rng> StOBGA<R> {
 }
 
 impl Individual {
-    fn mutation_remove_steiner<R: Rng>(&mut self, rng: &mut R) {
+    fn mutation_remove_steiner<R: Rng>(&mut self, problem : &SteinerProblem, rng: &mut R) {
         let mut candidate_steiner_points = Vec::new();
 
         let graph = &self.minimum_spanning_tree.as_ref().unwrap().graph;
@@ -681,7 +674,7 @@ impl Individual {
         }
         let mut candidate_corners = Vec::new();
         for index_corner in self.chromosome.included_corners.iter() {
-            let steiner_point = self.problem.obstacle_corners[index_corner];
+            let steiner_point = problem.obstacle_corners[index_corner];
             let id = graph
                 .node_indices()
                 .find(|id| graph[*id].0 == steiner_point.0 && graph[*id].1 == steiner_point.1)
@@ -718,7 +711,7 @@ impl Individual {
         self.minimum_spanning_tree = None;
     }
 
-    fn mutation_add_steiner<R: Rng>(&mut self, rng: &mut R) {
+    fn mutation_add_steiner<R: Rng>(&mut self, problem : &SteinerProblem, rng: &mut R) {
         let mut candidates = Vec::new();
         let graph = &self.minimum_spanning_tree.as_ref().unwrap().graph;
         for i1 in graph.node_indices() {
@@ -744,12 +737,12 @@ impl Individual {
         }
         if candidates.len() == 0 {
             // add random steiner point
-            let min_x = self.problem.bounds.min_x;
-            let max_x = self.problem.bounds.max_x;
-            let min_y = self.problem.bounds.min_y;
-            let max_y = self.problem.bounds.max_y;
+            let min_x = problem.bounds.min_x;
+            let max_x = problem.bounds.max_x;
+            let min_y = problem.bounds.min_y;
+            let max_y = problem.bounds.max_y;
             let mut new_steiner = (rng.gen_range(min_x..max_x), rng.gen_range(min_y..max_y));
-            while self.problem.coordinates_in_solid_obstacle(new_steiner) {
+            while problem.coordinates_in_solid_obstacle(new_steiner) {
                 new_steiner = (rng.gen_range(min_x..max_x), rng.gen_range(min_y..max_y));
             }
             self.chromosome.steiner_points.insert(to_graph(new_steiner));
@@ -763,22 +756,22 @@ impl Individual {
             let p2 = graph[random_triple.1];
             let p3 = graph[random_triple.2];
             let p4 = geometry::fermat_point(p1, p2, p3, EPSILON);
-            if !self.problem.coordinates_in_solid_obstacle(p4) {
+            if !problem.coordinates_in_solid_obstacle(p4) {
                 self.chromosome.steiner_points.insert(to_graph(p4));
             }
         }
         self.minimum_spanning_tree = None;
     }
 
-    fn mutation_flip_move<R: Rng>(&mut self, rng: &mut R, generation: usize) {
+    fn mutation_flip_move<R: Rng>(&mut self, problem : &SteinerProblem, rng: &mut R, generation: usize) {
         let s = self.chromosome.steiner_points.len();
-        let k = self.problem.obstacle_corners.len();
+        let k = problem.obstacle_corners.len();
         let p_gene = if s + k == 0 {
             1.0
         } else {
             1.0 / ((s + k) as f32)
         };
-        let m_range = self.problem.average_terminal_distance
+        let m_range = problem.average_terminal_distance
             * f32::max(1.0 - (generation as f32) / 1000.0, M_RANGE_MIN);
         let mut to_remove = Vec::new();
         let mut to_add = Vec::new();
@@ -924,7 +917,7 @@ fn main() {
 
     let rng = rand_pcg::Pcg32::seed_from_u64(seed);
     let problem = SteinerProblem::new(terminals.clone(), obstacles.clone());
-    let mut stobga = StOBGA::new(rng, Rc::new(problem), POPULATION_SIZE, 1, 50, 50);
+    let mut stobga = StOBGA::new(rng, problem, POPULATION_SIZE, 1, 50, 50);
 
     println!(
         "generation;average;best;chromosome;function_evaluations;runtime in seconds;seed={}",
