@@ -4,7 +4,7 @@ use std::f32::INFINITY;
 
 use itertools::Itertools;
 
-use crate::Point;
+use crate::{Point, EPSILON};
 
 #[derive(Debug, Clone)]
 pub struct Bounds {
@@ -88,8 +88,15 @@ pub fn segment_polygon_intersection(
         let intersection =
             segment_segment_intersection(x1, y1, x2, y2, x3, y3, x4, y4, point_overlap);
         if intersection.is_some() {
-            if !result.contains(&intersection.unwrap()) {
-                result.push(intersection.unwrap())
+            let new_intersection = intersection.unwrap();
+            let mut flag = true;
+            for intersection in result.iter() {
+                if euclidean_distance(new_intersection, *intersection) < EPSILON {
+                    flag = false;
+                }
+            }
+            if flag {
+                result.push(new_intersection);
             }
         }
     }

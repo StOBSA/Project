@@ -1001,7 +1001,7 @@ mod test {
     use crate::{
         geometry::{self, *},
         graph::{self, Graph},
-        util::{self}, corners::BinaryCorners,
+        util::{self}, corners::BinaryCorners, Obstacle,
     };
     use itertools::Itertools;
     use petgraph::{data::FromElements, prelude::UnGraph};
@@ -1328,5 +1328,31 @@ mod test {
         corners.remove(&0);
         corners.remove(&1);
         assert_eq!(corners.included, 4);
+    }
+    
+    #[test]
+    fn problematic_intersection() {
+        let obstacle = Obstacle {
+            weight : 4.0,
+            bounds : Bounds::default(),
+            points : 
+            vec![
+                (0.116,0.39),
+                (0.096,0.29),
+                (0.084,0.206),
+                (0.104,0.048),
+                (0.31,0.018),
+                (0.542,0.072),
+                (0.5,0.192),
+                (0.338,0.144),
+                (0.256,0.13),
+                (0.208,0.158),
+                (0.208,0.27),
+            ]
+        }.compute_bounds();
+        let start = (0.182,0.126);
+        let end = (0.31,0.018);
+        let distance = intersection_length(start.0, start.1, end.0, end.1, &obstacle.points, &obstacle.bounds);
+        assert_eq!(distance, euclidean_distance(start, end));
     }
 }
