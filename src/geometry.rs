@@ -89,23 +89,39 @@ pub fn segment_polygon_intersection(
             segment_segment_intersection(x1, y1, x2, y2, x3, y3, x4, y4, point_overlap);
         if intersection.is_some() {
             let new_intersection = intersection.unwrap();
-            let mut flag = true;
+            let mut add_new_intersection = true;
             for intersection in result.iter() {
                 if euclidean_distance(new_intersection, *intersection) < EPSILON {
-                    flag = false;
+                    add_new_intersection = false;
+                    break;
                 }
             }
-            if flag {
+            if add_new_intersection {
                 result.push(new_intersection);
             }
         }
     }
-    if result.contains(&(x1, y1)) {
-        result.remove(result.iter().position(|i| i.0 == x1 && i.1 == y1).unwrap());
+    let mut indices_to_delete = Vec::new();
+    for index in 0..result.len() {
+        if euclidean_distance(result[index], (x1,y1)) < EPSILON {
+            indices_to_delete.push(index);
+            continue;
+        }
+        if euclidean_distance(result[index], (x2,y2)) < EPSILON {
+            indices_to_delete.push(index);
+            continue;
+        }
     }
-    if result.contains(&(x2, y2)) {
-        result.remove(result.iter().position(|i| i.0 == x2 && i.1 == y2).unwrap());
+    indices_to_delete.reverse();
+    for index in indices_to_delete {
+        result.remove(index);
     }
+    // if result.contains(&(x1, y1)) {
+    //     result.remove(result.iter().position(|i| i.0 == x1 && i.1 == y1).unwrap());
+    // }
+    // if result.contains(&(x2, y2)) {
+    //     result.remove(result.iter().position(|i| i.0 == x2 && i.1 == y2).unwrap());
+    // }
     result
         .iter()
         .sorted_by(|&&a, &&b| {

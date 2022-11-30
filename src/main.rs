@@ -1001,7 +1001,7 @@ mod test {
     use crate::{
         geometry::{self, *},
         graph::{self, Graph},
-        util::{self}, corners::BinaryCorners, Obstacle,
+        util::{self}, corners::BinaryCorners, Obstacle, INF,
     };
     use itertools::Itertools;
     use petgraph::{data::FromElements, prelude::UnGraph};
@@ -1354,5 +1354,62 @@ mod test {
         let end = (0.31,0.018);
         let distance = intersection_length(start.0, start.1, end.0, end.1, &obstacle.points, &obstacle.bounds);
         assert_eq!(distance, euclidean_distance(start, end));
+    }
+
+    #[test]
+    fn problematic_lengths() {
+        let obstacle1 = Obstacle {
+            weight : INF,
+            bounds : Bounds::default(),
+            points : vec![
+                (0.83,1.33),
+                (2.7,1.19),
+                (0.91,0.36),
+                (8.16,1.31),
+                (6.43,3.06),
+            ]
+        }.compute_bounds();
+
+        let obstacle2 = Obstacle {
+            weight : INF,
+            bounds : Bounds::default(),
+            points : vec![
+                (0.56,1.27),
+                (2.16,1.09),
+                (0.56,0.33),
+                (1.14,0.88),
+            ]
+        }.compute_bounds();
+
+        let obstacle3 = Obstacle {
+            weight : INF,
+            bounds : Bounds::default(),
+            points : vec![
+                (0.19,1.21),
+                (0.82,0.86),
+                (0.18,0.32),
+            ]
+        }.compute_bounds();
+
+        let steiner1 = (0.56,0.33);
+        let steiner2 = (0.82,0.86);
+        let steiner3 = (0.56,1.27);
+        
+        let terminal1 = (2.89,0.25);
+        let terminal2 = (2.43,2.08);
+
+        let d1 = euclidean_distance(steiner1,  steiner2);
+        let d2 = euclidean_distance(steiner2,  steiner3);
+        let d3 = euclidean_distance(terminal1, steiner1);
+        let d4 = euclidean_distance(terminal2, steiner2);
+
+        let convenience = |v1:(f32,f32), v2:(f32,f32), p:Obstacle| geometry::intersection_length(v1.0, v1.1, v2.0, v2.1, &p.points, &p.bounds);
+        assert_eq!(convenience(steiner1, steiner2, obstacle1), 0.0);
+        assert_eq!(convenience(steiner1, steiner2, obstacle2), 0.0);
+        assert_eq!(convenience(
+            steiner1, steiner2, obstacle3), 0.0);
+        // assert_eq!(geometry::intersection_length(steiner1.0, steiner1.1, steiner2.0, steiner2.1, &obstacle3.points, &obstacle3.bounds), 0.0);
+        // assert_eq!(d1+d2+d3+d4,0.0);
+
     }
 }
