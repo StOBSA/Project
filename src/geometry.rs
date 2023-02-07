@@ -193,14 +193,18 @@ pub fn point_in_polygon(x1: f32, y1: f32, polygon: &[Point], bounds: &Bounds) ->
     );
     let (mut left, mut right) = (0, 0);
     for cut in intersections {
-        if cut.0 < x1 {
+        if cut.0 < x1 && significantly_different(cut.0, x1) {
             left += 1;
         }
-        if cut.0 > x1 {
+        if cut.0 > x1 && significantly_different(cut.0, x1) {
             right += 1;
         }
     }
     return left % 2 == 1 && right % 2 == 1;
+}
+
+fn significantly_different(f1:f32, f2:f32) -> bool {
+    (f1-f2).abs() > EPSILON
 }
 
 pub fn intersection_length(
@@ -216,11 +220,11 @@ pub fn intersection_length(
     cuts.insert(0, (x1, y1));
     let mut distance = 0.0;
     for i in 0..cuts.len() - 1 {
-        let (x2, y2) = (cuts[i].0, cuts[i].1);
-        let (x3, y3) = (cuts[i + 1].0, cuts[i + 1].1);
-        let (mx, my) = middle(x2, y2, x3, y3);
+        let (x3, y3) = (cuts[i].0, cuts[i].1);
+        let (x4, y4) = (cuts[i + 1].0, cuts[i + 1].1);
+        let (mx, my) = middle(x3, y3, x4, y4);
         if point_in_polygon(mx, my, polygon, bounds) {
-            distance += euclidean_distance((x2, y2), (x3, y3));
+            distance += euclidean_distance((x3, y3), (x4, y4));
         }
     }
     return distance;
