@@ -387,64 +387,22 @@ impl<R: Rng> StOBGA<R> {
     }
 
     fn new(
-        mut rng: R,
+        rng: R,
         problem: SteinerProblem,
         population_size: usize,
         t1: usize,
-        t2: usize,
-        t3: usize,
     ) -> Self {
         let mut population = vec![];
+        let k = problem.obstacle_corners.len();
+        let all_corners = (0..k).collect::<Corners>();
         for _ in 0..t1 {
             population.push(Individual {
                 chromosome: Chromosome {
                     steiner_points: problem.centroids.iter().map(|&p| to_graph(p)).collect(),
-                    included_corners: Corners::new(),
-                },
-                minimum_spanning_tree: Option::None,
-            });
-        }
-
-        let k = problem.obstacle_corners.len();
-        let n = problem.terminals.len();
-        let min_x = problem.bounds.min_x;
-        let max_x = problem.bounds.max_x;
-        let min_y = problem.bounds.min_y;
-        let max_y = problem.bounds.max_y;
-        let x_dist = Uniform::new(min_x, max_x);
-        let y_dist = Uniform::new(min_y, max_y);
-        let all_corners = (0..k).collect::<Corners>();
-        for _ in 0..t2 {
-            let mut steiner_points = IndexSet::new();
-            let r = rng.gen_range(0..(n + k));
-            for _ in 0..r {
-                steiner_points.insert(to_graph((rng.sample(x_dist), rng.sample(y_dist))));
-            }
-            population.push(Individual {
-                chromosome: Chromosome {
-                    steiner_points: steiner_points,
                     included_corners: all_corners.clone(),
                 },
                 minimum_spanning_tree: Option::None,
             });
-        }
-
-        for _ in 0..t3 {
-            let distribution = Uniform::new(0, k + 1);
-            let amount = rng.sample(distribution);
-            let draws = rand::seq::index::sample(&mut rng, k, amount);
-            let mut corners = Corners::new();
-            for elem in draws {
-                corners.insert(elem);
-            }
-
-            population.push(Individual {
-                chromosome: Chromosome {
-                    steiner_points: IndexSet::new(),
-                    included_corners: corners,
-                },
-                minimum_spanning_tree: Option::None,
-            })
         }
 
         let mut stobga = StOBGA {
@@ -458,7 +416,7 @@ impl<R: Rng> StOBGA<R> {
             start_time: SystemTime::now(),
         };
         stobga.build_msts();
-        for _ in 0..(population_size - (t1 + t2 + t3)) {
+        for _ in 0..(population_size - (t1)) {
             let p1 = stobga.tournament_select(5, false);
             let p2 = stobga.tournament_select(5, false);
             stobga.crossover(p1, p2);
@@ -466,8 +424,8 @@ impl<R: Rng> StOBGA<R> {
             stobga.mutate(stobga.population.len() - 2);
             stobga.build_mst(stobga.population.len() - 1);
             stobga.build_mst(stobga.population.len() - 2);
-            if stobga.population.len() >= 500 {
-                while stobga.population.len() > 500 {
+            if stobga.population.len() >= POPULATION_SIZE {
+                while stobga.population.len() > POPULATION_SIZE {
                     stobga.population.pop();
                 }
                 break;
@@ -959,7 +917,7 @@ fn main() {
 
     let rng = rand_pcg::Pcg32::seed_from_u64(seed);
     let problem = SteinerProblem::new(terminals.clone(), obstacles.clone());
-    let mut stobga = StOBGA::new(rng, problem, POPULATION_SIZE, 1, 50, 50);
+    let mut stobga = StOBGA::new(rng, problem, POPULATION_SIZE, POPULATION_SIZE);
 
     println!(
         "generation§population average§best§chromosome§function evaluations§runtime in seconds§svg§seed={}",
