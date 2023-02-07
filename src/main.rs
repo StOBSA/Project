@@ -97,7 +97,7 @@ impl SteinerProblem {
             ]);
         }
         for [a, b, c] in triangles {
-            centroids.push(geometry::centroid(a, b, c));
+            centroids.push(fermat_point(a, b, c, EPSILON));
         }
 
         let mut bounds = Bounds {
