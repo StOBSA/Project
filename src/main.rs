@@ -224,6 +224,198 @@ struct StOBGA<R: Rng> {
     start_time: SystemTime,
 }
 
+struct StOBSA<R: Rng> {
+    problem: SteinerProblem,
+    solution: Individual,
+    random_generator: R,
+    function_evaluations: u64,
+    edge_db: HashMap<(OPoint, OPoint), f32>,
+    start_time: SystemTime,
+}
+
+impl<R: Rng> StOBSA<R> {
+    fn mutate_flip_move(&mut self) {
+        // todo!("change generation to be meaningful or leave it out.");
+        self.solution.mutation_flip_move(&self.problem, &mut self.random_generator, 0);
+    }
+
+    fn mutate_add_steiner(&mut self) {
+        self.solution.mutation_add_steiner(&self.problem, &mut self.random_generator)
+    }
+
+    fn mutate_remove_steiner(&mut self) {
+        self.solution.mutation_remove_steiner(&self.problem, &mut self.random_generator)
+    }
+
+    fn mutate(&mut self) {
+        let p_flip_move = 1.0/3.0;
+        if self.random_generator.gen_bool(p_flip_move as f64) {
+            self.mutate_flip_move();
+        } else {
+            if self.random_generator.gen_bool(0.5) {
+                self.mutate_add_steiner();
+            } else {
+                self.mutate_remove_steiner();
+            }
+        }
+    }
+
+    fn compute_distance(&self, from: OPoint, to: OPoint) -> f32 {
+        let p1 = to_point(from);
+        let p2 = to_point(to);
+        let mut length = geometry::euclidean_distance(p1, p2);
+        let line_bounds = Bounds {
+            min_x: p1.0.min(p2.0),
+            min_y: p1.1.min(p2.1),
+            max_x: p1.0.max(p2.0),
+            max_y: p1.1.max(p2.1),
+        };
+        for obstacle in &self.problem.obstacles {
+            let bounds = &obstacle.bounds;
+            if overlap(
+                line_bounds.min_x,
+                line_bounds.min_y,
+                line_bounds.max_x,
+                line_bounds.max_y,
+                bounds.min_x,
+                bounds.min_y,
+                bounds.max_x,
+                bounds.max_y,
+            ) {
+                let intersection_len = geometry::intersection_length(
+                    *from.0,
+                    *from.1,
+                    *to.0,
+                    *to.1,
+                    &obstacle.points,
+                    &obstacle.bounds,
+                );
+                if intersection_len > 0.0 {
+                    if obstacle.weight == INF {
+                        length = INF;
+                        break;
+                    } else {
+                        length -= intersection_len;
+                        length += intersection_len * obstacle.weight;
+                    }
+                }
+            }
+        }
+        length
+    }
+
+    fn build_mst(&mut self) {
+        let mut graph = petgraph::graph::UnGraph::new_undirected();
+        let individual = &self.solution;
+        let source_vertices = individual
+            .chromosome
+            .steiner_points
+            .iter()
+            .map(|&p| p)
+            .chain(
+                individual
+                    .chromosome
+                    .included_corners
+                    .iter()
+                    .map(|c| util::to_graph(self.problem.obstacle_corners[c])),
+            )
+            .chain(self.problem.terminals.iter().map(|p| to_graph(*p)));
+        // let source_vertices = source_vertices.collect_vec();
+        for vertex in source_vertices.clone() {
+            graph.add_node(to_point(vertex));
+        }
+        for pair in source_vertices.enumerate().combinations(2) {
+            let (i1, t1) = pair[0];
+            let (i2, t2) = pair[1];
+            // let length = self.get_distance(t1, t2);
+            let length = if let Some(&x) = self.edge_db.get(&(t1, t2)) {
+                x
+            } else if let Some(&x) = self.edge_db.get(&(t2, t1)) {
+                x
+            } else {
+                let d = self.compute_distance(t1, t2);
+                self.edge_db.insert((t1, t2), d);
+                d
+            };
+            graph.add_edge(
+                petgraph::graph::NodeIndex::new(i1),
+                petgraph::graph::NodeIndex::new(i2),
+                length,
+            );
+        }
+
+        let mst = petgraph::graph::UnGraph::<_, _>::from_elements(
+            petgraph::algo::min_spanning_tree(&graph),
+        );
+        let total_distance = mst.edge_weights().sum::<f32>();
+        let mst = MinimumSpanningTree {
+            total_weight: total_distance,
+            graph: mst,
+        };
+        self.solution.minimum_spanning_tree = Some(mst);
+        self.function_evaluations += 1;
+    }
+
+    fn new(
+        mut rng: R,
+        problem: SteinerProblem,
+    ) -> Self {
+        let mut stobsa = StOBSA {
+            problem,
+            random_generator: rng,
+            edge_db: HashMap::new(),
+            function_evaluations: 0,
+            start_time: SystemTime::now(),
+            solution: Individual { chromosome: Chromosome { steiner_points: IndexSet::new(), included_corners: Corners::new() }, minimum_spanning_tree: None},
+        };
+        stobsa.build_mst();
+        stobsa
+    }
+
+    fn instance_to_svg(& self) -> String {
+        let scaling_factor = 1000.0;
+        let move_y = self.problem.bounds.max_y*scaling_factor;
+        let instance = &self.solution;
+        let mut result = format!("<svg width='{}px' height='{}px'>", self.problem.bounds.max_x*scaling_factor, self.problem.bounds.max_y*scaling_factor).to_string();
+        for obstacle in &self.problem.obstacles {
+            let mut svg = "<polygon style='fill:red' points='".to_string();
+            for corner in &obstacle.points {
+                svg = format!("{} {},{}", svg, corner.0*scaling_factor, -corner.1*scaling_factor + move_y);
+            }
+            svg = format!("{}'/>", svg);
+            result = format!("{} {}", result, svg);
+        }
+        let graph = &instance.minimum_spanning_tree.as_ref().unwrap().graph;
+        for edge in graph.edge_references() {
+            let from = graph[edge.source()];
+            let to = graph[edge.target()];
+            result = format!("{}<line x1='{}' y1='{}' x2='{}' y2='{}' style='stroke:black;stroke-width:2px'/>", result, from.0*scaling_factor, -from.1*scaling_factor + move_y, to.0*scaling_factor, -to.1*scaling_factor + move_y);
+        }
+        for steiner_point in instance.chromosome.steiner_points.iter() {
+            result = format!("{} <circle cx='{}' cy='{}' r='10' fill='green'/>", result, steiner_point.0*scaling_factor, -steiner_point.1*scaling_factor + move_y);
+        }
+        for corner in instance.chromosome.included_corners.iter() {
+            let steiner_point = self.problem.obstacle_corners[corner];
+            result = format!("{} <circle cx='{}' cy='{}' r='10' fill='grey'/>", result, steiner_point.0*scaling_factor, -steiner_point.1*scaling_factor + move_y);
+        }
+        for terminal in self.problem.terminals.iter() {
+            result = format!("{} <circle cx='{}' cy='{}' r='10' fill='blue'/>", result, terminal.0*scaling_factor, -terminal.1*scaling_factor + move_y);
+        }
+        format!("{}</svg>", result)
+    }
+
+    fn step(&mut self) {
+        let old_chromosome = self.solution.chromosome.clone();
+        let old_mst = self.solution.minimum_spanning_tree.as_ref().unwrap().clone();
+        self.mutate();
+        self.build_mst();
+        if old_mst.total_weight < self.solution.minimum_spanning_tree.as_ref().unwrap().total_weight {
+            self.solution.chromosome = old_chromosome;
+            self.solution.minimum_spanning_tree = Some(old_mst);
+        }
+    }
+}
+
 impl<R: Rng> StOBGA<R> {
     fn crossover(&mut self, parent_1_index: usize, parent_2_index: usize) {
         let min_x = self.problem.bounds.min_x;
@@ -959,13 +1151,13 @@ fn main() {
 
     let rng = rand_pcg::Pcg32::seed_from_u64(seed);
     let problem = SteinerProblem::new(terminals.clone(), obstacles.clone());
-    let mut stobga = StOBGA::new(rng, problem, POPULATION_SIZE, 1, 50, 50);
+    let mut stobsa = StOBSA::new(rng, problem);
+    stobsa.build_mst();
 
     println!(
         "generation§population average§best§chromosome§function evaluations§runtime in seconds§svg§seed={}",
         seed
     );
-    stobga.build_msts();
     #[derive(PartialEq)]
     enum LoopState {
         Running,
@@ -982,12 +1174,12 @@ fn main() {
         streak_length: 0,
     };
     loop {
-        stobga.step();
+        stobsa.step();
         if loop_data.state == LoopState::LastGeneration {
-            stobga.finalize();
+            // stobsa.finalize();
         }
         let best = 0;
-        let best_weight = stobga.population[best]
+        let best_weight = stobsa.solution
             .minimum_spanning_tree
             .as_ref()
             .unwrap()
@@ -998,31 +1190,21 @@ fn main() {
             loop_data.previous_best_weight = best_weight;
             loop_data.streak_length = 0;
             println!(
-                "{}§{}§{}§{:?}§{}§{}§{}",
-                stobga.current_generation,
+                "{}§{}§{:?}§{}§{}",
+                stobsa.function_evaluations,
                 {
-                    util::average_from_iterator(stobga.population.iter().map(|individual| {
-                        individual
-                            .minimum_spanning_tree
-                            .as_ref()
-                            .unwrap()
-                            .total_weight
-                    }))
-                },
-                {
-                    stobga.population[best]
+                    stobsa.solution
                         .minimum_spanning_tree
                         .as_ref()
                         .unwrap()
                         .total_weight
                 },
-                stobga.population[best].chromosome,
-                stobga.function_evaluations,
-                match SystemTime::now().duration_since(stobga.start_time) {
+                stobsa.solution.chromosome,
+                match SystemTime::now().duration_since(stobsa.start_time) {
                     Ok(s) => format!("{}", s.as_secs_f32()),
                     Err(_) => format!("NA"),
                 },
-                stobga.instance_to_svg(0)
+                stobsa.instance_to_svg()
             );
         } else {
             loop_data.streak_length += 1
