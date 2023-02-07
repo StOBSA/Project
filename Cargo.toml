@@ -2,7 +2,6 @@
 name = "stobga"
 version = "0.2.0"
 edition = "2021"
-
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
@@ -14,4 +13,4 @@ itertools     = "0.10.3" # simplifications for iterations
 petgraph      = "0.6.2"  # Graph library used to compute MST
 indexmap      = "1.9.1"  # an ordered hashset
 ordered-float = "3.0.0"  # implements hashing on float values
-rug           = "1.17.0"
+#rug           = "1.17.0"
