@@ -744,30 +744,30 @@ impl Individual {
     }
 
     fn mutation_add_steiner<R: Rng>(&mut self, problem: &SteinerProblem, rng: &mut R) {
-        let mut candidates = Vec::new();
-        let graph = &self.minimum_spanning_tree.as_ref().unwrap().graph;
-        for i1 in graph.node_indices() {
-            let connections = graph.edges(i1);
-            let c1 = graph[i1];
-            let v1 = nalgebra::Vector2::new(c1.0, c1.1);
-            for edge in connections.combinations(2) {
-                let i2 = edge[0].target();
-                let i3 = edge[1].target();
-                let c2 = graph[i2];
-                let c3 = graph[i3];
-                let v2 = nalgebra::Vector2::new(c2.0, c2.1);
-                let v3 = nalgebra::Vector2::new(c3.0, c3.1);
-                let v12 = v2 - v1;
-                let v13 = v3 - v1;
-                let dot = v12.dot(&v13);
-                let den = v12.norm() * v13.norm();
-                let angle = (dot / den).acos();
-                if angle < geometry::RADIANS_120_DEGREE {
-                    candidates.push((i1, i2, i3));
-                }
-            }
-        }
-        if candidates.len() == 0 {
+        // let mut candidates = Vec::new();
+        // let graph = &self.minimum_spanning_tree.as_ref().unwrap().graph;
+        // for i1 in graph.node_indices() {
+        //     let connections = graph.edges(i1);
+        //     let c1 = graph[i1];
+        //     let v1 = nalgebra::Vector2::new(c1.0, c1.1);
+        //     for edge in connections.combinations(2) {
+        //         let i2 = edge[0].target();
+        //         let i3 = edge[1].target();
+        //         let c2 = graph[i2];
+        //         let c3 = graph[i3];
+        //         let v2 = nalgebra::Vector2::new(c2.0, c2.1);
+        //         let v3 = nalgebra::Vector2::new(c3.0, c3.1);
+        //         let v12 = v2 - v1;
+        //         let v13 = v3 - v1;
+        //         let dot = v12.dot(&v13);
+        //         let den = v12.norm() * v13.norm();
+        //         let angle = (dot / den).acos();
+        //         if angle < geometry::RADIANS_120_DEGREE {
+        //             candidates.push((i1, i2, i3));
+        //         }
+        //     }
+        // }
+        // if candidates.len() == 0 {
             // add random steiner point
             let min_x = problem.bounds.min_x;
             let max_x = problem.bounds.max_x;
@@ -778,25 +778,25 @@ impl Individual {
                 new_steiner = (rng.gen_range(min_x..max_x), rng.gen_range(min_y..max_y));
             }
             self.chromosome.steiner_points.insert(to_graph(new_steiner));
-        } else {
-            let random_triple = candidates[if candidates.len() > 1 {
-                rng.gen_range(0..candidates.len())
-            } else {
-                0
-            }];
-            let p1 = graph[random_triple.0];
-            let p2 = graph[random_triple.1];
-            let p3 = graph[random_triple.2];
-            let p4 = geometry::fermat_point(p1, p2, p3, EPSILON);
-            if !problem.coordinates_in_solid_obstacle(p4) {
-                if match self.chromosome.steiner_points.iter().map(|&s| OrderedFloat::from(euclidean_distance(to_point(s), p4))).min() {
-                    Some(OrderedFloat(x)) => x > 1e-2,
-                    None => true,
-                } {
-                    self.chromosome.steiner_points.insert(to_graph(p4));
-                }
-            }
-        }
+        // } else {
+            // let random_triple = candidates[if candidates.len() > 1 {
+            //     rng.gen_range(0..candidates.len())
+            // } else {
+            //     0
+            // }];
+            // let p1 = graph[random_triple.0];
+            // let p2 = graph[random_triple.1];
+            // let p3 = graph[random_triple.2];
+            // let p4 = geometry::fermat_point(p1, p2, p3, EPSILON);
+            // if !problem.coordinates_in_solid_obstacle(p4) {
+            //     if match self.chromosome.steiner_points.iter().map(|&s| OrderedFloat::from(euclidean_distance(to_point(s), p4))).min() {
+            //         Some(OrderedFloat(x)) => x > 1e-2,
+            //         None => true,
+            //     } {
+            //         self.chromosome.steiner_points.insert(to_graph(p4));
+            //     }
+            // }
+        // }
         self.minimum_spanning_tree = None;
     }
 
