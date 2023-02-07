@@ -322,11 +322,11 @@ impl<R: Rng> StOBGA<R> {
         }
     }
 
-    fn mutate_remove_steiner(&mut self, index: usize) {
+    fn _mutate_remove_steiner(&mut self, index: usize) {
         if self.population[index].minimum_spanning_tree.is_none() {
             self.build_mst(index);
         }
-        self.population[index].mutation_remove_steiner(&self.problem, &mut self.random_generator);
+        // self.population[index].mutation_remove_steiner(&self.problem, &mut self.random_generator);
         if self.population[index].minimum_spanning_tree.is_none() {
             self.build_mst(index);
         }
@@ -340,11 +340,11 @@ impl<R: Rng> StOBGA<R> {
         if self.random_generator.gen_bool(p_flip_move as f64) {
             self.mutate_flip_move(index);
         } else {
-            if self.random_generator.gen_bool(0.5) {
+            // if self.random_generator.gen_bool(0.5) {
                 self.mutate_add_steiner(index);
-            } else {
-                self.mutate_remove_steiner(index);
-            }
+            // } else {
+                // self.mutate_remove_steiner(index);
+            // }
         }
     }
 
@@ -690,7 +690,7 @@ impl<R: Rng> StOBGA<R> {
 }
 
 impl Individual {
-    fn mutation_remove_steiner<R: Rng>(&mut self, problem: &SteinerProblem, rng: &mut R) {
+    fn _mutation_remove_steiner<R: Rng>(&mut self, problem: &SteinerProblem, rng: &mut R) {
         let mut candidate_steiner_points = Vec::new();
 
         let graph = &self.minimum_spanning_tree.as_ref().unwrap().graph;
