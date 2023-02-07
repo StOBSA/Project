@@ -959,7 +959,7 @@ fn main() {
 
     let rng = rand_pcg::Pcg32::seed_from_u64(seed);
     let problem = SteinerProblem::new(terminals.clone(), obstacles.clone());
-    let mut stobga = StOBGA::new(rng, problem, POPULATION_SIZE, 1, 50, 50);
+    let mut stobga = StOBGA::new(rng, problem, POPULATION_SIZE, 0, 500, 0);
 
     println!(
         "generation§population average§best§chromosome§function evaluations§runtime in seconds§svg§seed={}",
