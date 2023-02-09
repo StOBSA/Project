@@ -450,9 +450,9 @@ impl<R: Rng> StOBSA<R> {
     }
 
     fn temperature(&mut self) -> f32 {
-        if self.iterations_at_current_temperature >= 3 {
+        if self.iterations_at_current_temperature >= 10 {
             self.iterations_at_current_temperature = 0;
-            self.temperature *= 0.9;
+            self.temperature -= 0.01;
         }
         self.temperature
     }
