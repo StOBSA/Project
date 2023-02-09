@@ -43,12 +43,12 @@ const INF: f32 = 1e10;
 const EPSILON: f32 = 1e-6;
 /// amount of generations the algorithm continues whilst not finding
 /// a better individual before ending
-const RECESSION_DURATION: usize = 500;
+const RECESSION_DURATION: usize = 119500;
 
 /// represents a Steiner Problem instance, consisting of terminals, obstacles
 /// and their corners, the centroids obtained through Delaunay triangulation,
 /// bounds and the average distance between terminals
-struct SteinerProblem {
+struct EstpoInstance {
     /// a list of all the terminals to be connected
     terminals: Vec<Point>,
     /// a list of all the obstacles present on the plane
@@ -65,7 +65,7 @@ struct SteinerProblem {
     average_terminal_distance: f32,
 }
 
-impl SteinerProblem {
+impl EstpoInstance {
     /// constructor taking a vector of terminals (Points) and a list of
     /// Obstacles as its arguments.
     fn new(terminals: Vec<Point>, obstacles: Vec<Obstacle>) -> Self {
@@ -130,7 +130,7 @@ impl SteinerProblem {
         }
         average_terminal_distance /= counter as f32;
 
-        SteinerProblem {
+        EstpoInstance {
             terminals,
             obstacles,
             obstacle_corners,
@@ -214,7 +214,7 @@ struct Individual {
 }
 
 struct StOBGA<R: Rng> {
-    problem: SteinerProblem,
+    problem: EstpoInstance,
     population: Vec<Individual>,
     random_generator: R,
     current_generation: usize,
@@ -225,9 +225,11 @@ struct StOBGA<R: Rng> {
 }
 
 struct StOBSA<R: Rng> {
-    problem: SteinerProblem,
+    problem: EstpoInstance,
     solution: Individual,
+    best_so_far: Option<Individual>,
     random_generator: R,
+    iteration: u64,
     function_evaluations: u64,
     edge_db: HashMap<(OPoint, OPoint), f32>,
     start_time: SystemTime,
@@ -236,19 +238,22 @@ struct StOBSA<R: Rng> {
 impl<R: Rng> StOBSA<R> {
     fn mutate_flip_move(&mut self) {
         // todo!("change generation to be meaningful or leave it out.");
-        self.solution.mutation_flip_move(&self.problem, &mut self.random_generator, 0);
+        self.solution
+            .mutation_flip_move(&self.problem, &mut self.random_generator, 0);
     }
 
     fn mutate_add_steiner(&mut self) {
-        self.solution.mutation_add_steiner(&self.problem, &mut self.random_generator)
+        self.solution
+            .mutation_add_steiner(&self.problem, &mut self.random_generator)
     }
 
     fn mutate_remove_steiner(&mut self) {
-        self.solution.mutation_remove_steiner(&self.problem, &mut self.random_generator)
+        self.solution
+            .mutation_remove_steiner(&self.problem, &mut self.random_generator)
     }
 
     fn mutate(&mut self) {
-        let p_flip_move = 1.0/3.0;
+        let p_flip_move = f32::max(2.0/3.0, f32::min(1.0, self.iteration as f32/239000.0));
         if self.random_generator.gen_bool(p_flip_move as f64) {
             self.mutate_flip_move();
         } else {
@@ -356,533 +361,101 @@ impl<R: Rng> StOBSA<R> {
         self.function_evaluations += 1;
     }
 
-    fn new(
-        mut rng: R,
-        problem: SteinerProblem,
-    ) -> Self {
+    fn new(mut rng: R, problem: EstpoInstance) -> Self {
         let mut stobsa = StOBSA {
             problem,
             random_generator: rng,
             edge_db: HashMap::new(),
             function_evaluations: 0,
             start_time: SystemTime::now(),
-            solution: Individual { chromosome: Chromosome { steiner_points: IndexSet::new(), included_corners: Corners::new() }, minimum_spanning_tree: None},
+            solution: Individual {
+                chromosome: Chromosome {
+                    steiner_points: IndexSet::new(),
+                    included_corners: Corners::new(),
+                },
+                minimum_spanning_tree: None,
+            },
+            best_so_far: None,
+            iteration: 0,
         };
         stobsa.build_mst();
         stobsa
     }
 
-    fn instance_to_svg(& self) -> String {
+    fn instance_to_svg(&self, instance: &Individual) -> String {
         let scaling_factor = 1000.0;
-        let move_y = self.problem.bounds.max_y*scaling_factor;
-        let instance = &self.solution;
-        let mut result = format!("<svg width='{}px' height='{}px'>", self.problem.bounds.max_x*scaling_factor, self.problem.bounds.max_y*scaling_factor).to_string();
+        let move_y = self.problem.bounds.max_y * scaling_factor;
+        let mut result = format!(
+            "<svg width='{}px' height='{}px'>",
+            self.problem.bounds.max_x * scaling_factor,
+            self.problem.bounds.max_y * scaling_factor
+        )
+        .to_string();
         for obstacle in &self.problem.obstacles {
             let mut svg = "<polygon style='fill:red' points='".to_string();
             for corner in &obstacle.points {
-                svg = format!("{} {},{}", svg, corner.0*scaling_factor, -corner.1*scaling_factor + move_y);
-            }
-            svg = format!("{}'/>", svg);
-            result = format!("{} {}", result, svg);
-        }
-        let graph = &instance.minimum_spanning_tree.as_ref().unwrap().graph;
-        for edge in graph.edge_references() {
-            let from = graph[edge.source()];
-            let to = graph[edge.target()];
-            result = format!("{}<line x1='{}' y1='{}' x2='{}' y2='{}' style='stroke:black;stroke-width:2px'/>", result, from.0*scaling_factor, -from.1*scaling_factor + move_y, to.0*scaling_factor, -to.1*scaling_factor + move_y);
-        }
-        for steiner_point in instance.chromosome.steiner_points.iter() {
-            result = format!("{} <circle cx='{}' cy='{}' r='10' fill='green'/>", result, steiner_point.0*scaling_factor, -steiner_point.1*scaling_factor + move_y);
-        }
-        for corner in instance.chromosome.included_corners.iter() {
-            let steiner_point = self.problem.obstacle_corners[corner];
-            result = format!("{} <circle cx='{}' cy='{}' r='10' fill='grey'/>", result, steiner_point.0*scaling_factor, -steiner_point.1*scaling_factor + move_y);
-        }
-        for terminal in self.problem.terminals.iter() {
-            result = format!("{} <circle cx='{}' cy='{}' r='10' fill='blue'/>", result, terminal.0*scaling_factor, -terminal.1*scaling_factor + move_y);
-        }
-        format!("{}</svg>", result)
-    }
-
-    fn step(&mut self) {
-        let old_chromosome = self.solution.chromosome.clone();
-        let old_mst = self.solution.minimum_spanning_tree.as_ref().unwrap().clone();
-        self.mutate();
-        self.build_mst();
-        if old_mst.total_weight < self.solution.minimum_spanning_tree.as_ref().unwrap().total_weight {
-            self.solution.chromosome = old_chromosome;
-            self.solution.minimum_spanning_tree = Some(old_mst);
-        }
-    }
-}
-
-impl<R: Rng> StOBGA<R> {
-    fn crossover(&mut self, parent_1_index: usize, parent_2_index: usize) {
-        let min_x = self.problem.bounds.min_x;
-        let max_x = self.problem.bounds.max_x;
-        let random_x_value = self.random_generator.gen_range(min_x..max_x);
-
-        let mut steiner_points_1 = IndexSet::new();
-        let mut steiner_points_2 = IndexSet::new();
-
-        let mut obstacle_corners_1 = Corners::new();
-        let mut obstacle_corners_2 = Corners::new();
-
-        for point in self.population[parent_1_index]
-            .chromosome
-            .steiner_points
-            .iter()
-        {
-            if *point.0 < random_x_value {
-                steiner_points_1.insert(point.clone());
-            } else {
-                steiner_points_2.insert(point.clone());
-            }
-        }
-        for point in self.population[parent_2_index]
-            .chromosome
-            .steiner_points
-            .iter()
-        {
-            if *point.0 > random_x_value {
-                steiner_points_1.insert(point.clone());
-            } else {
-                steiner_points_2.insert(point.clone());
-            }
-        }
-
-        for index in self.population[parent_1_index]
-            .chromosome
-            .included_corners
-            .iter()
-        {
-            let point = self.problem.obstacle_corners[index];
-            if point.0 < random_x_value {
-                obstacle_corners_1.insert(index);
-            } else {
-                obstacle_corners_2.insert(index);
-            }
-        }
-
-        for index in self.population[parent_2_index]
-            .chromosome
-            .included_corners
-            .iter()
-        {
-            let point = self.problem.obstacle_corners[index];
-            if point.0 > random_x_value {
-                obstacle_corners_1.insert(index);
-            } else {
-                obstacle_corners_2.insert(index);
-            }
-        }
-
-        self.population.push(Individual {
-            chromosome: Chromosome {
-                steiner_points: steiner_points_1,
-                included_corners: obstacle_corners_1,
-            },
-            minimum_spanning_tree: None,
-        });
-        self.population.push(Individual {
-            chromosome: Chromosome {
-                steiner_points: steiner_points_2,
-                included_corners: obstacle_corners_2,
-            },
-            minimum_spanning_tree: None,
-        });
-    }
-
-    fn mutate_flip_move(&mut self, index: usize) {
-        self.population[index].mutation_flip_move(
-            &self.problem,
-            &mut self.random_generator,
-            self.current_generation,
-        );
-        if self.population[index].minimum_spanning_tree.is_none() {
-            self.build_mst(index);
-        }
-    }
-
-    fn mutate_add_steiner(&mut self, index: usize) {
-        if self.population[index].minimum_spanning_tree.is_none() {
-            self.build_mst(index);
-        }
-        self.population[index].mutation_add_steiner(&self.problem, &mut self.random_generator);
-        if self.population[index].minimum_spanning_tree.is_none() {
-            self.build_mst(index);
-        }
-    }
-
-    fn mutate_remove_steiner(&mut self, index: usize) {
-        if self.population[index].minimum_spanning_tree.is_none() {
-            self.build_mst(index);
-        }
-        self.population[index].mutation_remove_steiner(&self.problem, &mut self.random_generator);
-        if self.population[index].minimum_spanning_tree.is_none() {
-            self.build_mst(index);
-        }
-    }
-
-    fn mutate(&mut self, index: usize) {
-        let p_flip_move = f32::max(
-            1.0 - (self.current_generation as f32) / 1000.0,
-            P_FLIP_MOVE_MIN,
-        );
-        if self.random_generator.gen_bool(p_flip_move as f64) {
-            self.mutate_flip_move(index);
-        } else {
-            if self.random_generator.gen_bool(0.5) {
-                self.mutate_add_steiner(index);
-            } else {
-                self.mutate_remove_steiner(index);
-            }
-        }
-    }
-
-    fn finalize(&mut self) {
-        self.build_msts();
-        let best = &mut self.population[0];
-        let mut best_copy = best.clone();
-        let mst = best_copy.minimum_spanning_tree.as_ref().unwrap();
-        let mut rem_add_list = Vec::new();
-        for node in mst.graph.node_indices() {
-            let n_edges = mst.graph.edges(node).count();
-            if n_edges == 3 {
-                let mut all = mst.graph.edges(node);
-                let a = all.next().unwrap();
-                let b = all.next().unwrap();
-                let c = all.next().unwrap();
-                rem_add_list.push((
-                    node,
-                    fermat_point(
-                        mst.graph[a.target()],
-                        mst.graph[b.target()],
-                        mst.graph[c.target()],
-                        EPSILON,
-                    ),
-                ));
-            }
-        }
-        for (index, value) in rem_add_list {
-            best_copy.minimum_spanning_tree.as_mut().unwrap().graph[index] = value;
-        }
-        if best_copy
-            .minimum_spanning_tree
-            .as_ref()
-            .unwrap()
-            .total_weight
-            < best.minimum_spanning_tree.as_ref().unwrap().total_weight
-        {
-            self.population[0] = best_copy;
-        }
-    }
-
-    fn new(
-        mut rng: R,
-        problem: SteinerProblem,
-        population_size: usize,
-        t1: usize,
-        t2: usize,
-        t3: usize,
-    ) -> Self {
-        let mut population = vec![];
-        for _ in 0..t1 {
-            population.push(Individual {
-                chromosome: Chromosome {
-                    steiner_points: problem.centroids.iter().map(|&p| to_graph(p)).collect(),
-                    included_corners: Corners::new(),
-                },
-                minimum_spanning_tree: Option::None,
-            });
-        }
-
-        let k = problem.obstacle_corners.len();
-        let n = problem.terminals.len();
-        let min_x = problem.bounds.min_x;
-        let max_x = problem.bounds.max_x;
-        let min_y = problem.bounds.min_y;
-        let max_y = problem.bounds.max_y;
-        let x_dist = Uniform::new(min_x, max_x);
-        let y_dist = Uniform::new(min_y, max_y);
-        let all_corners = (0..k).collect::<Corners>();
-        for _ in 0..t2 {
-            let mut steiner_points = IndexSet::new();
-            let r = rng.gen_range(0..(n + k));
-            for _ in 0..r {
-                steiner_points.insert(to_graph((rng.sample(x_dist), rng.sample(y_dist))));
-            }
-            population.push(Individual {
-                chromosome: Chromosome {
-                    steiner_points: steiner_points,
-                    included_corners: all_corners.clone(),
-                },
-                minimum_spanning_tree: Option::None,
-            });
-        }
-
-        for _ in 0..t3 {
-            let distribution = Uniform::new(0, k + 1);
-            let amount = rng.sample(distribution);
-            let draws = rand::seq::index::sample(&mut rng, k, amount);
-            let mut corners = Corners::new();
-            for elem in draws {
-                corners.insert(elem);
-            }
-
-            population.push(Individual {
-                chromosome: Chromosome {
-                    steiner_points: IndexSet::new(),
-                    included_corners: corners,
-                },
-                minimum_spanning_tree: Option::None,
-            })
-        }
-
-        let mut stobga = StOBGA {
-            problem,
-            population,
-            random_generator: rng,
-            current_generation: 0,
-            child_buffer: Vec::new(),
-            edge_db: HashMap::new(),
-            function_evaluations: 0,
-            start_time: SystemTime::now(),
-        };
-        stobga.build_msts();
-        for _ in 0..(population_size - (t1 + t2 + t3)) {
-            let p1 = stobga.tournament_select(5, false);
-            let p2 = stobga.tournament_select(5, false);
-            stobga.crossover(p1, p2);
-            stobga.mutate(stobga.population.len() - 1);
-            stobga.mutate(stobga.population.len() - 2);
-            stobga.build_mst(stobga.population.len() - 1);
-            stobga.build_mst(stobga.population.len() - 2);
-            if stobga.population.len() >= 500 {
-                while stobga.population.len() > 500 {
-                    stobga.population.pop();
-                }
-                break;
-            }
-        }
-        stobga.child_buffer.clear();
-        stobga.build_msts();
-        assert_eq!(stobga.population.len(), POPULATION_SIZE);
-        stobga
-    }
-
-    fn instance_to_svg(& self, index : usize) -> String {
-        let scaling_factor = 1000.0;
-        let move_y = self.problem.bounds.max_y*scaling_factor;
-        let instance = &self.population[index];
-        let mut result = format!("<svg width='{}px' height='{}px'>", self.problem.bounds.max_x*scaling_factor, self.problem.bounds.max_y*scaling_factor).to_string();
-        for obstacle in &self.problem.obstacles {
-            let mut svg = "<polygon style='fill:red' points='".to_string();
-            for corner in &obstacle.points {
-                svg = format!("{} {},{}", svg, corner.0*scaling_factor, -corner.1*scaling_factor + move_y);
-            }
-            svg = format!("{}'/>", svg);
-            result = format!("{} {}", result, svg);
-        }
-        let graph = &instance.minimum_spanning_tree.as_ref().unwrap().graph;
-        for edge in graph.edge_references() {
-            let from = graph[edge.source()];
-            let to = graph[edge.target()];
-            result = format!("{}<line x1='{}' y1='{}' x2='{}' y2='{}' style='stroke:black;stroke-width:2px'/>", result, from.0*scaling_factor, -from.1*scaling_factor + move_y, to.0*scaling_factor, -to.1*scaling_factor + move_y);
-        }
-        for steiner_point in instance.chromosome.steiner_points.iter() {
-            result = format!("{} <circle cx='{}' cy='{}' r='10' fill='green'/>", result, steiner_point.0*scaling_factor, -steiner_point.1*scaling_factor + move_y);
-        }
-        for corner in instance.chromosome.included_corners.iter() {
-            let steiner_point = self.problem.obstacle_corners[corner];
-            result = format!("{} <circle cx='{}' cy='{}' r='10' fill='grey'/>", result, steiner_point.0*scaling_factor, -steiner_point.1*scaling_factor + move_y);
-        }
-        for terminal in self.problem.terminals.iter() {
-            result = format!("{} <circle cx='{}' cy='{}' r='10' fill='blue'/>", result, terminal.0*scaling_factor, -terminal.1*scaling_factor + move_y);
-        }
-        format!("{}</svg>", result)
-    }
-
-    fn tournament_select(&mut self, size: usize, to_die: bool) -> usize {
-        if to_die {
-            return rand::seq::index::sample(
-                &mut self.random_generator,
-                self.population.len(),
-                size,
-            )
-            .iter()
-            .max_by(|i1, i2| {
-                let w1 = self.population[*i1]
-                    .minimum_spanning_tree
-                    .as_ref()
-                    .unwrap()
-                    .total_weight;
-                let w2 = self.population[*i2]
-                    .minimum_spanning_tree
-                    .as_ref()
-                    .unwrap()
-                    .total_weight;
-                w1.total_cmp(&w2)
-            })
-            .unwrap();
-        } else {
-            return rand::seq::index::sample(
-                &mut self.random_generator,
-                self.population.len(),
-                size,
-            )
-            .iter()
-            .min_by(|i1, i2| {
-                let w1 = self.population[*i1]
-                    .minimum_spanning_tree
-                    .as_ref()
-                    .unwrap()
-                    .total_weight;
-                let w2 = self.population[*i2]
-                    .minimum_spanning_tree
-                    .as_ref()
-                    .unwrap()
-                    .total_weight;
-                w1.total_cmp(&w2)
-            })
-            .unwrap();
-        }
-    }
-
-    fn step(&mut self) {
-        let mut base = self.population.len();
-        for _ in 0..NUMBER_OFFSPRING / 2 {
-            let p1 = self.tournament_select(5, false);
-            let p2 = self.tournament_select(5, false);
-            self.crossover(p1, p2);
-            self.mutate(base);
-            self.mutate(base + 1);
-            base += 2;
-        }
-
-        let to_die = self.population.len() - POPULATION_SIZE;
-        for _ in 0..to_die {
-            let index = self.tournament_select(5, true);
-            self.population.swap_remove(index);
-        }
-        self.population.sort_unstable_by(|i1, i2| {
-            i1.minimum_spanning_tree
-                .as_ref()
-                .unwrap()
-                .total_weight
-                .total_cmp(&i2.minimum_spanning_tree.as_ref().unwrap().total_weight)
-        });
-        self.current_generation += 1;
-        // assert_eq!(self.population.len(), POPULATION_SIZE);
-    }
-
-    fn compute_distance(&self, from: OPoint, to: OPoint) -> f32 {
-        let p1 = to_point(from);
-        let p2 = to_point(to);
-        let mut length = geometry::euclidean_distance(p1, p2);
-        let line_bounds = Bounds {
-            min_x: p1.0.min(p2.0),
-            min_y: p1.1.min(p2.1),
-            max_x: p1.0.max(p2.0),
-            max_y: p1.1.max(p2.1),
-        };
-        for obstacle in &self.problem.obstacles {
-            let bounds = &obstacle.bounds;
-            if overlap(
-                line_bounds.min_x,
-                line_bounds.min_y,
-                line_bounds.max_x,
-                line_bounds.max_y,
-                bounds.min_x,
-                bounds.min_y,
-                bounds.max_x,
-                bounds.max_y,
-            ) {
-                let intersection_len = geometry::intersection_length(
-                    *from.0,
-                    *from.1,
-                    *to.0,
-                    *to.1,
-                    &obstacle.points,
-                    &obstacle.bounds,
+                svg = format!(
+                    "{} {},{}",
+                    svg,
+                    corner.0 * scaling_factor,
+                    -corner.1 * scaling_factor + move_y
                 );
-                if intersection_len > 0.0 {
-                    if obstacle.weight == INF {
-                        length = INF;
-                        break;
-                    } else {
-                        length -= intersection_len;
-                        length += intersection_len * obstacle.weight;
-                    }
-                }
             }
+            svg = format!("{}'/>", svg);
+            result = format!("{} {}", result, svg);
         }
-        length
-    }
-
-    fn build_mst(&mut self, index: usize) {
-        let mut graph = petgraph::graph::UnGraph::new_undirected();
-        let individual = &self.population[index];
-        let source_vertices = individual
-            .chromosome
-            .steiner_points
-            .iter()
-            .map(|&p| p)
-            .chain(
-                individual
-                    .chromosome
-                    .included_corners
-                    .iter()
-                    .map(|c| util::to_graph(self.problem.obstacle_corners[c])),
-            )
-            .chain(self.problem.terminals.iter().map(|p| to_graph(*p)));
-        // let source_vertices = source_vertices.collect_vec();
-        for vertex in source_vertices.clone() {
-            graph.add_node(to_point(vertex));
-        }
-        for pair in source_vertices.enumerate().combinations(2) {
-            let (i1, t1) = pair[0];
-            let (i2, t2) = pair[1];
-            // let length = self.get_distance(t1, t2);
-            let length = if let Some(&x) = self.edge_db.get(&(t1, t2)) {
-                x
-            } else if let Some(&x) = self.edge_db.get(&(t2, t1)) {
-                x
-            } else {
-                let d = self.compute_distance(t1, t2);
-                self.edge_db.insert((t1, t2), d);
-                d
-            };
-            graph.add_edge(
-                petgraph::graph::NodeIndex::new(i1),
-                petgraph::graph::NodeIndex::new(i2),
-                length,
+        let graph = &instance.minimum_spanning_tree.as_ref().unwrap().graph;
+        for edge in graph.edge_references() {
+            let from = graph[edge.source()];
+            let to = graph[edge.target()];
+            result = format!(
+                "{}<line x1='{}' y1='{}' x2='{}' y2='{}' style='stroke:black;stroke-width:2px'/>",
+                result,
+                from.0 * scaling_factor,
+                -from.1 * scaling_factor + move_y,
+                to.0 * scaling_factor,
+                -to.1 * scaling_factor + move_y
             );
         }
-
-        let mst = petgraph::graph::UnGraph::<_, _>::from_elements(
-            petgraph::algo::min_spanning_tree(&graph),
-        );
-        let total_distance = mst.edge_weights().sum::<f32>();
-        let mst = MinimumSpanningTree {
-            total_weight: total_distance,
-            graph: mst,
-        };
-        self.population[index].minimum_spanning_tree = Some(mst);
-        self.function_evaluations += 1;
+        for steiner_point in instance.chromosome.steiner_points.iter() {
+            result = format!(
+                "{} <circle cx='{}' cy='{}' r='10' fill='green'/>",
+                result,
+                steiner_point.0 * scaling_factor,
+                -steiner_point.1 * scaling_factor + move_y
+            );
+        }
+        for corner in instance.chromosome.included_corners.iter() {
+            let steiner_point = self.problem.obstacle_corners[corner];
+            result = format!(
+                "{} <circle cx='{}' cy='{}' r='10' fill='grey'/>",
+                result,
+                steiner_point.0 * scaling_factor,
+                -steiner_point.1 * scaling_factor + move_y
+            );
+        }
+        for terminal in self.problem.terminals.iter() {
+            result = format!(
+                "{} <circle cx='{}' cy='{}' r='10' fill='blue'/>",
+                result,
+                terminal.0 * scaling_factor,
+                -terminal.1 * scaling_factor + move_y
+            );
+        }
+        format!("{}</svg>", result)
     }
 
-    fn build_msts(&mut self) {
-        for index in 0..self.population.len() {
-            if self.population[index].minimum_spanning_tree.is_none() {
-                self.build_mst(index);
-            }
-        }
+    fn temperature(&self) -> f32 {
+        // let starting_temperature = 1000.0;
+        // let t = f32::powf(0.999,self.iteration as f32) * starting_temperature;
+        // // println!("temperature: {}", t);
+        // t
+        0.25 / f32::ln(1.0 + self.iteration as f32)
     }
 }
 
 impl Individual {
-    fn mutation_remove_steiner<R: Rng>(&mut self, problem: &SteinerProblem, rng: &mut R) {
+    fn mutation_remove_steiner<R: Rng>(&mut self, problem: &EstpoInstance, rng: &mut R) {
         let mut candidate_steiner_points = Vec::new();
 
         let graph = &self.minimum_spanning_tree.as_ref().unwrap().graph;
@@ -935,7 +508,7 @@ impl Individual {
         self.minimum_spanning_tree = None;
     }
 
-    fn mutation_add_steiner<R: Rng>(&mut self, problem: &SteinerProblem, rng: &mut R) {
+    fn mutation_add_steiner<R: Rng>(&mut self, problem: &EstpoInstance, rng: &mut R) {
         let mut candidates = Vec::new();
         let graph = &self.minimum_spanning_tree.as_ref().unwrap().graph;
         for i1 in graph.node_indices() {
@@ -981,7 +554,13 @@ impl Individual {
             let p3 = graph[random_triple.2];
             let p4 = geometry::fermat_point(p1, p2, p3, EPSILON);
             if !problem.coordinates_in_solid_obstacle(p4) {
-                if match self.chromosome.steiner_points.iter().map(|&s| OrderedFloat::from(euclidean_distance(to_point(s), p4))).min() {
+                if match self
+                    .chromosome
+                    .steiner_points
+                    .iter()
+                    .map(|&s| OrderedFloat::from(euclidean_distance(to_point(s), p4)))
+                    .min()
+                {
                     Some(OrderedFloat(x)) => x > 1e-2,
                     None => true,
                 } {
@@ -994,7 +573,7 @@ impl Individual {
 
     fn mutation_flip_move<R: Rng>(
         &mut self,
-        problem: &SteinerProblem,
+        problem: &EstpoInstance,
         rng: &mut R,
         generation: usize,
     ) {
@@ -1150,50 +729,73 @@ fn main() {
     };
 
     let rng = rand_pcg::Pcg32::seed_from_u64(seed);
-    let problem = SteinerProblem::new(terminals.clone(), obstacles.clone());
+    let problem = EstpoInstance::new(terminals.clone(), obstacles.clone());
     let mut stobsa = StOBSA::new(rng, problem);
-    stobsa.build_mst();
 
     println!(
         "generation§population average§best§chromosome§function evaluations§runtime in seconds§svg§seed={}",
         seed
     );
-    #[derive(PartialEq)]
-    enum LoopState {
-        Running,
-        LastGeneration,
-    }
-    struct LoopData {
-        state: LoopState,
-        streak_length: usize,
-        previous_best_weight: f32,
-    }
-    let mut loop_data = LoopData {
-        state: LoopState::Running,
-        previous_best_weight: INF,
-        streak_length: 0,
-    };
+    let mut iterations_without_improvement = 0;
     loop {
-        stobsa.step();
-        if loop_data.state == LoopState::LastGeneration {
-            // stobsa.finalize();
-        }
-        let best = 0;
-        let best_weight = stobsa.solution
+        let old_chromosome = stobsa.solution.chromosome.clone();
+        let old_mst = stobsa
+            .solution
             .minimum_spanning_tree
             .as_ref()
             .unwrap()
-            .total_weight;
-        if is_improvement_by_factor(loop_data.previous_best_weight, best_weight, 0.01 / 100.0)
-            || loop_data.state == LoopState::LastGeneration
-        {
-            loop_data.previous_best_weight = best_weight;
-            loop_data.streak_length = 0;
+            .clone();
+        stobsa.mutate();
+        stobsa.build_mst();
+        let t = stobsa.temperature();
+        let delta = old_mst.total_weight
+            - stobsa
+                .solution
+                .minimum_spanning_tree
+                .as_ref()
+                .unwrap()
+                .total_weight;
+        let mut p_accept = f32::exp(delta / t) as f64;
+        if p_accept >= 1.0 {
+            p_accept = 1.0;
+        }
+        if !stobsa.random_generator.gen_bool(p_accept) {
+            stobsa.solution.chromosome = old_chromosome;
+            stobsa.solution.minimum_spanning_tree = Some(old_mst);
+        }
+        let mut print_flag = false;
+        if stobsa.best_so_far.is_none() {
+            stobsa.best_so_far = Some(stobsa.solution.clone());
+            print_flag = true;
+        } else {
+            if stobsa
+                .solution
+                .minimum_spanning_tree
+                .as_ref()
+                .unwrap()
+                .total_weight
+                < stobsa
+                    .best_so_far
+                    .as_ref()
+                    .unwrap()
+                    .minimum_spanning_tree
+                    .as_ref()
+                    .unwrap()
+                    .total_weight
+            {
+                stobsa.best_so_far = Some(stobsa.solution.clone());
+                print_flag = true;
+            }
+        }
+        stobsa.iteration += 1;
+        if print_flag {
+            iterations_without_improvement = 0;
             println!(
                 "{}§{}§{:?}§{}§{}",
                 stobsa.function_evaluations,
                 {
-                    stobsa.solution
+                    stobsa
+                        .solution
                         .minimum_spanning_tree
                         .as_ref()
                         .unwrap()
@@ -1204,26 +806,43 @@ fn main() {
                     Ok(s) => format!("{}", s.as_secs_f32()),
                     Err(_) => format!("NA"),
                 },
-                stobsa.instance_to_svg()
+                stobsa.instance_to_svg(&stobsa.solution)
             );
         } else {
-            loop_data.streak_length += 1
+            iterations_without_improvement += 1;
         }
-        if loop_data.state == LoopState::LastGeneration {
+        if iterations_without_improvement >= RECESSION_DURATION {
             break;
         }
-        if loop_data.streak_length == RECESSION_DURATION {
-            loop_data.state = LoopState::LastGeneration;
-        }
     }
+    println!(
+        "{}§{}§{:?}§{}§{}",
+        stobsa.function_evaluations,
+        {
+            stobsa
+                .best_so_far.as_ref().unwrap()
+                .minimum_spanning_tree
+                .as_ref()
+                .unwrap()
+                .total_weight
+        },
+        stobsa.best_so_far.as_ref().unwrap().chromosome,
+        match SystemTime::now().duration_since(stobsa.start_time) {
+            Ok(s) => format!("{}", s.as_secs_f32()),
+            Err(_) => format!("NA"),
+        },
+        stobsa.instance_to_svg(stobsa.best_so_far.as_ref().unwrap())
+    );
 }
 
 #[cfg(test)]
 mod test {
-    use std::{collections::HashSet, time::Instant, fmt::Binary};
+    use std::{collections::HashSet, fmt::Binary, time::Instant};
 
     use crate::{
-        *, geometry::{intersection_length, middle, point_in_polygon, segment_polygon_intersection}, graph::Graph,
+        geometry::{intersection_length, middle, point_in_polygon, segment_polygon_intersection},
+        graph::Graph,
+        *,
     };
     use itertools::Itertools;
     use petgraph::{data::FromElements, prelude::UnGraph};
@@ -1551,7 +1170,6 @@ mod test {
     //     corners.remove(&1);
     //     assert_eq!(corners.included, 4);
     // }
-
     #[test]
     fn problematic_intersection() {
         let obstacle = Obstacle {
@@ -1639,28 +1257,34 @@ mod test {
     #[test]
     fn wrapping_an_obstacle() {
         let obstacle = Obstacle {
-            points: 
-            vec![
-                (0.168,0.63),
-                (0.168,0.606),
-                (0.188,0.5840000000000001),
-                (0.226,0.5920000000000001),
-                (0.336,0.614),
-                (0.392,0.766),
-                (0.32,0.758),
-                (0.244,0.69),
+            points: vec![
+                (0.168, 0.63),
+                (0.168, 0.606),
+                (0.188, 0.5840000000000001),
+                (0.226, 0.5920000000000001),
+                (0.336, 0.614),
+                (0.392, 0.766),
+                (0.32, 0.758),
+                (0.244, 0.69),
             ],
             weight: 9999999.0,
             bounds: Bounds::default(),
-        }.compute_bounds();
+        }
+        .compute_bounds();
         for i in 0..6 {
             let a = obstacle.points[i];
-            let b = obstacle.points[i+1];
+            let b = obstacle.points[i + 1];
             println!("i is {}", i);
-            assert_eq!(intersection_length(a.0,a.1, b.0,b.1, &obstacle.points, &obstacle.bounds), 0.0);
+            assert_eq!(
+                intersection_length(a.0, a.1, b.0, b.1, &obstacle.points, &obstacle.bounds),
+                0.0
+            );
         }
         let a = obstacle.points[7];
         let b = obstacle.points[0];
-        assert_eq!(intersection_length(a.0,a.1, b.0,b.1, &obstacle.points, &obstacle.bounds), 0.0);
+        assert_eq!(
+            intersection_length(a.0, a.1, b.0, b.1, &obstacle.points, &obstacle.bounds),
+            0.0
+        );
     }
 }
