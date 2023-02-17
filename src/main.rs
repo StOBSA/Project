@@ -454,6 +454,7 @@ impl<R: Rng> StOBSA<R> {
             self.iterations_at_current_temperature = 0;
             self.temperature *= 0.9;
         }
+        self.iterations_at_current_temperature += 1;
         self.temperature
     }
 }
