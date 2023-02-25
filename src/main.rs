@@ -1,4 +1,4 @@
-pub mod corners;
+>pub mod corners;
 mod geometry;
 pub mod graph;
 mod util;
@@ -19,6 +19,7 @@ use util::to_graph;
 use util::to_point;
 
 use std::collections::HashMap;
+use std::collections::HashSet;
 use std::time::SystemTime;
 
 use crate::util::is_improvement_by_factor;
@@ -44,6 +45,11 @@ const EPSILON: f32 = 1e-6;
 /// amount of generations the algorithm continues whilst not finding
 /// a better individual before ending
 const RECESSION_DURATION: usize = 500;
+
+enum BufferSelector {
+    ChildBuffer,
+    Population
+}
 
 /// represents a Steiner Problem instance, consisting of terminals, obstacles
 /// and their corners, the centroids obtained through Delaunay triangulation,
@@ -285,14 +291,14 @@ impl<R: Rng> StOBGA<R> {
             }
         }
 
-        self.population.push(Individual {
+        self.child_buffer.push(Individual {
             chromosome: Chromosome {
                 steiner_points: steiner_points_1,
                 included_corners: obstacle_corners_1,
             },
             minimum_spanning_tree: None,
         });
-        self.population.push(Individual {
+        self.child_buffer.push(Individual {
             chromosome: Chromosome {
                 steiner_points: steiner_points_2,
                 included_corners: obstacle_corners_2,
@@ -302,33 +308,33 @@ impl<R: Rng> StOBGA<R> {
     }
 
     fn mutate_flip_move(&mut self, index: usize) {
-        self.population[index].mutation_flip_move(
+        self.child_buffer[index].mutation_flip_move(
             &self.problem,
             &mut self.random_generator,
             self.current_generation,
         );
-        if self.population[index].minimum_spanning_tree.is_none() {
-            self.build_mst(index);
+        if self.child_buffer[index].minimum_spanning_tree.is_none() {
+            self.build_mst(index, BufferSelector::ChildBuffer);
         }
     }
 
     fn mutate_add_steiner(&mut self, index: usize) {
-        if self.population[index].minimum_spanning_tree.is_none() {
-            self.build_mst(index);
+        if self.child_buffer[index].minimum_spanning_tree.is_none() {
+            self.build_mst(index, BufferSelector::ChildBuffer);
         }
-        self.population[index].mutation_add_steiner(&self.problem, &mut self.random_generator);
-        if self.population[index].minimum_spanning_tree.is_none() {
-            self.build_mst(index);
+        self.child_buffer[index].mutation_add_steiner(&self.problem, &mut self.random_generator);
+        if self.child_buffer[index].minimum_spanning_tree.is_none() {
+            self.build_mst(index, BufferSelector::ChildBuffer);
         }
     }
 
     fn _mutate_remove_steiner(&mut self, index: usize) {
-        if self.population[index].minimum_spanning_tree.is_none() {
-            self.build_mst(index);
+        if self.child_buffer[index].minimum_spanning_tree.is_none() {
+            self.build_mst(index, BufferSelector::ChildBuffer);
         }
-        // self.population[index].mutation_remove_steiner(&self.problem, &mut self.random_generator);
-        if self.population[index].minimum_spanning_tree.is_none() {
-            self.build_mst(index);
+        self.child_buffer[index].mutation_remove_steiner(&self.problem, &mut self.random_generator);
+        if self.child_buffer[index].minimum_spanning_tree.is_none() {
+            self.build_mst(index, BufferSelector::ChildBuffer);
         }
     }
 
@@ -462,18 +468,18 @@ impl<R: Rng> StOBGA<R> {
             let p1 = stobga.tournament_select(5, false);
             let p2 = stobga.tournament_select(5, false);
             stobga.crossover(p1, p2);
-            stobga.mutate(stobga.population.len() - 1);
-            stobga.mutate(stobga.population.len() - 2);
-            stobga.build_mst(stobga.population.len() - 1);
-            stobga.build_mst(stobga.population.len() - 2);
-            if stobga.population.len() >= 500 {
-                while stobga.population.len() > 500 {
-                    stobga.population.pop();
+            stobga.mutate(stobga.child_buffer.len() - 1);
+            stobga.mutate(stobga.child_buffer.len() - 2);
+            // stobga.build_mst(stobga.child_buffer.len() - 1, BufferSelector::ChildBuffer);
+            // stobga.build_mst(stobga.child_buffer.len() - 2, BufferSelector::ChildBuffer);
+            if stobga.population.len() + stobga.child_buffer.len() >= 500 {
+                while stobga.population.len() + stobga.child_buffer.len() > 500 {
+                    stobga.child_buffer.pop();
                 }
                 break;
             }
         }
-        stobga.child_buffer.clear();
+        stobga.population.append(&mut stobga.child_buffer);
         stobga.build_msts();
         assert_eq!(stobga.population.len(), POPULATION_SIZE);
         stobga
@@ -558,21 +564,37 @@ impl<R: Rng> StOBGA<R> {
     }
 
     fn step(&mut self) {
-        let mut base = self.population.len();
-        for _ in 0..NUMBER_OFFSPRING / 2 {
+        // println!("population size {}", self.population.len());
+        let mut indices_to_recombine = HashSet::new();
+        while indices_to_recombine.len() < NUMBER_OFFSPRING {
             let p1 = self.tournament_select(5, false);
-            let p2 = self.tournament_select(5, false);
-            self.crossover(p1, p2);
-            self.mutate(base);
-            self.mutate(base + 1);
-            base += 2;
+            // let p2 = self.tournament_select(5, false);
+            indices_to_recombine.insert(p1);
+            // println!("{}", indices_to_recombine.len());
         }
-
-        let to_die = self.population.len() - POPULATION_SIZE;
+        let mut pair = Vec::new();
+        for &index in indices_to_recombine.iter() {
+            if pair.len() == 0{
+                pair.push(index);
+            } else if pair.len() == 1{
+                self.crossover(pair[0], index);
+                pair.clear();
+            }
+            else {
+                unreachable!();
+            }
+        }
+        for i in 0..self.child_buffer.len() {
+            self.mutate(i);
+        }
+        let to_die = NUMBER_OFFSPRING;
         for _ in 0..to_die {
             let index = self.tournament_select(5, true);
-            self.population.swap_remove(index);
+            self.population.remove(index);
         }
+        assert_eq!(self.child_buffer.len(), 166);
+        self.population.append(&mut self.child_buffer);
+        self.build_msts();
         self.population.sort_unstable_by(|i1, i2| {
             i1.minimum_spanning_tree
                 .as_ref()
@@ -581,7 +603,9 @@ impl<R: Rng> StOBGA<R> {
                 .total_cmp(&i2.minimum_spanning_tree.as_ref().unwrap().total_weight)
         });
         self.current_generation += 1;
-        // assert_eq!(self.population.len(), POPULATION_SIZE);
+        assert_eq!(self.population.len(), POPULATION_SIZE);
+        assert_eq!(self.child_buffer.len(), 0);
+        // println!("{}", "leavin step now");
     }
 
     fn compute_distance(&self, from: OPoint, to: OPoint) -> f32 {
@@ -628,9 +652,12 @@ impl<R: Rng> StOBGA<R> {
         length
     }
 
-    fn build_mst(&mut self, index: usize) {
+    fn build_mst(&mut self, index: usize, buffer : BufferSelector) {
         let mut graph = petgraph::graph::UnGraph::new_undirected();
-        let individual = &self.population[index];
+        let individual = match buffer {
+            BufferSelector::ChildBuffer => &self.child_buffer[index],
+            BufferSelector::Population => &self.population[index],
+        };
         let source_vertices = individual
             .chromosome
             .steiner_points
@@ -676,14 +703,17 @@ impl<R: Rng> StOBGA<R> {
             total_weight: total_distance,
             graph: mst,
         };
-        self.population[index].minimum_spanning_tree = Some(mst);
+        match buffer {
+            BufferSelector::ChildBuffer => self.child_buffer[index].minimum_spanning_tree = Some(mst),
+            BufferSelector::Population => self.population[index].minimum_spanning_tree = Some(mst),
+        }
         self.function_evaluations += 1;
     }
 
     fn build_msts(&mut self) {
         for index in 0..self.population.len() {
             if self.population[index].minimum_spanning_tree.is_none() {
-                self.build_mst(index);
+                self.build_mst(index, BufferSelector::Population);
             }
         }
     }
