@@ -222,8 +222,6 @@ struct Individual {
 struct StOBGA<R: Rng> {
     problem: SteinerProblem,
     population: Vec<Individual>,
-    indices_to_recombine : HashSet<usize>,
-    indices_to_replace : HashSet<usize>,
     random_generator: R,
     current_generation: usize,
     child_buffer: Vec<Individual>,
@@ -464,8 +462,6 @@ impl<R: Rng> StOBGA<R> {
             edge_db: HashMap::new(),
             function_evaluations: 0,
             start_time: SystemTime::now(),
-            indices_to_recombine: HashSet::new(),
-            indices_to_replace: HashSet::new(),
         };
         stobga.build_msts();
         for _ in 0..(population_size - (t1 + t2 + t3)) {
