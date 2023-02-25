@@ -1,4 +1,4 @@
->pub mod corners;
+pub mod corners;
 mod geometry;
 pub mod graph;
 mod util;
@@ -329,13 +329,13 @@ impl<R: Rng> StOBGA<R> {
     }
 
     fn _mutate_remove_steiner(&mut self, index: usize) {
-        if self.child_buffer[index].minimum_spanning_tree.is_none() {
-            self.build_mst(index, BufferSelector::ChildBuffer);
-        }
-        self.child_buffer[index].mutation_remove_steiner(&self.problem, &mut self.random_generator);
-        if self.child_buffer[index].minimum_spanning_tree.is_none() {
-            self.build_mst(index, BufferSelector::ChildBuffer);
-        }
+        // if self.child_buffer[index].minimum_spanning_tree.is_none() {
+        //     self.build_mst(index, BufferSelector::ChildBuffer);
+        // }
+        // self.child_buffer[index].mutation_remove_steiner(&self.problem, &mut self.random_generator);
+        // if self.child_buffer[index].minimum_spanning_tree.is_none() {
+        //     self.build_mst(index, BufferSelector::ChildBuffer);
+        // }
     }
 
     fn mutate(&mut self, index: usize) {
