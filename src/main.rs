@@ -328,7 +328,7 @@ impl<R: Rng> StOBGA<R> {
         }
     }
 
-    fn _mutate_remove_steiner(&mut self, index: usize) {
+    fn _mutate_remove_steiner(&mut self, _index: usize) {
         // if self.child_buffer[index].minimum_spanning_tree.is_none() {
         //     self.build_mst(index, BufferSelector::ChildBuffer);
         // }
