@@ -340,10 +340,7 @@ impl<R: Rng> StOBGA<R> {
     }
 
     fn mutate(&mut self, index: usize) {
-        let p_flip_move = f32::max(
-            1.0 - (self.current_generation as f32) / 1000.0,
-            P_FLIP_MOVE_MIN,
-        );
+        let p_flip_move = 1.0/3.0;
         if self.random_generator.gen_bool(p_flip_move as f64) {
             self.mutate_flip_move(index);
         } else {
