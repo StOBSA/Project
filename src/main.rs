@@ -234,8 +234,6 @@ struct StOBSA<R: Rng> {
     function_evaluations: u64,
     edge_db: HashMap<(OPoint, OPoint), f32>,
     start_time: SystemTime,
-    iterations_at_current_temperature: u64,
-    temperature : f32,
 }
 
 impl<R: Rng> StOBSA<R> {
@@ -380,8 +378,6 @@ impl<R: Rng> StOBSA<R> {
             },
             best_so_far: None,
             iteration: 0,
-            iterations_at_current_temperature: 0,
-            temperature: 1.0
         };
         stobsa.build_mst();
         stobsa
@@ -450,13 +446,8 @@ impl<R: Rng> StOBSA<R> {
         format!("{}</svg>", result)
     }
 
-    fn temperature(&mut self) -> f32 {
-        if self.iterations_at_current_temperature >= 10 {
-            self.iterations_at_current_temperature = 0;
-            self.temperature *= 0.9;
-        }
-        self.iterations_at_current_temperature += 1;
-        self.temperature
+    fn temperature(&self) -> f32 {
+        f32::powf(0.9, f32::floor(self.function_evaluations / 10.0))
     }
 }
 
