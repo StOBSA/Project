@@ -305,6 +305,6 @@ pub fn fermat_point(a: Point, b: Point, c: Point, epsilon: f32) -> Point {
     }
 }
 
-pub fn centroid(a: Point, b: Point,c: Point) -> Point {
+pub fn _centroid(a: Point, b: Point,c: Point) -> Point {
     ((a.0+b.0+c.0)/3.0,(a.1+b.1+c.1)/3.0)
 }
