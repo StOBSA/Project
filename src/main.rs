@@ -5,7 +5,7 @@ mod util;
 
 use corners::Corners;
 use geometry::euclidean_distance;
-use geometry::fermat_point;
+// use geometry::fermat_point;
 use geometry::overlap;
 use geometry::Bounds;
 use indexmap::IndexSet;
@@ -21,21 +21,22 @@ use util::to_point;
 use std::collections::HashMap;
 use std::time::SystemTime;
 
-use crate::util::is_improvement_by_factor;
+// use crate::util::is_improvement_by_factor;
 
 /// a location in 2D
 type Point = (f32, f32);
 
-const POPULATION_SIZE: usize = 500;
+// const POPULATION_SIZE: usize = 500;
 /// the minimum multiplier to the average terminal distance by which a Steiner
 /// point will be moved. In the original paper this value is always used after
 /// 1000 generations have passed.
 const M_RANGE_MIN: f32 = 0.01;
 /// the number of new individuals to create every generation. In the original
 /// StOBGA this value is fixed at 166.
-const NUMBER_OFFSPRING: usize = POPULATION_SIZE / 3;
+// const NUMBER_OFFSPRING: usize = POPULATION_SIZE / 3;
 /// the smallest probability by which a flip_move_mutation is going to occur.
-const P_FLIP_MOVE_MIN: f32 = 0.01;
+const P_FLIP_MOVE_MIN: f32 = 0.60;
+const P_FLIP_MOVE_MAX: f32 = 0.99;
 /// represents an infinitely large value without getting dangerously close to
 /// the limits of this datatype.
 const INF: f32 = 1e10;
@@ -57,7 +58,7 @@ struct EstpoInstance {
     obstacle_corners: Vec<Point>,
     /// a list to store the centroids of the triangles, obtained through
     /// Delaunay triangulation
-    centroids: Vec<Point>,
+    // centroids: Vec<Point>,
     /// the left, topmost and right, bottommost coordinates framing all
     /// terminals and obstacles in a square
     bounds: Bounds,
@@ -134,7 +135,7 @@ impl EstpoInstance {
             terminals,
             obstacles,
             obstacle_corners,
-            centroids,
+            // centroids,
             bounds,
             average_terminal_distance,
         }
@@ -213,16 +214,16 @@ struct Individual {
     minimum_spanning_tree: Option<MinimumSpanningTree>,
 }
 
-struct StOBGA<R: Rng> {
-    problem: EstpoInstance,
-    population: Vec<Individual>,
-    random_generator: R,
-    current_generation: usize,
-    child_buffer: Vec<Individual>,
-    function_evaluations: u64,
-    edge_db: HashMap<(OPoint, OPoint), f32>,
-    start_time: SystemTime,
-}
+// struct StOBGA<R: Rng> {
+//     problem: EstpoInstance,
+//     population: Vec<Individual>,
+//     random_generator: R,
+//     current_generation: usize,
+//     child_buffer: Vec<Individual>,
+//     function_evaluations: u64,
+//     edge_db: HashMap<(OPoint, OPoint), f32>,
+//     start_time: SystemTime,
+// }
 
 struct StOBSA<R: Rng> {
     problem: EstpoInstance,
@@ -253,7 +254,7 @@ impl<R: Rng> StOBSA<R> {
     }
 
     fn mutate(&mut self) {
-        let p_flip_move = f32::max(2.0/3.0, f32::min(1.0, self.iteration as f32/239000.0));
+        let p_flip_move = f32::max(P_FLIP_MOVE_MIN as f32, P_FLIP_MOVE_MAX as f32 * (1.0-(self.iteration as f32 / 239000 as f32)));
         if self.random_generator.gen_bool(p_flip_move as f64) {
             self.mutate_flip_move();
         } else {
@@ -361,7 +362,7 @@ impl<R: Rng> StOBSA<R> {
         self.function_evaluations += 1;
     }
 
-    fn new(mut rng: R, problem: EstpoInstance) -> Self {
+    fn new(rng: R, problem: EstpoInstance) -> Self {
         let mut stobsa = StOBSA {
             problem,
             random_generator: rng,
