@@ -36,8 +36,8 @@ const M_RANGE_MIN: f32 = 0.01;
 /// StOBGA this value is fixed at 166.
 const NUMBER_OFFSPRING: usize = POPULATION_SIZE / 3;
 /// the smallest probability by which a flip_move_mutation is going to occur.
-const P_FLIP_MOVE_MIN: f32 = 0.6;
-const P_FLIP_MOVE_MAX: f32 = 0.99;
+const _P_FLIP_MOVE_MIN: f32 = 0.6;
+const _P_FLIP_MOVE_MAX: f32 = 0.99;
 /// represents an infinitely large value without getting dangerously close to
 /// the limits of this datatype.
 const INF: f32 = 1e10;
