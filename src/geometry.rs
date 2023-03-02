@@ -192,7 +192,12 @@ pub fn point_in_polygon(x1: f32, y1: f32, polygon: &[Point], bounds: &Bounds) ->
         true,
     );
     let (mut left, mut right) = (0, 0);
-    for cut in intersections {
+    'outer : for cut in intersections {
+        for corner in polygon {
+            if !significantly_different(cut.0, corner.0) && !significantly_different(cut.1, corner.1) {
+                continue 'outer;
+            }
+        }
         if cut.0 < x1 && significantly_different(cut.0, x1) {
             left += 1;
         }
@@ -300,6 +305,6 @@ pub fn fermat_point(a: Point, b: Point, c: Point, epsilon: f32) -> Point {
     }
 }
 
-pub fn _centroid(a: Point, b: Point,c: Point) -> Point {
+pub fn centroid(a: Point, b: Point,c: Point) -> Point {
     ((a.0+b.0+c.0)/3.0,(a.1+b.1+c.1)/3.0)
 }
