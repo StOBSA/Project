@@ -1159,20 +1159,92 @@ mod test {
         )
     }
 
-    // #[test]
-    // fn test_geometry5() {
-    //     assert_eq!(
-    //         crate::geometry::segment_polygon_intersection(
-    //             3.0,
-    //             1.0,
-    //             4.0,
-    //             5.0,
-    //             &[(0.0, 0.0), (3.0, 1.0), (4.0, 5.0)],
-    //             true
-    //         ),
-    //         Vec::new()
-    //     )
-    // }
+    #[test]
+    fn instance_five_issue() {
+        let steiner_points = [
+            (0.39435774, 0.36414573), 
+            (0.48510268, 0.82256573), 
+            (0.478367, 0.45599815), 
+            (0.5242697, 0.7148127), 
+            (0.545881, 0.718454), 
+            (0.2153477, 0.84840983), 
+            (0.09824701, 0.16467005), 
+            (0.10451312, 0.3484062), 
+            (0.09365932, 0.16696312)
+            ].iter().map(|&a|to_graph(a)).collect::<IndexSet<_>>();
+        let terminals = vec![
+            (0.644,0.242),
+            (0.24,0.386),
+            (0.048,0.39),
+            (0.152,0.15000000000000002),
+            (0.654,0.698),
+            (0.526,0.87),
+            (0.156,0.85),
+            (0.43,0.5900000000000001),
+            (0.91,0.72),
+            (0.88,0.634),
+            (0.728,0.406),
+        ];
+        let mut obstacles = vec![
+        Obstacle::new(5.0, vec![
+            (0.098,0.9),
+            (0.21,0.902),
+            (0.204,0.488),
+            (0.094,0.488),
+        ]).compute_bounds(),
+        Obstacle::new(5.0, vec![
+            (0.602,0.81),
+            (0.578,0.6),
+            (0.766,0.466),
+            (0.912,0.704),
+            (0.72,0.622),
+            (0.718,0.834)]).compute_bounds(),
+        Obstacle::new(5.0,vec![
+            (0.45,0.206),
+            (0.512,0.414),
+            (0.614,0.408),
+            (0.732,0.39),
+            (0.84,0.398),
+            (0.85,0.2),
+            (0.644,0.274)]).compute_bounds(),
+        Obstacle::new(5.0,vec![
+            (0.1,0.304),
+            (0.344,0.112),
+            (0.096,0.098),
+        ]).compute_bounds()
+        ];
+        let obstacle = Obstacle::new(5.0, vec![
+            (0.602,0.81),
+            (0.578,0.6),
+            (0.766,0.466),
+            (0.912,0.704),
+            (0.72,0.622),
+            (0.718,0.834)]).compute_bounds();
+        let rng = rand_pcg::Pcg32::seed_from_u64(0);
+        let included_corners = [
+            7, 
+            10, 
+            17
+            ].into_iter().collect();
+        let instance = SteinerProblem::new(terminals, obstacles);
+        let chromosome = Chromosome {
+            steiner_points,
+            included_corners,
+        };
+        
+        assert!(geometry::point_in_polygon(0.721041977,0.599999964, &obstacle.points, &obstacle.bounds));
+        assert!(!geometry::point_in_polygon(0.7965147, 0.48967615, &obstacle.points, &obstacle.bounds));
+        assert!(geometry::point_in_polygon(0.622285664, 0.703999758, &obstacle.points, &obstacle.bounds));
+        assert!(!geometry::point_in_polygon(0.545881, 0.718454, &obstacle.points, &obstacle.bounds));
+        assert!(geometry::intersection_length(0.654, 0.698, 0.545881, 0.718454, &obstacle.points, &obstacle.bounds) > 0.0);
+        assert!(geometry::intersection_length(0.545881, 0.718454,0.654, 0.698, &obstacle.points, &obstacle.bounds) > 0.0);
+        assert!(geometry::intersection_length(0.7965147, 0.48967615,0.654, 0.698, &obstacle.points, &obstacle.bounds) > 0.0);
+        let mut stobga = StOBGA::new(rng,instance, 500, 0, 500, 0);
+        stobga.population[0] = Individual{chromosome, minimum_spanning_tree:None};
+        stobga.build_mst(0, BufferSelector::Population);
+        println!("{}",stobga.population[0].minimum_spanning_tree.as_ref().unwrap().total_weight);
+        println!("{}",stobga.instance_to_svg(0));
+    }
 
     #[test]
     fn test_geometry6() {
