@@ -1,6 +1,6 @@
 pub const RADIANS_120_DEGREE: f32 = 2.0 * std::f32::consts::PI / 3.0;
 
-use std::f32::INFINITY;
+use std::{f32::INFINITY, vec};
 
 use itertools::Itertools;
 
@@ -116,12 +116,6 @@ pub fn segment_polygon_intersection(
     for index in indices_to_delete {
         result.remove(index);
     }
-    // if result.contains(&(x1, y1)) {
-    //     result.remove(result.iter().position(|i| i.0 == x1 && i.1 == y1).unwrap());
-    // }
-    // if result.contains(&(x2, y2)) {
-    //     result.remove(result.iter().position(|i| i.0 == x2 && i.1 == y2).unwrap());
-    // }
     result
         .iter()
         .sorted_by(|&&a, &&b| {
@@ -182,33 +176,39 @@ pub fn middle(x1: f32, y1: f32, x2: f32, y2: f32) -> Point {
     (x1 + dx / 2.0, y1 + dy / 2.0)
 }
 
-pub fn point_in_polygon(x1: f32, y1: f32, polygon: &[Point], bounds: &Bounds) -> bool {
-    let intersections = segment_polygon_intersection(
-        bounds.min_x - 1.0,
-        y1,
-        bounds.max_x + 1.0,
-        y1,
-        polygon,
-        true,
-    );
-    let (mut left, mut right) = (0, 0);
-    'outer : for cut in intersections {
-        for corner in polygon {
-            if !significantly_different(cut.0, corner.0) && !significantly_different(cut.1, corner.1) {
-                continue 'outer;
-            }
-        }
-        if cut.0 < x1 && significantly_different(cut.0, x1) {
-            left += 1;
-        }
-        if cut.0 > x1 && significantly_different(cut.0, x1) {
-            right += 1;
+pub fn point_in_polygon(x1: f32, y1: f32, polygon: &[Point], _bounds: &Bounds) -> bool {
+    let mut mids = vec![];
+    {
+        let &(a,b) = polygon.last().unwrap();
+        let &(c,d) = polygon.first().unwrap();
+        mids.push(middle(a,b,c,d));
+    }
+    for j in 1..polygon.len() {
+        let i = j-1;
+        let (a,b) = polygon[i];
+        let (c,d) = polygon[j];
+        mids.push(middle(a, b, c, d));
+    }
+    let mut inside = 0;
+    let mut outside = 0;
+    for mid in mids.iter() {
+        let &(x2, y2) = mid;
+        let (dx, dy) = (x1-x2, y1-y2);
+        let length = euclidean_distance((0.0,0.0), (dx,dy));
+        let ray_length = 1000.0;
+        let factor = ray_length / length;
+        let (x2, y2) = (dx * factor, dy * factor);
+        let cuts = segment_polygon_intersection(x1, y1, x2, y2, polygon, true);
+        if cuts.len() % 2 == 1 {
+            inside+=1;
+        } else {
+            outside+=1;
         }
     }
-    return left % 2 == 1 && right % 2 == 1;
+    return inside>outside
 }
 
-fn significantly_different(f1:f32, f2:f32) -> bool {
+fn _significantly_different(f1:f32, f2:f32) -> bool {
     (f1-f2).abs() > EPSILON
 }
 
