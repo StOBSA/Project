@@ -1162,21 +1162,6 @@ mod test {
         )
     }
 
-    // #[test]
-    // fn test_geometry5() {
-    //     assert_eq!(
-    //         crate::geometry::segment_polygon_intersection(
-    //             3.0,
-    //             1.0,
-    //             4.0,
-    //             5.0,
-    //             &[(0.0, 0.0), (3.0, 1.0), (4.0, 5.0)],
-    //             true
-    //         ),
-    //         Vec::new()
-    //     )
-    // }
-
     #[test]
     fn instance_five_issue() {
         let steiner_points = [
@@ -1249,14 +1234,17 @@ mod test {
             steiner_points,
             included_corners,
         };
+        
+        assert!(geometry::point_in_polygon(0.721041977,0.599999964, &obstacle.points, &obstacle.bounds));
+        assert!(!geometry::point_in_polygon(0.7965147, 0.48967615, &obstacle.points, &obstacle.bounds));
         assert!(geometry::point_in_polygon(0.622285664, 0.703999758, &obstacle.points, &obstacle.bounds));
         assert!(!geometry::point_in_polygon(0.545881, 0.718454, &obstacle.points, &obstacle.bounds));
-        // assert!(geometry::intersection_length(0.654, 0.698, 0.545881, 0.718454, &obstacle.points, &obstacle.bounds) > 0.0);
+        assert!(geometry::intersection_length(0.654, 0.698, 0.545881, 0.718454, &obstacle.points, &obstacle.bounds) > 0.0);
         assert!(geometry::intersection_length(0.545881, 0.718454,0.654, 0.698, &obstacle.points, &obstacle.bounds) > 0.0);
+        assert!(geometry::intersection_length(0.7965147, 0.48967615,0.654, 0.698, &obstacle.points, &obstacle.bounds) > 0.0);
         let mut stobga = StOBGA::new(rng,instance, 500, 0, 500, 0);
         stobga.population[0] = Individual{chromosome, minimum_spanning_tree:None};
         stobga.build_mst(0, BufferSelector::Population);
-        // assert_eq!(3.0990233, stobga.population[0].minimum_spanning_tree.as_ref().unwrap().total_weight);
         println!("{}",stobga.population[0].minimum_spanning_tree.as_ref().unwrap().total_weight);
         println!("{}",stobga.instance_to_svg(0));
     }
