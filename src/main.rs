@@ -19,7 +19,6 @@ use util::to_graph;
 use util::to_point;
 
 use std::collections::HashMap;
-use std::collections::HashSet;
 use std::time::SystemTime;
 
 // use crate::util::is_improvement_by_factor;
