@@ -122,15 +122,16 @@ impl EstpoInstance {
             }
         }
         let mut average_terminal_distance = 0.0;
-        let mut counter = 0;
-        for i in 0..terminals.len() {
-            for j in (i + 1)..terminals.len() {
-                average_terminal_distance += euclidean_distance(terminals[i], terminals[j]);
-                counter += 1;
-            }
-        }
-        average_terminal_distance /= counter as f32;
 
+        {
+            let n = terminals.len();
+            for i in 0..n {
+                for j in 0..n {
+                    average_terminal_distance += euclidean_distance(terminals[i], terminals[j]);
+                }
+            }
+            average_terminal_distance /= (n*(n-1)) as f32;
+        }
         EstpoInstance {
             terminals,
             obstacles,
@@ -240,7 +241,7 @@ impl<R: Rng> StOBSA<R> {
     fn mutate_flip_move(&mut self) {
         // todo!("change generation to be meaningful or leave it out.");
         self.solution
-            .mutation_flip_move(&self.problem, &mut self.random_generator, 0);
+            .mutation_flip_move(&self.problem, &mut self.random_generator, self.iteration as usize);
     }
 
     fn mutate_add_steiner(&mut self) {
@@ -572,7 +573,7 @@ impl Individual {
         &mut self,
         problem: &EstpoInstance,
         rng: &mut R,
-        generation: usize,
+        iteration: usize,
     ) {
         let s = self.chromosome.steiner_points.len();
         let k = problem.obstacle_corners.len();
@@ -582,7 +583,7 @@ impl Individual {
             1.0 / ((s + k) as f32)
         };
         let m_range = problem.average_terminal_distance
-            * f32::max(1.0 - (generation as f32) / 1000.0, M_RANGE_MIN);
+            * f32::max(1.0 - (iteration as f32) / (1000.0 * 239.0), M_RANGE_MIN);
         let mut to_remove = Vec::new();
         let mut to_add = Vec::new();
         for &steiner_point in self.chromosome.steiner_points.iter() {
