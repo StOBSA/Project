@@ -107,12 +107,7 @@ impl SteinerProblem {
             centroids.push(geometry::centroid(a, b, c));
         }
 
-        let mut bounds = Bounds {
-            min_x: INF,
-            max_x: 0.0,
-            min_y: INF,
-            max_y: 0.0,
-        };
+        let mut bounds = Bounds::default();
         for point in terminals.iter().chain(obstacle_corners.iter()) {
             if point.0 < bounds.min_x {
                 bounds.min_x = point.0
@@ -128,14 +123,15 @@ impl SteinerProblem {
             }
         }
         let mut average_terminal_distance = 0.0;
-        let mut counter = 0;
-        for i in 0..terminals.len() {
-            for j in (i + 1)..terminals.len() {
-                average_terminal_distance += euclidean_distance(terminals[i], terminals[j]);
-                counter += 1;
+        {
+            let n = terminals.len();
+            for i in 0..n {
+                for j in 0..n {
+                    average_terminal_distance += euclidean_distance(terminals[i], terminals[j]);
+                }
             }
+            average_terminal_distance /= (n*(n-1)) as f32;
         }
-        average_terminal_distance /= counter as f32;
 
         SteinerProblem {
             terminals,
