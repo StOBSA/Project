@@ -42,9 +42,11 @@ const P_FLIP_MOVE_MAX: f32 = 0.99;
 const INF: f32 = 1e10;
 /// a small value, usually utilized to make up for floating point imprecisions.
 const EPSILON: f32 = 1e-6;
+
+const C_SA : f32 = 278.3841928;
 /// amount of generations the algorithm continues whilst not finding
 /// a better individual before ending
-const RECESSION_DURATION: usize = 119500;
+const RECESSION_DURATION: usize = (500.0 * C_SA) as usize;
 
 /// represents a Steiner Problem instance, consisting of terminals, obstacles
 /// and their corners, the centroids obtained through Delaunay triangulation,
@@ -255,7 +257,7 @@ impl<R: Rng> StOBSA<R> {
     }
 
     fn mutate(&mut self) {
-        let p_flip_move = f32::max(P_FLIP_MOVE_MIN as f32, P_FLIP_MOVE_MAX as f32 * (1.0-(self.iteration as f32 / 239000 as f32)));
+        let p_flip_move = f32::max(P_FLIP_MOVE_MIN as f32, P_FLIP_MOVE_MAX as f32 * (1.0-(self.iteration as f32 / (1000.0 * C_SA))));
         if self.random_generator.gen_bool(p_flip_move as f64) {
             self.mutate_flip_move();
         } else {
@@ -583,7 +585,7 @@ impl Individual {
             1.0 / ((s + k) as f32)
         };
         let m_range = problem.average_terminal_distance
-            * f32::max(1.0 - (iteration as f32) / (1000.0 * 239.0), M_RANGE_MIN);
+            * f32::max(1.0 - (iteration as f32) / (1000.0 * C_SA), M_RANGE_MIN);
         let mut to_remove = Vec::new();
         let mut to_add = Vec::new();
         for &steiner_point in self.chromosome.steiner_points.iter() {
