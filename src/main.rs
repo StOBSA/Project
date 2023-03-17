@@ -21,6 +21,8 @@ use util::to_point;
 use std::collections::HashMap;
 use std::time::SystemTime;
 
+use crate::util::is_improvement_by_factor;
+
 // use crate::util::is_improvement_by_factor;
 
 /// a location in 2D
@@ -244,6 +246,43 @@ impl<R: Rng> StOBSA<R> {
         // todo!("change generation to be meaningful or leave it out.");
         self.solution
             .mutation_flip_move(&self.problem, &mut self.random_generator, self.iteration as usize);
+    }
+
+    fn finalize(&mut self) {
+        let best = &mut self.best_so_far.as_mut().unwrap();
+        let mut best_copy = best.clone();
+        let mst = best_copy.minimum_spanning_tree.as_ref().unwrap();
+        let mut rem_add_list = Vec::new();
+        for node in mst.graph.node_indices() {
+            let n_edges = mst.graph.edges(node).count();
+            if n_edges == 3 {
+                let mut all = mst.graph.edges(node);
+                let a = all.next().unwrap();
+                let b = all.next().unwrap();
+                let c = all.next().unwrap();
+                rem_add_list.push((
+                    node,
+                    geometry::fermat_point(
+                        mst.graph[a.target()],
+                        mst.graph[b.target()],
+                        mst.graph[c.target()],
+                        EPSILON,
+                    ),
+                ));
+            }
+        }
+        for (index, value) in rem_add_list {
+            best_copy.minimum_spanning_tree.as_mut().unwrap().graph[index] = value;
+        }
+        if best_copy
+            .minimum_spanning_tree
+            .as_ref()
+            .unwrap()
+            .total_weight
+            < best.minimum_spanning_tree.as_ref().unwrap().total_weight
+        {
+            self.best_so_far = Option::Some(best_copy);
+        }
     }
 
     fn mutate_add_steiner(&mut self) {
@@ -768,20 +807,19 @@ fn main() {
             stobsa.best_so_far = Some(stobsa.solution.clone());
             print_flag = true;
         } else {
-            if stobsa
+            if is_improvement_by_factor(stobsa
+                .best_so_far
+                .as_ref()
+                .unwrap()
+                .minimum_spanning_tree
+                .as_ref()
+                .unwrap()
+                .total_weight, stobsa
                 .solution
                 .minimum_spanning_tree
                 .as_ref()
                 .unwrap()
-                .total_weight
-                < stobsa
-                    .best_so_far
-                    .as_ref()
-                    .unwrap()
-                    .minimum_spanning_tree
-                    .as_ref()
-                    .unwrap()
-                    .total_weight
+                .total_weight, 1e-4)
             {
                 stobsa.best_so_far = Some(stobsa.solution.clone());
                 print_flag = true;
@@ -815,6 +853,7 @@ fn main() {
             break;
         }
     }
+    stobsa.finalize();
     println!(
         "{}§{}§{:?}§{}§{}",
         stobsa.function_evaluations,
