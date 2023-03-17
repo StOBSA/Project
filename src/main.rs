@@ -450,7 +450,7 @@ impl<R: Rng> StOBSA<R> {
     }
 
     fn temperature(&self) -> f32 {
-        f32::max(EPSILON, f32::powf(0.9, f32::floor(self.function_evaluations as f32 / 10.0)))
+        f32::max(EPSILON, f32::powf(0.999835669, self.function_evaluations as f32))
     }
 }
 
