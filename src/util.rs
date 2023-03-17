@@ -12,9 +12,9 @@ pub fn to_point(point: OPoint) -> Point {
     (*point.0, *point.1)
 }
 
-// pub fn is_improvement_by_factor(current_value : f32, new_value : f32, factor : f32) -> bool {
-//     new_value < (current_value-current_value*factor)
-// }
+pub fn is_improvement_by_factor(current_value : f32, new_value : f32, factor : f32) -> bool {
+    new_value < (current_value-current_value*factor)
+}
 
 // pub fn average_from_iterator<I:Iterator<Item=f32> + Clone>(values : I) -> f32 {
 //     let mut len = 0;
