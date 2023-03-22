@@ -14,6 +14,7 @@ use ordered_float::OrderedFloat;
 use petgraph::data::FromElements;
 use petgraph::visit::EdgeRef;
 
+use rand::seq::SliceRandom;
 use rand::{distributions::Uniform, prelude::Distribution, Rng, SeedableRng};
 use util::to_graph;
 use util::to_point;
@@ -566,8 +567,10 @@ impl<R: Rng> StOBGA<R> {
             indices_to_recombine.insert(p1);
             // println!("{}", indices_to_recombine.len());
         }
+        let mut indices_to_recombine = indices_to_recombine.iter().sorted().collect::<Vec<_>>();
+        indices_to_recombine.shuffle(&mut self.random_generator);
         let mut pair = Vec::new();
-        for &index in indices_to_recombine.iter() {
+        for &&index in indices_to_recombine.iter() {
             if pair.len() == 0{
                 pair.push(index);
             } else if pair.len() == 1{
