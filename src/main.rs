@@ -489,7 +489,7 @@ impl<R: Rng> StOBGA<R> {
         let instance = &self.population[index];
         let mut result = format!("<svg width='{}px' height='{}px'>", self.problem.bounds.max_x*scaling_factor, self.problem.bounds.max_y*scaling_factor).to_string();
         for obstacle in &self.problem.obstacles {
-            let mut svg = "<polygon style='fill:red' points='".to_string();
+            let mut svg = "<polygon style='fill:#FFDD54' points='".to_string();
             for corner in &obstacle.points {
                 svg = format!("{} {},{}", svg, corner.0*scaling_factor, -corner.1*scaling_factor + move_y);
             }
@@ -503,14 +503,14 @@ impl<R: Rng> StOBGA<R> {
             result = format!("{}<line x1='{}' y1='{}' x2='{}' y2='{}' style='stroke:black;stroke-width:2px'/>", result, from.0*scaling_factor, -from.1*scaling_factor + move_y, to.0*scaling_factor, -to.1*scaling_factor + move_y);
         }
         for steiner_point in instance.chromosome.steiner_points.iter() {
-            result = format!("{} <circle cx='{}' cy='{}' r='10' fill='green'/>", result, steiner_point.0*scaling_factor, -steiner_point.1*scaling_factor + move_y);
+            result = format!("{} <circle cx='{}' cy='{}' r='10' fill='#59CDF7'/>", result, steiner_point.0*scaling_factor, -steiner_point.1*scaling_factor + move_y);
         }
         for corner in instance.chromosome.included_corners.iter() {
             let steiner_point = self.problem.obstacle_corners[corner];
             result = format!("{} <circle cx='{}' cy='{}' r='10' fill='grey'/>", result, steiner_point.0*scaling_factor, -steiner_point.1*scaling_factor + move_y);
         }
         for terminal in self.problem.terminals.iter() {
-            result = format!("{} <circle cx='{}' cy='{}' r='10' fill='blue'/>", result, terminal.0*scaling_factor, -terminal.1*scaling_factor + move_y);
+            result = format!("{} <circle cx='{}' cy='{}' r='10' fill='black'/>", result, terminal.0*scaling_factor, -terminal.1*scaling_factor + move_y);
         }
         format!("{}</svg>", result)
     }
@@ -1163,16 +1163,18 @@ mod test {
 
     #[test]
     fn instance_five_issue() {
+        // x = 0.3
         let steiner_points = [
             (0.39435774, 0.36414573), 
-            (0.48510268, 0.82256573), 
             (0.478367, 0.45599815), 
+            (0.48510268, 0.82256573), 
             (0.5242697, 0.7148127), 
-            (0.545881, 0.718454), 
-            (0.2153477, 0.84840983), 
-            (0.09824701, 0.16467005), 
+            
+            (0.09365932, 0.16696312),
+            // (0.09824701, 0.16467005), 
             (0.10451312, 0.3484062), 
-            (0.09365932, 0.16696312)
+            (0.2153477, 0.84840983), 
+            // (0.545881, 0.718454), 
             ].iter().map(|&a|to_graph(a)).collect::<IndexSet<_>>();
         let terminals = vec![
             (0.644,0.242),
@@ -1222,7 +1224,7 @@ mod test {
             (0.912,0.704),
             (0.72,0.622),
             (0.718,0.834)]).compute_bounds();
-        let rng = rand_pcg::Pcg32::seed_from_u64(0);
+        let rng = rand_pcg::Pcg32::seed_from_u64(2);
         let included_corners = [
             7, 
             10, 
@@ -1242,10 +1244,17 @@ mod test {
         assert!(geometry::intersection_length(0.545881, 0.718454,0.654, 0.698, &obstacle.points, &obstacle.bounds) > 0.0);
         assert!(geometry::intersection_length(0.7965147, 0.48967615,0.654, 0.698, &obstacle.points, &obstacle.bounds) > 0.0);
         let mut stobga = StOBGA::new(rng,instance, 500, 0, 500, 0);
-        stobga.population[0] = Individual{chromosome, minimum_spanning_tree:None};
-        stobga.build_mst(0, BufferSelector::Population);
-        println!("{}",stobga.population[0].minimum_spanning_tree.as_ref().unwrap().total_weight);
-        println!("{}",stobga.instance_to_svg(0));
+        
+        stobga.child_buffer = vec![Individual{chromosome, minimum_spanning_tree:None}];
+        stobga.build_mst(0, BufferSelector::ChildBuffer);
+        stobga.population[0] = stobga.child_buffer[0].clone();
+        println!("{}\n\n", stobga.instance_to_svg(0));
+        stobga.mutate_remove_steiner(0);
+        stobga.population[0] = stobga.child_buffer[0].clone();
+        stobga.build_mst(0, BufferSelector::ChildBuffer);
+        println!("{}\n\n", stobga.instance_to_svg(0));
+        // println!("{}",stobga.population[0].minimum_spanning_tree.as_ref().unwrap().total_weight);
+        // println!("{}",stobga.instance_to_svg(0));
     }
 
     #[test]
