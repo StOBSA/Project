@@ -489,7 +489,13 @@ impl<R: Rng> StOBGA<R> {
         let instance = &self.population[index];
         let mut result = format!("<svg width='{}px' height='{}px'>", self.problem.bounds.max_x*scaling_factor, self.problem.bounds.max_y*scaling_factor).to_string();
         for obstacle in &self.problem.obstacles {
-            let mut svg = "<polygon style='fill:#FFDD54' points='".to_string();
+            let mut svg = format!("<polygon style='fill:{}' points='", {
+                if obstacle.weight == INF {
+                    "#E86441"
+                } else {
+                    "#FFDD54"
+                }
+            }).to_string();
             for corner in &obstacle.points {
                 svg = format!("{} {},{}", svg, corner.0*scaling_factor, -corner.1*scaling_factor + move_y);
             }
