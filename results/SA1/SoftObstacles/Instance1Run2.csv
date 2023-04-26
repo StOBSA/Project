@@ -1,0 +1,27 @@
+function evaluations§best§chromosome§runtime in seconds
+2§2.4075284§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([13]))§0.001031647
+146§2.3957927§Chromosome(steinerPoints=[(0.8718455, 0.6571747)], includedObstacleCornersIndices=set([16, 6, 7, 17]))§0.013898891
+568§2.3640172§Chromosome(steinerPoints=[(0.70165306, 0.6213963), (0.551296, 0.77014875)], includedObstacleCornersIndices=set([7, 17]))§0.034245927
+570§2.3560095§Chromosome(steinerPoints=[(0.70165306, 0.6213963), (0.551296, 0.77014875), (0.10671836, 0.3394257)], includedObstacleCornersIndices=set([7, 17]))§0.03441389
+2665§2.3548605§Chromosome(steinerPoints=[(0.54930234, 0.7363361), (0.47898775, 0.66774213)], includedObstacleCornersIndices=set([17]))§0.1353528
+2671§2.346853§Chromosome(steinerPoints=[(0.54930234, 0.7363361), (0.47898775, 0.66774213), (0.10671836, 0.3394257)], includedObstacleCornersIndices=set([17]))§0.13560338
+2674§2.3387454§Chromosome(steinerPoints=[(0.54930234, 0.7363361), (0.47898775, 0.66774213), (0.10671836, 0.3394257), (0.50094515, 0.8315175)], includedObstacleCornersIndices=set([17]))§0.13578968
+2684§2.3381236§Chromosome(steinerPoints=[(0.54930234, 0.7363361), (0.47898775, 0.66774213), (0.10671836, 0.3394257), (0.50094515, 0.8315175)], includedObstacleCornersIndices=set([17, 7]))§0.13620044
+2717§2.3273294§Chromosome(steinerPoints=[(0.54930234, 0.7363361), (0.50094515, 0.8315175), (0.10671836, 0.3394257)], includedObstacleCornersIndices=set([16, 7, 8]))§0.13774906
+2815§2.3235533§Chromosome(steinerPoints=[(0.54930234, 0.7363361), (0.50094515, 0.8315175), (0.10671836, 0.3394257)], includedObstacleCornersIndices=set([8]))§0.14156893
+7142§2.3219953§Chromosome(steinerPoints=[(0.5644297, 0.7226435), (0.12793314, 0.29356533), (0.77512664, 0.6102321), (0.52747786, 0.6763891)], includedObstacleCornersIndices=set([7, 16]))§0.55659956
+7704§2.3171859§Chromosome(steinerPoints=[(0.5644297, 0.7226435), (0.3836713, 0.6052034), (0.76344925, 0.60599375), (0.10671836, 0.3394257), (0.38875145, 0.594021)], includedObstacleCornersIndices=set([16]))§0.5932789
+7709§2.316564§Chromosome(steinerPoints=[(0.5644297, 0.7226435), (0.3836713, 0.6052034), (0.76344925, 0.60599375), (0.10671836, 0.3394257), (0.38875145, 0.594021)], includedObstacleCornersIndices=set([16, 7]))§0.59359276
+7746§2.312268§Chromosome(steinerPoints=[(0.5644297, 0.7226435), (0.38875145, 0.594021), (0.76344925, 0.60599375), (0.10671836, 0.3394257)], includedObstacleCornersIndices=set([]))§0.5954609
+7889§2.3111296§Chromosome(steinerPoints=[(0.5644297, 0.7226435), (0.38875145, 0.594021), (0.76344925, 0.60599375), (0.14995065, 0.33265412)], includedObstacleCornersIndices=set([16, 8]))§0.6045594
+7890§2.3046136§Chromosome(steinerPoints=[(0.5644297, 0.7226435), (0.38875145, 0.594021), (0.76344925, 0.60599375), (0.14995065, 0.33265412)], includedObstacleCornersIndices=set([16]))§0.6046557
+7892§2.3039918§Chromosome(steinerPoints=[(0.5644297, 0.7226435), (0.38875145, 0.594021), (0.76344925, 0.60599375), (0.14995065, 0.33265412)], includedObstacleCornersIndices=set([16, 7]))§0.60479176
+7945§2.300216§Chromosome(steinerPoints=[(0.5644297, 0.7226435), (0.38875145, 0.594021), (0.76344925, 0.60599375), (0.14995065, 0.33265412)], includedObstacleCornersIndices=set([]))§0.6073783
+13531§2.2976768§Chromosome(steinerPoints=[(0.13063177, 0.3450235), (0.5303918, 0.711381), (0.7790428, 0.58914757), (0.48885566, 0.8253755), (0.48283494, 0.81701607)], includedObstacleCornersIndices=set([7]))§1.021931
+13641§2.2967722§Chromosome(steinerPoints=[(0.13063177, 0.3450235), (0.5303918, 0.711381), (0.7634527, 0.58386236), (0.48283494, 0.81701607), (0.7662409, 0.59699935)], includedObstacleCornersIndices=set([7]))§1.0284905
+13845§2.2949598§Chromosome(steinerPoints=[(0.13063177, 0.3450235), (0.5303918, 0.711381), (0.75624615, 0.5930796), (0.48283494, 0.81701607), (0.15071516, 0.333615)], includedObstacleCornersIndices=set([]))§1.0383868
+16587§2.29423§Chromosome(steinerPoints=[(0.14503604, 0.32604676), (0.7756029, 0.5959882), (0.4721914, 0.7957659), (0.51656204, 0.7065458), (0.13092238, 0.33346754)], includedObstacleCornersIndices=set([7]))§1.1984744
+23062§2.2928467§Chromosome(steinerPoints=[(0.5271408, 0.7693378), (0.7838973, 0.59563756), (0.4255964, 0.7075315), (0.14995065, 0.33265412)], includedObstacleCornersIndices=set([16]))§1.5911369
+23064§2.2884488§Chromosome(steinerPoints=[(0.5271408, 0.7693378), (0.7838973, 0.59563756), (0.4255964, 0.7075315), (0.14995065, 0.33265412)], includedObstacleCornersIndices=set([]))§1.5912757
+23069§2.287827§Chromosome(steinerPoints=[(0.5271408, 0.7693378), (0.7838973, 0.59563756), (0.4255964, 0.7075315), (0.14995065, 0.33265412)], includedObstacleCornersIndices=set([7]))§1.5916218
+162261§2.287827§Chromosome(steinerPoints=[(0.5271408, 0.7693378), (0.7838973, 0.59563756), (0.4255964, 0.7075315), (0.14995065, 0.33265412)], includedObstacleCornersIndices=set([7]))§7.7770357

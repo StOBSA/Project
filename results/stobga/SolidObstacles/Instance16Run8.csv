@@ -1,0 +1,13 @@
+generation§population average§best§chromosome§function evaluations§runtime in seconds§svg
+1§1439999700§2.7667575§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([2, 9]))§670§0.103403784
+3§460000030§2.763343§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([9, 2, 6, 8]))§1011§0.119057685
+6§520000030§2.7590632§Chromosome(steinerPoints=[(0.81445247, 0.12459756)], includedObstacleCornersIndices=set([9, 2, 8, 6]))§1516§0.14040959
+8§300000000§2.7540278§Chromosome(steinerPoints=[(0.71876144, 0.2802855)], includedObstacleCornersIndices=set([9, 2]))§1853§0.15392579
+13§359999970§2.7506132§Chromosome(steinerPoints=[(0.71876144, 0.2802855)], includedObstacleCornersIndices=set([6, 8, 9, 2]))§2708§0.18701747
+20§379999970§2.748669§Chromosome(steinerPoints=[(0.082272336, 0.120791525), (0.71876144, 0.2802855)], includedObstacleCornersIndices=set([6, 9, 2, 8]))§3891§0.23427778
+23§459999940§2.7463336§Chromosome(steinerPoints=[(0.81445247, 0.12459756), (0.71876144, 0.2802855)], includedObstacleCornersIndices=set([2, 9, 6, 8]))§4406§0.2573064
+28§439999940§2.7437716§Chromosome(steinerPoints=[(0.81445247, 0.12459756), (0.71876144, 0.2802855), (0.08574775, 0.11146358)], includedObstacleCornersIndices=set([9, 2, 8, 6]))§5250§0.29727843
+32§459999900§2.7433615§Chromosome(steinerPoints=[(0.81445247, 0.12459756), (0.71876144, 0.2802855), (0.08574775, 0.11146358)], includedObstacleCornersIndices=set([2, 9, 8]))§5936§0.3317588
+87§599999800§2.7430696§Chromosome(steinerPoints=[(0.71876144, 0.2802855), (0.81445247, 0.12459756), (0.06747632, 0.086296245)], includedObstacleCornersIndices=set([9, 2]))§15660§0.86530787
+95§499999970§2.742167§Chromosome(steinerPoints=[(0.81445247, 0.12459756), (0.71876144, 0.2802855), (0.06747632, 0.086296245), (0.07585713, 0.10035244)], includedObstacleCornersIndices=set([8, 9, 2]))§17110§0.9438881
+596§759999700§2.7421017§Chromosome(steinerPoints=[(0.81445247, 0.12459756), (0.71876144, 0.2802855), (0.07547047, 0.09946987)], includedObstacleCornersIndices=set([2, 9]))§126174§6.194362

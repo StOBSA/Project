@@ -1,0 +1,14 @@
+generation§population average§best§chromosome§function evaluations§runtime in seconds§svg
+1§2.9355712§2.1607647§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([8]))§674§0.3776041
+2§2.6864827§2.1498578§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([3]))§842§0.38271895
+4§2.4030337§2.139758§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([3, 8]))§1178§0.3919367
+5§2.3363001§2.1392827§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([8, 3, 20]))§1346§0.39610264
+7§2.2561395§2.1292777§Chromosome(steinerPoints=[(0.88939416, 0.77288175)], includedObstacleCornersIndices=set([3, 19, 8]))§1684§0.4040187
+13§2.2309434§2.127293§Chromosome(steinerPoints=[(0.88939416, 0.77288175), (0.40974134, 0.85822034)], includedObstacleCornersIndices=set([19, 8, 28, 3]))§2697§0.4284109
+14§2.2148938§2.126697§Chromosome(steinerPoints=[(0.88939416, 0.77288175), (0.40840498, 0.8496082)], includedObstacleCornersIndices=set([3, 19, 8]))§2866§0.4328828
+17§2.206244§2.1261804§Chromosome(steinerPoints=[(0.88939416, 0.77288175), (0.40974134, 0.85822034)], includedObstacleCornersIndices=set([19, 8, 3]))§3376§0.44682017
+19§2.2096045§2.125705§Chromosome(steinerPoints=[(0.88939416, 0.77288175), (0.40974134, 0.85822034)], includedObstacleCornersIndices=set([19, 8, 20, 3]))§3713§0.4572116
+23§2.194602§2.1223633§Chromosome(steinerPoints=[(0.40974134, 0.85822034), (0.8901363, 0.7729369), (0.756948, 0.6144535)], includedObstacleCornersIndices=set([28, 3, 8, 19]))§4396§0.47937456
+24§2.201263§2.1212509§Chromosome(steinerPoints=[(0.40974134, 0.85822034), (0.8901363, 0.7729369), (0.756948, 0.6144535)], includedObstacleCornersIndices=set([3, 8, 19]))§4567§0.48510188
+31§2.191707§2.1208558§Chromosome(steinerPoints=[(0.39529914, 0.8549063), (0.88939416, 0.77288175), (0.756948, 0.6144535)], includedObstacleCornersIndices=set([8]))§5776§0.5303493
+532§2.1628203§2.1208167§Chromosome(steinerPoints=[(0.39529914, 0.8549063), (0.7583925, 0.6164075), (0.8901363, 0.7729369)], includedObstacleCornersIndices=set([8]))§111641§3.788708

@@ -1,0 +1,16 @@
+generation§population average§best§chromosome§function evaluations§runtime in seconds§svg
+1§4140001000§16.983507§Chromosome(steinerPoints=[(5.1082172, 7.9416246)], includedObstacleCornersIndices=set([26, 12, 37, 33, 28, 24, 32]))§673§0.84854406
+3§220000030§16.800077§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([14, 12, 24, 28, 48]))§1007§0.8845992
+6§160000030§16.350565§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([26, 48]))§1507§0.92206293
+7§280000030§16.151606§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([]))§1678§0.9344245
+11§120000020§16.13967§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([37]))§2350§0.97339714
+13§260000020§16.136616§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([32]))§2690§0.99190503
+14§200000020§16.131472§Chromosome(steinerPoints=[(3.5512924, 2.2975202)], includedObstacleCornersIndices=set([]))§2858§1.0014303
+15§280000030§16.12661§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([12, 37, 32, 24]))§3028§1.0123566
+16§240000020§16.111837§Chromosome(steinerPoints=[(3.134449, 2.5823407)], includedObstacleCornersIndices=set([]))§3199§1.0207219
+19§260000020§16.09685§Chromosome(steinerPoints=[(3.134449, 2.5823407)], includedObstacleCornersIndices=set([32]))§3711§1.044538
+27§260000020§16.088285§Chromosome(steinerPoints=[(3.2267678, 2.530331)], includedObstacleCornersIndices=set([37]))§5082§1.1044862
+37§260000020§16.073296§Chromosome(steinerPoints=[(3.2267678, 2.530331)], includedObstacleCornersIndices=set([37, 32]))§6808§1.1829993
+47§300000000§16.070587§Chromosome(steinerPoints=[(3.2267678, 2.530331), (5.1082172, 7.9416246)], includedObstacleCornersIndices=set([37, 24, 32]))§8547§1.2643253
+54§340000000§16.056702§Chromosome(steinerPoints=[(3.2267678, 2.530331), (3.7648103, 6.719467)], includedObstacleCornersIndices=set([37, 32]))§9784§1.3276681
+555§260000020§16.056486§Chromosome(steinerPoints=[(3.7648103, 6.719467), (3.2267678, 2.530331)], includedObstacleCornersIndices=set([37, 32, 24]))§116929§7.7502728

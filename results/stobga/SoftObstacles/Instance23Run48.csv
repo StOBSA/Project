@@ -1,0 +1,16 @@
+generation§population average§best§chromosome§function evaluations§runtime in seconds§svg
+1§3700000800§16.390839§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([30]))§677§1.0738463
+2§220000030§16.388554§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([30, 29]))§843§1.0899667
+3§100000024§16.148623§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([48, 32]))§1011§1.0976992
+12§180000020§16.136616§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([32]))§2545§1.1757932
+13§379999940§16.128645§Chromosome(steinerPoints=[(3.5512924, 2.2975202)], includedObstacleCornersIndices=set([48, 32, 12]))§2717§1.1832285
+14§280000030§16.116482§Chromosome(steinerPoints=[(3.5512924, 2.2975202)], includedObstacleCornersIndices=set([32]))§2887§1.1901785
+15§220000020§16.108854§Chromosome(steinerPoints=[(3.134449, 2.5823407)], includedObstacleCornersIndices=set([48, 32]))§3056§1.1972322
+16§220000020§16.105171§Chromosome(steinerPoints=[(3.134449, 2.5823407)], includedObstacleCornersIndices=set([48, 24, 32]))§3225§1.2041787
+17§200000020§16.100447§Chromosome(steinerPoints=[(3.2267678, 2.530331)], includedObstacleCornersIndices=set([37, 48, 12]))§3393§1.210835
+18§320000000§16.093164§Chromosome(steinerPoints=[(3.134449, 2.5823407)], includedObstacleCornersIndices=set([32, 24]))§3562§1.221037
+21§320000000§16.0846§Chromosome(steinerPoints=[(3.2267678, 2.530331)], includedObstacleCornersIndices=set([37, 24]))§4078§1.2440308
+26§240000020§16.07891§Chromosome(steinerPoints=[(3.2267678, 2.530331)], includedObstacleCornersIndices=set([37, 12, 32]))§4940§1.2861248
+29§320000000§16.073296§Chromosome(steinerPoints=[(3.2267678, 2.530331)], includedObstacleCornersIndices=set([32, 37]))§5454§1.3116529
+31§260000020§16.070587§Chromosome(steinerPoints=[(3.2267678, 2.530331), (5.1082172, 7.9416246)], includedObstacleCornersIndices=set([37, 24, 32]))§5805§1.3293011
+532§240000020§16.069613§Chromosome(steinerPoints=[(3.2267678, 2.530331)], includedObstacleCornersIndices=set([37, 32, 24]))§111367§5.2970138

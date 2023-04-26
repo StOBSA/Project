@@ -1,0 +1,14 @@
+function evaluations§best§chromosome§runtime in seconds
+2§0.96950686§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([]))§0.000054638
+2412§0.93205345§Chromosome(steinerPoints=[(0.5672034, 0.5444623)], includedObstacleCornersIndices=set([]))§0.037406
+4394§0.90159434§Chromosome(steinerPoints=[(0.5672034, 0.5444623), (0.36033583, 0.526219)], includedObstacleCornersIndices=set([]))§0.060199056
+10274§0.8983967§Chromosome(steinerPoints=[(0.5396408, 0.4651081), (0.37275463, 0.4708035)], includedObstacleCornersIndices=set([]))§0.25446767
+12111§0.89800245§Chromosome(steinerPoints=[(0.35126874, 0.4459451), (0.5522716, 0.455621), (0.36912277, 0.47148904)], includedObstacleCornersIndices=set([]))§0.2946598
+12121§0.896984§Chromosome(steinerPoints=[(0.35126874, 0.4459451), (0.5522716, 0.455621), (0.36912277, 0.47148904), (0.54521483, 0.46836102)], includedObstacleCornersIndices=set([]))§0.29487762
+12126§0.8966743§Chromosome(steinerPoints=[(0.54521483, 0.46836102), (0.5522716, 0.455621), (0.36912277, 0.47148904)], includedObstacleCornersIndices=set([]))§0.29503572
+12134§0.8964647§Chromosome(steinerPoints=[(0.54521483, 0.46836102), (0.36912277, 0.47148904)], includedObstacleCornersIndices=set([]))§0.29519397
+12458§0.89545614§Chromosome(steinerPoints=[(0.54521483, 0.46836102), (0.36912277, 0.47148904), (0.55844057, 0.46895143)], includedObstacleCornersIndices=set([]))§0.2991233
+17864§0.89451087§Chromosome(steinerPoints=[(0.55844057, 0.46895143), (0.35535932, 0.4846622)], includedObstacleCornersIndices=set([]))§0.36145034
+17907§0.89366794§Chromosome(steinerPoints=[(0.55844057, 0.46895143), (0.35535932, 0.4846622), (0.5520234, 0.4806142)], includedObstacleCornersIndices=set([]))§0.36195594
+17955§0.892961§Chromosome(steinerPoints=[(0.5520234, 0.4806142), (0.35535932, 0.4846622), (0.36128372, 0.49349126)], includedObstacleCornersIndices=set([]))§0.3626421
+157147§0.892961§Chromosome(steinerPoints=[(0.5520234, 0.4806142), (0.35535932, 0.4846622), (0.36128372, 0.49349126)], includedObstacleCornersIndices=set([]))§1.753298

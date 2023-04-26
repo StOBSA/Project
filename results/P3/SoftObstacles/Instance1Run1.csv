@@ -1,0 +1,24 @@
+generation§population average§best§chromosome§function evaluations§runtime in seconds§svg
+1§2.8868194§2.4027455§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([]))§672§0.18179907
+3§2.6603189§2.391042§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([17]))§1011§0.19401966
+6§2.515942§2.3904202§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([17, 7]))§1514§0.2093269
+8§2.465914§2.3823133§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([17, 8, 7]))§1851§0.21836638
+10§2.4419656§2.374062§Chromosome(steinerPoints=[(0.14995065, 0.33265412)], includedObstacleCornersIndices=set([4]))§2190§0.22699715
+12§2.4295402§2.3631983§Chromosome(steinerPoints=[(0.5644297, 0.7226435)], includedObstacleCornersIndices=set([]))§2530§0.23573342
+14§2.4192057§2.3514946§Chromosome(steinerPoints=[(0.5644297, 0.7226435)], includedObstacleCornersIndices=set([17]))§2869§0.24455445
+15§2.4202752§2.343487§Chromosome(steinerPoints=[(0.10671836, 0.3394257), (0.5644297, 0.7226435)], includedObstacleCornersIndices=set([17]))§3041§0.24923706
+18§2.415271§2.342766§Chromosome(steinerPoints=[(0.5644297, 0.7226435)], includedObstacleCornersIndices=set([17, 7, 8]))§3552§0.26324412
+20§2.4063933§2.3175578§Chromosome(steinerPoints=[(0.5644297, 0.7226435), (0.14995065, 0.33265412)], includedObstacleCornersIndices=set([8]))§3899§0.27292836
+25§2.3872457§2.308876§Chromosome(steinerPoints=[(0.75932854, 0.5893532), (0.5644297, 0.7226435), (0.14995065, 0.33265412)], includedObstacleCornersIndices=set([7, 16]))§4766§0.30100033
+26§2.382912§2.3057635§Chromosome(steinerPoints=[(0.75932854, 0.5893532), (0.5644297, 0.7226435), (0.14995065, 0.33265412)], includedObstacleCornersIndices=set([8, 7]))§4936§0.30657658
+28§2.372363§2.303657§Chromosome(steinerPoints=[(0.14995065, 0.33265412), (0.5644297, 0.7226435), (0.7675379, 0.5968199)], includedObstacleCornersIndices=set([]))§5278§0.31851447
+29§2.371108§2.3030353§Chromosome(steinerPoints=[(0.14995065, 0.33265412), (0.7675379, 0.5968199), (0.5644297, 0.7226435)], includedObstacleCornersIndices=set([7]))§5451§0.32477722
+34§2.3518991§2.2980525§Chromosome(steinerPoints=[(0.5644297, 0.7226435), (0.7675379, 0.5968199), (0.5046899, 0.8362386), (0.14995065, 0.33265412)], includedObstacleCornersIndices=set([]))§6309§0.35763276
+37§2.3411012§2.2974308§Chromosome(steinerPoints=[(0.5644297, 0.7226435), (0.7675379, 0.5968199), (0.5046899, 0.8362386), (0.14995065, 0.33265412)], includedObstacleCornersIndices=set([7]))§6829§0.37840542
+50§2.337437§2.295429§Chromosome(steinerPoints=[(0.5644297, 0.7226435), (0.5046899, 0.8362386), (0.7675379, 0.5968199), (0.14995065, 0.33265412), (0.54458016, 0.72617155)], includedObstacleCornersIndices=set([7]))§9100§0.4686572
+61§2.3292406§2.294534§Chromosome(steinerPoints=[(0.14995065, 0.33265412), (0.54458016, 0.72617155), (0.7675379, 0.5968199), (0.5046899, 0.8362386), (0.49693203, 0.8248326)], includedObstacleCornersIndices=set([7]))§11047§0.5563826
+127§2.3313904§2.2930942§Chromosome(steinerPoints=[(0.54458016, 0.72617155), (0.14995065, 0.33265412), (0.7675379, 0.5968199), (0.43412787, 0.6801726)], includedObstacleCornersIndices=set([7]))§23113§1.0813411
+131§2.332139§2.2909245§Chromosome(steinerPoints=[(0.54458016, 0.72617155), (0.7675379, 0.5968199), (0.43412787, 0.6801726), (0.14995065, 0.33265412), (0.52763253, 0.73568356)], includedObstacleCornersIndices=set([7]))§23870§1.1132451
+133§2.3300474§2.2904074§Chromosome(steinerPoints=[(0.14995065, 0.33265412), (0.52763253, 0.73568356), (0.7675379, 0.5968199), (0.43412787, 0.6801726)], includedObstacleCornersIndices=set([7]))§24241§1.129864
+142§2.3290207§2.28895§Chromosome(steinerPoints=[(0.52763253, 0.73568356), (0.7675379, 0.5968199), (0.14995065, 0.33265412), (0.43412787, 0.6801726), (0.5412076, 0.7459082)], includedObstacleCornersIndices=set([7]))§25972§1.2032859
+643§2.3090017§2.2888615§Chromosome(steinerPoints=[(0.14995065, 0.33265412), (0.5412076, 0.7459082), (0.7675379, 0.5968199), (0.43412787, 0.6801726)], includedObstacleCornersIndices=set([7]))§137312§5.4316254

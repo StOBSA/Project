@@ -1,0 +1,11 @@
+generation§population average§best§chromosome§function evaluations§runtime in seconds§svg
+1§3.031199§2.5543146§Chromosome(steinerPoints=[(0.5644297, 0.7226435)], includedObstacleCornersIndices=set([]))§1063§0.23635304
+2§2.814277§2.525096§Chromosome(steinerPoints=[(0.5644297, 0.7226435), (0.14995065, 0.33265412)], includedObstacleCornersIndices=set([]))§1338§0.24411963
+4§2.6343424§2.5234485§Chromosome(steinerPoints=[(0.8672816, 0.66623825), (0.5644297, 0.7226435), (0.14995065, 0.33265412), (0.5046899, 0.8362386)], includedObstacleCornersIndices=set([]))§1888§0.25767404
+5§2.599598§2.5174463§Chromosome(steinerPoints=[(0.5644297, 0.7226435), (0.5046899, 0.8362386), (0.14995065, 0.33265412), (0.54458016, 0.72617155)], includedObstacleCornersIndices=set([]))§2168§0.2644377
+7§2.5588505§2.5166686§Chromosome(steinerPoints=[(0.5644297, 0.7226435), (0.5046899, 0.8362386), (0.14995065, 0.33265412), (0.54458016, 0.72617155), (0.49693203, 0.8248326)], includedObstacleCornersIndices=set([]))§2718§0.27758902
+8§2.5465152§2.5083§Chromosome(steinerPoints=[(0.14995065, 0.33265412), (0.5644297, 0.7226435), (0.5046899, 0.8362386)], includedObstacleCornersIndices=set([7]))§2990§0.28484714
+12§2.5380688§2.5062983§Chromosome(steinerPoints=[(0.5644297, 0.7226435), (0.14995065, 0.33265412), (0.5046899, 0.8362386), (0.54458016, 0.72617155)], includedObstacleCornersIndices=set([7]))§4085§0.31604654
+13§2.5322053§2.5055149§Chromosome(steinerPoints=[(0.14995065, 0.33265412), (0.5644297, 0.7226435), (0.49693203, 0.8248326), (0.54458016, 0.72617155)], includedObstacleCornersIndices=set([7]))§4369§0.32482573
+15§2.5295737§2.5035589§Chromosome(steinerPoints=[(0.9063096, 0.7126548), (0.14995065, 0.33265412), (0.54458016, 0.72617155), (0.5046899, 0.8362386), (0.49693203, 0.8248326)], includedObstacleCornersIndices=set([7]))§4919§0.34184057
+516§2.5173614§2.503553§Chromosome(steinerPoints=[(0.14995065, 0.33265412), (0.9063096, 0.7126548), (0.49693203, 0.8248326), (0.54458016, 0.72617155)], includedObstacleCornersIndices=set([7]))§143299§5.4525695

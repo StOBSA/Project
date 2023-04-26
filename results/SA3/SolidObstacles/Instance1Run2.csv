@@ -1,0 +1,15 @@
+function evaluations§best§chromosome§runtime in seconds
+2§16.792788§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([]))§0.000300998
+10§16.243977§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([7]))§0.000955956
+136§14.924971§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([0]))§0.00590927
+169§14.67829§Chromosome(steinerPoints=[(5.0539637, 6.9060874)], includedObstacleCornersIndices=set([0]))§0.007142001
+10367§14.658989§Chromosome(steinerPoints=[(5.1326327, 6.7693276), (3.5959644, 2.7184412), (5.1720304, 6.555649), (3.6126335, 2.795071)], includedObstacleCornersIndices=set([0]))§0.5907149
+10369§14.651217§Chromosome(steinerPoints=[(5.1326327, 6.7693276), (3.6126335, 2.795071), (5.1720304, 6.555649)], includedObstacleCornersIndices=set([0]))§0.59084535
+10420§14.647221§Chromosome(steinerPoints=[(5.1720304, 6.555649), (3.5387285, 2.8263102)], includedObstacleCornersIndices=set([0]))§0.59208894
+10585§14.622953§Chromosome(steinerPoints=[(4.991856, 6.6350274), (3.5387285, 2.8263102)], includedObstacleCornersIndices=set([0]))§0.5959968
+10962§14.604131§Chromosome(steinerPoints=[(4.991856, 6.6350274), (3.542289, 2.795136), (5.1313095, 6.7714086)], includedObstacleCornersIndices=set([0]))§0.6029748
+11030§14.602374§Chromosome(steinerPoints=[(5.1313095, 6.7714086), (3.542289, 2.795136)], includedObstacleCornersIndices=set([0]))§0.6045007
+11185§14.596871§Chromosome(steinerPoints=[(5.1313095, 6.7714086), (3.542289, 2.795136), (5.0374794, 6.805971)], includedObstacleCornersIndices=set([0]))§0.6073601
+11207§14.594433§Chromosome(steinerPoints=[(5.0374794, 6.805971), (3.542289, 2.795136), (5.0844774, 6.849596)], includedObstacleCornersIndices=set([0]))§0.6078872
+11854§14.592874§Chromosome(steinerPoints=[(5.0675135, 6.880388), (3.542289, 2.795136), (5.0512223, 6.885868)], includedObstacleCornersIndices=set([0]))§0.6201872
+151046§14.592874§Chromosome(steinerPoints=[(5.0675135, 6.880388), (3.542289, 2.795136), (5.0512223, 6.885868)], includedObstacleCornersIndices=set([0]))§2.9569159

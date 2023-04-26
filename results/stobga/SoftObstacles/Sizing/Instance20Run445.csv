@@ -1,0 +1,13 @@
+generation§population average§best§chromosome§function evaluations§runtime in seconds§svg
+1§3.5595303§3.1028025§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([3]))§672§0.93227446
+3§3.285534§3.0774503§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([15, 3, 16]))§1009§0.9738025
+7§3.1540442§3.060724§Chromosome(steinerPoints=[(0.72322845, 0.5965917)], includedObstacleCornersIndices=set([15, 3, 16]))§1680§1.0502096
+13§3.136697§3.0558636§Chromosome(steinerPoints=[(0.6872314, 0.53573745)], includedObstacleCornersIndices=set([15, 16, 8, 6, 3]))§2695§1.1523839
+17§3.122496§3.0553434§Chromosome(steinerPoints=[(0.6872314, 0.53573745)], includedObstacleCornersIndices=set([28, 15, 16, 8, 3]))§3369§1.2418708
+18§3.1231997§3.0503368§Chromosome(steinerPoints=[(0.72322845, 0.5965917)], includedObstacleCornersIndices=set([28, 3, 15, 16, 8]))§3541§1.2663057
+19§3.1126916§3.0485704§Chromosome(steinerPoints=[(0.6872314, 0.53573745), (0.9598286, 0.7866192)], includedObstacleCornersIndices=set([8, 15, 3, 16]))§3713§1.2905102
+21§3.110372§3.0435638§Chromosome(steinerPoints=[(0.72322845, 0.5965917), (0.9598286, 0.7866192)], includedObstacleCornersIndices=set([8, 15, 16, 3]))§4051§1.3588386
+34§3.093217§3.041167§Chromosome(steinerPoints=[(0.72322845, 0.5965917), (0.9598286, 0.7866192), (0.41409504, 0.91810524)], includedObstacleCornersIndices=set([28, 3, 15, 16, 8]))§6281§1.7241873
+35§3.089876§3.038045§Chromosome(steinerPoints=[(0.72322845, 0.5965917), (0.72436714, 0.50475633), (0.9598286, 0.7866192)], includedObstacleCornersIndices=set([15, 16, 3, 8]))§6455§1.7563549
+42§3.07902§3.034673§Chromosome(steinerPoints=[(0.3977725, 0.89180285), (0.72322845, 0.5965917), (0.9598286, 0.7866192), (0.72436714, 0.50475633)], includedObstacleCornersIndices=set([28, 15, 16, 8]))§7672§1.9761388
+543§3.054694§3.034673§Chromosome(steinerPoints=[(0.9598286, 0.7866192), (0.72322845, 0.5965917), (0.72436714, 0.50475633), (0.3977725, 0.89180285)], includedObstacleCornersIndices=set([8, 28, 15, 16]))§113924§19.083319

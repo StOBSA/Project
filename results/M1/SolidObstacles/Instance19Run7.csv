@@ -1,0 +1,13 @@
+generation§population average§best§chromosome§function evaluations§runtime in seconds§svg
+1§140000000§2.5980444§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([8, 0, 12, 13, 18, 6, 7, 4, 2]))§1037§0.34709778
+2§2.904208§2.5977507§Chromosome(steinerPoints=[(0.5229438, 0.41975674)], includedObstacleCornersIndices=set([8, 0, 12, 13, 18, 6, 7, 4, 2]))§1323§0.37126398
+3§2.8349116§2.5796862§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([19, 13, 10, 1, 9]))§1594§0.3927488
+4§2.787115§2.5669622§Chromosome(steinerPoints=[(0.4694005, 0.41301262)], includedObstacleCornersIndices=set([10, 9, 16, 17, 1, 13]))§1862§0.41253698
+5§2.7519715§2.512492§Chromosome(steinerPoints=[(0.5261379, 0.415578)], includedObstacleCornersIndices=set([10, 9, 8, 13, 17, 1, 7]))§2130§0.43253472
+9§2.65728§2.5120761§Chromosome(steinerPoints=[(0.6080328, 0.5982756)], includedObstacleCornersIndices=set([8, 10, 17, 9, 7, 13, 1]))§3225§0.5118988
+11§40000004§2.4944832§Chromosome(steinerPoints=[(0.6080328, 0.5982756), (0.49313855, 0.4403734)], includedObstacleCornersIndices=set([8, 10, 9, 7, 4, 1, 13]))§3768§0.5523499
+16§2.563951§2.4925451§Chromosome(steinerPoints=[(0.6080328, 0.5982756), (0.62137, 0.40278178)], includedObstacleCornersIndices=set([13, 1, 7, 8, 10, 9]))§5188§0.64839697
+17§2.554443§2.4835746§Chromosome(steinerPoints=[(0.6080328, 0.5982756), (0.49313855, 0.4403734)], includedObstacleCornersIndices=set([1, 13, 7, 8, 10, 9]))§5469§0.6672816
+19§2.5443373§2.4805346§Chromosome(steinerPoints=[(0.49313855, 0.4403734), (0.62137, 0.40278178)], includedObstacleCornersIndices=set([13, 1, 10, 9, 7, 8]))§6018§0.7038244
+20§2.5365927§2.480048§Chromosome(steinerPoints=[(0.49313855, 0.4403734), (0.6080328, 0.5982756), (0.62137, 0.40278178)], includedObstacleCornersIndices=set([13, 1, 7, 8, 10, 9]))§6294§0.7224325
+521§40000004§2.480048§Chromosome(steinerPoints=[(0.49313855, 0.4403734), (0.62137, 0.40278178), (0.6080328, 0.5982756)], includedObstacleCornersIndices=set([1, 13, 7, 8, 9, 10]))§144875§10.559526

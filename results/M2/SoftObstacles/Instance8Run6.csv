@@ -1,0 +1,13 @@
+generation§population average§best§chromosome§function evaluations§runtime in seconds§svg
+1§2.024863§1.9347162§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([2, 3]))§672§0.022814225
+15§1.9558307§1.9251133§Chromosome(steinerPoints=[(0.36135304, 0.15612823)], includedObstacleCornersIndices=set([2, 3]))§3039§0.0468436
+33§1.9601284§1.9249§Chromosome(steinerPoints=[(0.36135304, 0.15612823), (0.8868867, 0.75659585)], includedObstacleCornersIndices=set([2, 3]))§6132§0.07989427
+49§1.9674516§1.9233819§Chromosome(steinerPoints=[(0.36135304, 0.15612823), (0.88806677, 0.7608386)], includedObstacleCornersIndices=set([2, 3]))§8904§0.11939413
+158§1.9702235§1.9195255§Chromosome(steinerPoints=[(0.88806677, 0.7608386), (0.36135304, 0.15612823), (0.36081368, 0.17774037)], includedObstacleCornersIndices=set([2, 3]))§29083§0.51740885
+173§1.9676709§1.9187895§Chromosome(steinerPoints=[(0.88806677, 0.7608386), (0.3733826, 0.18182522)], includedObstacleCornersIndices=set([3, 2]))§32023§0.5758076
+201§1.9607955§1.9181108§Chromosome(steinerPoints=[(0.88806677, 0.7608386), (0.3733826, 0.18182522), (0.8881047, 0.7798378)], includedObstacleCornersIndices=set([3, 2]))§37646§0.6911728
+206§1.9628301§1.9174542§Chromosome(steinerPoints=[(0.3733826, 0.18182522), (0.88806677, 0.7608386), (0.8933779, 0.76857007)], includedObstacleCornersIndices=set([2, 3]))§38629§0.7106537
+209§1.9603119§1.9167283§Chromosome(steinerPoints=[(0.8881047, 0.7798378), (0.3733826, 0.18182522)], includedObstacleCornersIndices=set([3, 2]))§39226§0.7224994
+377§1.9610225§1.9164313§Chromosome(steinerPoints=[(0.8881047, 0.7798378), (0.3733826, 0.18182522), (0.87280655, 0.7757485)], includedObstacleCornersIndices=set([3, 2]))§75428§1.4291167
+384§1.9535058§1.9160849§Chromosome(steinerPoints=[(0.3733826, 0.18182522), (0.87280655, 0.7757485)], includedObstacleCornersIndices=set([2, 3]))§77062§1.4605038
+885§1.9440322§1.916073§Chromosome(steinerPoints=[(0.37398422, 0.1860139), (0.87280655, 0.7757485)], includedObstacleCornersIndices=set([2, 3]))§193649§3.7460337

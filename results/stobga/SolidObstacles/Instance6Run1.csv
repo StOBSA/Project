@@ -1,0 +1,25 @@
+generation§population average§best§chromosome§function evaluations§runtime in seconds§svg
+1§1399999900§3.3101182§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([14, 18, 23, 20, 15, 7, 5, 9, 16, 6, 26, 24, 27, 11, 8]))§678§0.39959505
+3§140000020§3.2121277§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([9, 12, 24, 20, 13, 14, 7, 17, 0, 1, 16, 2, 15, 19, 5, 18, 3, 6]))§1013§0.44068456
+6§100000010§3.1679583§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([1, 18, 17, 2, 0, 13, 24, 14, 22, 9, 19, 8, 20, 4, 7, 21]))§1517§0.49817792
+7§80000010§3.1349206§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([24, 14, 18, 23, 20, 15, 7, 5, 9, 16, 6, 17, 27, 11, 8]))§1686§0.51665515
+8§140000020§3.0229273§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([17, 18, 5, 1, 0, 6, 9, 20, 12, 24, 13, 14, 10]))§1855§0.5353503
+12§80000010§2.98826§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([17, 13, 8, 18, 16, 25, 14, 6, 20, 5, 24]))§2529§0.6078624
+13§80000010§2.9281244§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([5, 24, 14, 13, 10, 17, 18, 16, 6, 20]))§2698§0.6251114
+18§100000010§2.8998404§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([5, 24, 10, 17, 18, 13, 6, 20, 14]))§3548§0.7086337
+20§160000020§2.8402598§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([18, 17, 20, 24, 14, 13, 12, 5, 9, 25, 6]))§3887§0.73956716
+26§300000000§2.8179786§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([17, 18, 9, 5, 25, 20, 24, 14, 13, 6]))§4901§0.8235688
+35§379999940§2.7973678§Chromosome(steinerPoints=[(0.89216286, 0.78545964)], includedObstacleCornersIndices=set([14, 9, 13, 25, 24, 6, 5, 20, 17, 18]))§6458§0.93989867
+39§399999940§2.783473§Chromosome(steinerPoints=[(0.6559654, 0.48572278), (0.89216286, 0.78545964)], includedObstacleCornersIndices=set([24, 14, 13, 6, 18, 17, 20, 5, 25, 9]))§7157§0.98965085
+45§320000030§2.7781332§Chromosome(steinerPoints=[(0.89216286, 0.78545964), (0.39991343, 0.17559218)], includedObstacleCornersIndices=set([14, 24, 13, 18, 17, 20, 5, 9, 6, 25]))§8196§1.0640258
+46§459999940§2.7679455§Chromosome(steinerPoints=[(0.39991343, 0.17559218), (0.89216286, 0.78545964), (0.8609069, 0.14372358), (0.5176535, 0.47735146)], includedObstacleCornersIndices=set([18, 17, 20, 5, 9, 25, 6, 24, 14, 13]))§8366§1.077192
+50§379999940§2.7641866§Chromosome(steinerPoints=[(0.89216286, 0.78545964), (0.39991343, 0.17559218), (0.6559654, 0.48572278)], includedObstacleCornersIndices=set([14, 13, 24, 18, 17, 20, 6, 5, 25]))§9070§1.131808
+55§499999870§2.7625113§Chromosome(steinerPoints=[(0.39991343, 0.1755922), (0.6559654, 0.48572278), (0.89216286, 0.78545964), (0.48813877, 0.43143964)], includedObstacleCornersIndices=set([25, 5, 9, 6, 20, 18, 17, 14, 13]))§9954§1.2080579
+56§379999940§2.7537596§Chromosome(steinerPoints=[(0.39991343, 0.17559218), (0.5176535, 0.47735146), (0.6559654, 0.48572278), (0.89216286, 0.78545964)], includedObstacleCornersIndices=set([18, 17, 20, 5, 9, 6, 25, 14, 24, 13]))§10130§1.2240318
+61§379999970§2.7510095§Chromosome(steinerPoints=[(0.6559654, 0.48572278), (0.89216286, 0.78545964), (0.5176535, 0.47735146), (0.39991343, 0.1755922), (0.10609982, 0.17452213)], includedObstacleCornersIndices=set([14, 13, 24, 9, 25, 5, 6, 18, 17, 20]))§11003§1.3056551
+65§419999900§2.7490313§Chromosome(steinerPoints=[(0.10609982, 0.17452213), (0.39991343, 0.17559218), (0.5176535, 0.47735146), (0.89216286, 0.78545964), (0.6559654, 0.48572278)], includedObstacleCornersIndices=set([18, 17, 20, 5, 9, 24, 6, 14, 13]))§11722§1.375018
+71§379999940§2.7484872§Chromosome(steinerPoints=[(0.10609982, 0.17452213), (0.39991343, 0.1755922), (0.5176535, 0.47735146), (0.6559654, 0.48572278), (0.89216286, 0.78545964)], includedObstacleCornersIndices=set([18, 17, 20, 14, 6, 5, 9, 13]))§12804§1.4802442
+72§359999970§2.7481024§Chromosome(steinerPoints=[(0.6559654, 0.48572278), (0.39991343, 0.17559218), (0.5176535, 0.47735146), (0.89216286, 0.78545964), (0.48577368, 0.4729617)], includedObstacleCornersIndices=set([18, 17, 24, 13, 20, 5, 14, 6]))§12983§1.4985054
+81§260000020§2.7453523§Chromosome(steinerPoints=[(0.6559654, 0.48572278), (0.39991343, 0.17559218), (0.5176535, 0.47735146), (0.89216286, 0.78545964), (0.48577368, 0.4729617), (0.10609982, 0.17452213)], includedObstacleCornersIndices=set([24, 13, 5, 14, 6, 20, 18, 17]))§14595§1.661022
+83§399999940§2.7448082§Chromosome(steinerPoints=[(0.39991343, 0.17559218), (0.5176535, 0.47735146), (0.48577368, 0.4729617), (0.10609982, 0.17452213), (0.6559654, 0.48572278), (0.89216286, 0.78545964)], includedObstacleCornersIndices=set([5, 6, 20, 18, 17, 14, 13]))§14962§1.6971607
+584§599999800§2.7445905§Chromosome(steinerPoints=[(0.89216286, 0.78545964), (0.48577368, 0.4729617), (0.39991343, 0.17559218), (0.6559654, 0.48572278), (0.10609982, 0.17452213)], includedObstacleCornersIndices=set([14, 5, 13, 6, 20, 18, 17]))§123337§11.035123

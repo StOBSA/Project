@@ -1,0 +1,23 @@
+function evaluations§best§chromosome§runtime in seconds
+2§2.4960225§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([]))§0.000317657
+68§2.4911644§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([17, 6, 5]))§0.00446239
+71§2.4852436§Chromosome(steinerPoints=[(0.7385514, 0.45692527)], includedObstacleCornersIndices=set([17, 6, 5]))§0.004672725
+482§2.46724§Chromosome(steinerPoints=[(0.53361785, 0.7085376), (0.14995065, 0.33265412), (0.68817806, 0.20168251)], includedObstacleCornersIndices=set([7]))§0.022935724
+544§2.4528928§Chromosome(steinerPoints=[(0.53361785, 0.7085376), (0.14995065, 0.33265412), (0.41054174, 0.45613965)], includedObstacleCornersIndices=set([]))§0.025684835
+590§2.4263887§Chromosome(steinerPoints=[(0.53361785, 0.7085376), (0.14995065, 0.33265412), (0.28679597, 0.5886496)], includedObstacleCornersIndices=set([16]))§0.027897315
+4480§2.4239259§Chromosome(steinerPoints=[(0.49171156, 0.7640434), (0.5046899, 0.8362386), (0.14208072, 0.30471575)], includedObstacleCornersIndices=set([7, 6]))§0.27399158
+4935§2.4115124§Chromosome(steinerPoints=[(0.49171156, 0.7640434), (0.14208072, 0.30471575), (0.87931824, 0.63498616), (0.5159905, 0.71102977)], includedObstacleCornersIndices=set([6]))§0.2993394
+4983§2.4111726§Chromosome(steinerPoints=[(0.49171156, 0.7640434), (0.14208072, 0.30471575), (0.5159905, 0.71102977), (0.8596694, 0.6537211)], includedObstacleCornersIndices=set([]))§0.30188087
+5389§2.4004927§Chromosome(steinerPoints=[(0.40564728, 0.6897649), (0.5289233, 0.7656171), (0.14995065, 0.33265412)], includedObstacleCornersIndices=set([16]))§0.32162365
+12730§2.3993413§Chromosome(steinerPoints=[(0.5644297, 0.7226435), (0.8672816, 0.66623825), (0.1716533, 0.37560654), (0.13455108, 0.34963185), (0.5046899, 0.8362386)], includedObstacleCornersIndices=set([]))§0.75184804
+16720§2.394234§Chromosome(steinerPoints=[(0.4981537, 0.8281686), (0.14117059, 0.33262193), (0.54368573, 0.7198487)], includedObstacleCornersIndices=set([6, 7]))§0.98297787
+18023§2.3932085§Chromosome(steinerPoints=[(0.5446336, 0.74255085), (0.4352706, 0.68200296), (0.8666232, 0.6771943), (0.12228791, 0.351134)], includedObstacleCornersIndices=set([6, 16]))§1.0553548
+18045§2.3885145§Chromosome(steinerPoints=[(0.5446336, 0.74255085), (0.4352706, 0.68200296), (0.8666232, 0.6771943), (0.12228791, 0.351134)], includedObstacleCornersIndices=set([6]))§1.056563
+18098§2.3836427§Chromosome(steinerPoints=[(0.5446336, 0.74255085), (0.4352706, 0.68200296), (0.8666232, 0.6771943), (0.12228791, 0.351134), (0.1513952, 0.3344559)], includedObstacleCornersIndices=set([6, 16]))§1.0588503
+18206§2.3789048§Chromosome(steinerPoints=[(0.5446336, 0.74255085), (0.4352706, 0.68200296), (0.8666232, 0.6771943), (0.1513952, 0.3344559)], includedObstacleCornersIndices=set([]))§1.0644867
+18374§2.3780608§Chromosome(steinerPoints=[(0.5446336, 0.74255085), (0.4352706, 0.68200296), (0.8666232, 0.6771943), (0.1513952, 0.3344559), (0.5339309, 0.7478371)], includedObstacleCornersIndices=set([]))§1.0711963
+108571§2.3777924§Chromosome(steinerPoints=[(0.8687562, 0.6808777), (0.14503604, 0.32604676), (0.5189285, 0.79359215), (0.4086576, 0.72322184), (0.51856047, 0.78207594), (0.42145282, 0.7169402)], includedObstacleCornersIndices=set([]))§5.199361
+213375§2.3750017§Chromosome(steinerPoints=[(0.14503604, 0.32604676), (0.41588795, 0.7031576), (0.5229791, 0.76632124), (0.86086375, 0.68626475)], includedObstacleCornersIndices=set([]))§9.215343
+262116§2.3743608§Chromosome(steinerPoints=[(0.52860475, 0.75164187), (0.16263105, 0.32426983), (0.87014204, 0.68556863), (0.44301873, 0.7118158)], includedObstacleCornersIndices=set([]))§11.365298
+262127§2.373277§Chromosome(steinerPoints=[(0.52860475, 0.75164187), (0.16263105, 0.32426983), (0.87014204, 0.68556863), (0.44301873, 0.7118158), (0.42723823, 0.7021794)], includedObstacleCornersIndices=set([]))§11.365835
+401319§2.373277§Chromosome(steinerPoints=[(0.52860475, 0.75164187), (0.16263105, 0.32426983), (0.87014204, 0.68556863), (0.44301873, 0.7118158), (0.42723823, 0.7021794)], includedObstacleCornersIndices=set([]))§17.363941

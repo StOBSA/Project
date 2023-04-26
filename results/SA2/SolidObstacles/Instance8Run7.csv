@@ -1,0 +1,19 @@
+function evaluations§best§chromosome§runtime in seconds
+2§10000000000§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([6, 8]))§0.000115331
+7§3.1955552§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([4, 6, 0]))§0.000286991
+15§3.0407193§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([4, 6, 0, 2, 1]))§0.00048223
+16§3.013315§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([4, 6, 0, 2, 1, 5]))§0.000581485
+17§2.653502§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([4, 6, 0, 2, 1, 5, 8]))§0.000666168
+18§2.6375546§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([8, 5, 0, 2, 1]))§0.000730323
+19§2.6142788§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([8, 5, 1, 2, 7]))§0.000804563
+20§2.6132236§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([8, 5, 1, 2]))§0.000861832
+21§2.6095498§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([8, 5, 1, 2, 6]))§0.000921216
+26§2.577837§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([8, 5, 1, 2, 7, 6, 3]))§0.001082708
+130§2.5772417§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([0, 2, 5, 1, 6]))§0.003201076
+194§2.5651007§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([2, 0, 3, 6, 1, 7]))§0.004858685
+273§2.5529106§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([5, 6, 1, 2]))§0.007012857
+463§2.5407696§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([3, 1, 2, 7, 6]))§0.011117467
+4967§2.5390294§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([6, 2, 1, 7]))§0.14656973
+4969§2.537974§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([6, 2, 1]))§0.14664847
+12244§2.5268312§Chromosome(steinerPoints=[(0.92108715, 0.8386997)], includedObstacleCornersIndices=set([6, 2, 7, 1]))§0.37711924
+151436§2.5268312§Chromosome(steinerPoints=[(0.92108715, 0.8386997)], includedObstacleCornersIndices=set([6, 2, 7, 1]))§3.112212

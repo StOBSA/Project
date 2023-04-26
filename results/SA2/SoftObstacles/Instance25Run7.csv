@@ -1,0 +1,14 @@
+function evaluations§best§chromosome§runtime in seconds
+2§10.144281§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([]))§0.000167971
+5§10.132978§Chromosome(steinerPoints=[(5.1672354, 3.608791)], includedObstacleCornersIndices=set([]))§0.000579393
+186§10.132555§Chromosome(steinerPoints=[(5.165166, 3.580107), (5.143149, 3.5915227)], includedObstacleCornersIndices=set([]))§0.006501284
+25420§10.131557§Chromosome(steinerPoints=[(6.509499, 2.7568822)], includedObstacleCornersIndices=set([]))§0.15495077
+25422§10.120749§Chromosome(steinerPoints=[(6.509499, 2.7568822), (5.0723453, 3.5439723)], includedObstacleCornersIndices=set([]))§0.15504463
+31899§10.11554§Chromosome(steinerPoints=[(6.509499, 2.7568822), (3.181716, 2.5581698)], includedObstacleCornersIndices=set([]))§0.20205252
+31903§10.1047325§Chromosome(steinerPoints=[(6.509499, 2.7568822), (3.181716, 2.5581698), (5.0723453, 3.5439723)], includedObstacleCornersIndices=set([]))§0.20220987
+35627§10.104666§Chromosome(steinerPoints=[(5.0723453, 3.5439723), (3.181716, 2.5581698), (5.1524644, 5.327967)], includedObstacleCornersIndices=set([]))§0.23592877
+36960§10.104361§Chromosome(steinerPoints=[(5.1524644, 5.327967), (3.181716, 2.5581698), (7.1166725, 2.5244772)], includedObstacleCornersIndices=set([]))§0.2482927
+36963§10.097881§Chromosome(steinerPoints=[(5.1524644, 5.327967), (3.181716, 2.5581698), (7.1166725, 2.5244772), (5.1777983, 3.6061697)], includedObstacleCornersIndices=set([]))§0.24841508
+86436§10.093282§Chromosome(steinerPoints=[(5.1777983, 3.6061697), (3.181716, 2.5581698), (7.1166725, 2.5244772), (5.202256, 6.167824)], includedObstacleCornersIndices=set([]))§0.80128086
+98904§10.087373§Chromosome(steinerPoints=[(5.1777983, 3.6061697), (3.181716, 2.5581698), (5.202256, 6.167824), (6.941216, 2.6030009)], includedObstacleCornersIndices=set([]))§0.9496716
+218404§10.087373§Chromosome(steinerPoints=[(5.1777983, 3.6061697), (3.181716, 2.5581698), (5.202256, 6.167824), (6.941216, 2.6030009)], includedObstacleCornersIndices=set([]))§2.3310893

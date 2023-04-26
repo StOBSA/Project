@@ -1,0 +1,19 @@
+function evaluations§best§chromosome§runtime in seconds
+2§10000000000§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([]))§0.000173912
+11§2.8253808§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([5, 2, 7, 6, 8, 0]))§0.000946996
+12§2.792613§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([5, 2, 7, 6, 8, 0, 3]))§0.001199721
+15§2.7331326§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([5, 0, 7, 6]))§0.001445149
+22§2.7199366§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([3, 0, 6, 7]))§0.001807705
+26§2.7188814§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([3, 0, 6]))§0.002037036
+38§2.6038542§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([3, 2, 8, 1, 4]))§0.002803804
+42§2.5974586§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([3, 2, 8, 1, 4, 7, 5, 6]))§0.003101978
+63§2.580037§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([5, 2, 3, 1, 6, 7, 0]))§0.004237063
+67§2.5789816§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([5, 2, 3, 1, 6, 0]))§0.004553648
+80§2.5640454§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([3, 2, 0, 1, 6]))§0.0052298
+90§2.5623052§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([6, 2, 0, 1]))§0.005769977
+140§2.5546508§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([1, 2, 6, 3, 5]))§0.008175831
+148§2.5397143§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([1, 2, 6, 3]))§0.008576935
+150§2.537974§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([1, 2, 6]))§0.008736927
+600§2.5281007§Chromosome(steinerPoints=[(0.92108715, 0.8386997), (0.29353768, 0.9124976)], includedObstacleCornersIndices=set([1, 2, 7, 6]))§0.019709809
+2207§2.5268312§Chromosome(steinerPoints=[(0.92108715, 0.8386997)], includedObstacleCornersIndices=set([2, 1, 6, 7]))§0.054387037
+141399§2.5268312§Chromosome(steinerPoints=[(0.92108715, 0.8386997)], includedObstacleCornersIndices=set([2, 1, 6, 7]))§2.9308672

@@ -1,0 +1,14 @@
+generation§population average§best§chromosome§function evaluations§runtime in seconds§svg
+1§3.607573§3.1060638§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([8]))§677§0.6335585
+3§3.2851586§3.1028025§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([3]))§1015§0.6578506
+6§3.1762607§3.0908113§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([15, 16]))§1518§0.6908881
+10§3.1523852§3.0895634§Chromosome(steinerPoints=[(0.3977725, 0.89180285)], includedObstacleCornersIndices=set([28, 6, 8]))§2196§0.7338234
+13§3.1431§3.0871837§Chromosome(steinerPoints=[(0.72436714, 0.50475633)], includedObstacleCornersIndices=set([3, 8]))§2705§0.7678824
+14§3.1352217§3.080983§Chromosome(steinerPoints=[(0.6872314, 0.53573745)], includedObstacleCornersIndices=set([8, 3]))§2873§0.77954084
+15§3.135529§3.0642662§Chromosome(steinerPoints=[(0.3977725, 0.89180285)], includedObstacleCornersIndices=set([15, 16, 8]))§3044§0.79988927
+16§3.1303465§3.0572057§Chromosome(steinerPoints=[(0.3977725, 0.89180285), (0.9598286, 0.7866192)], includedObstacleCornersIndices=set([15, 16, 8]))§3212§0.8231676
+19§3.1234481§3.0553434§Chromosome(steinerPoints=[(0.6872314, 0.53573745)], includedObstacleCornersIndices=set([16, 15, 8, 3, 28]))§3719§0.88531756
+21§3.1196842§3.0475402§Chromosome(steinerPoints=[(0.3977725, 0.89180285), (0.72322845, 0.5965917)], includedObstacleCornersIndices=set([15, 16, 8]))§4059§0.9126964
+27§3.094366§3.0404794§Chromosome(steinerPoints=[(0.9598286, 0.7866192), (0.3977725, 0.89180285), (0.72322845, 0.5965917)], includedObstacleCornersIndices=set([8, 15, 16]))§5089§0.9998302
+36§3.0799484§3.0349605§Chromosome(steinerPoints=[(0.72322845, 0.5965917), (0.72436714, 0.50475633), (0.3977725, 0.89180285), (0.9598286, 0.7866192)], includedObstacleCornersIndices=set([15, 16, 8]))§6637§1.143816
+537§3.0540276§3.034673§Chromosome(steinerPoints=[(0.3977725, 0.89180285), (0.72322845, 0.5965917), (0.72436714, 0.50475633), (0.9598286, 0.7866192)], includedObstacleCornersIndices=set([16, 15, 28, 8]))§112558§13.538093

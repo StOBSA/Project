@@ -1,0 +1,23 @@
+function evaluations§best§chromosome§runtime in seconds
+2§2.5013533§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([13]))§0.000524571
+81§2.4865954§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([6, 5, 7, 17]))§0.005894774
+1433§2.4465406§Chromosome(steinerPoints=[(0.20056945, 0.37339056), (0.48562655, 0.89180785), (0.15977451, 0.4104673), (0.77989304, 0.48325494), (0.5841585, 0.7178375)], includedObstacleCornersIndices=set([16, 7]))§0.08931929
+1835§2.4234369§Chromosome(steinerPoints=[(0.20056945, 0.37339056), (0.5841585, 0.7178375)], includedObstacleCornersIndices=set([6]))§0.11367023
+4811§2.4230373§Chromosome(steinerPoints=[(0.6105735, 0.71795434), (0.85427994, 0.6747239), (0.14995065, 0.33265412)], includedObstacleCornersIndices=set([13, 16]))§0.26438746
+4813§2.415961§Chromosome(steinerPoints=[(0.6105735, 0.71795434), (0.85427994, 0.6747239), (0.14995065, 0.33265412)], includedObstacleCornersIndices=set([16]))§0.26453084
+4816§2.4112668§Chromosome(steinerPoints=[(0.6105735, 0.71795434), (0.85427994, 0.6747239), (0.14995065, 0.33265412)], includedObstacleCornersIndices=set([]))§0.2646972
+5501§2.4105375§Chromosome(steinerPoints=[(0.6105735, 0.71795434), (0.15114851, 0.3453231), (0.3000611, 0.4697907), (0.5656955, 0.72934365)], includedObstacleCornersIndices=set([7, 13]))§0.30408943
+5517§2.405233§Chromosome(steinerPoints=[(0.6105735, 0.71795434), (0.15114851, 0.3453231), (0.3000611, 0.4697907), (0.5656955, 0.72934365)], includedObstacleCornersIndices=set([7, 6]))§0.3048701
+5819§2.4032564§Chromosome(steinerPoints=[(0.5656955, 0.72934365), (0.15114851, 0.3453231), (0.8672816, 0.66623825)], includedObstacleCornersIndices=set([6, 16]))§0.32188544
+5869§2.3985357§Chromosome(steinerPoints=[(0.5656955, 0.72934365), (0.15114851, 0.3453231), (0.8672816, 0.66623825)], includedObstacleCornersIndices=set([]))§0.32420847
+14405§2.3942726§Chromosome(steinerPoints=[(0.8672816, 0.66623825), (0.33471963, 0.58283216), (0.14503604, 0.32604676), (0.5644297, 0.7226435)], includedObstacleCornersIndices=set([]))§0.93287164
+16550§2.3868656§Chromosome(steinerPoints=[(0.15766716, 0.32042506), (0.51206285, 0.7917715), (0.53847796, 0.7186541), (0.15710995, 0.33319676), (0.8672816, 0.66623825), (0.49576074, 0.82540464)], includedObstacleCornersIndices=set([]))§1.0749655
+25187§2.3843017§Chromosome(steinerPoints=[(0.4309035, 0.75793827), (0.8628125, 0.6800209), (0.14995065, 0.33265412), (0.530363, 0.80413353)], includedObstacleCornersIndices=set([6]))§1.6205773
+25280§2.3824108§Chromosome(steinerPoints=[(0.4309035, 0.75793827), (0.8628125, 0.6800209), (0.14995065, 0.33265412), (0.530363, 0.80413353), (0.4108057, 0.7427029)], includedObstacleCornersIndices=set([]))§1.6258825
+25294§2.381943§Chromosome(steinerPoints=[(0.4108057, 0.7427029), (0.8628125, 0.6800209), (0.14995065, 0.33265412), (0.530363, 0.80413353)], includedObstacleCornersIndices=set([]))§1.6267529
+25391§2.3791704§Chromosome(steinerPoints=[(0.4108057, 0.7427029), (0.8628125, 0.6800209), (0.14995065, 0.33265412), (0.51908576, 0.79290736)], includedObstacleCornersIndices=set([]))§1.6315086
+122869§2.3780284§Chromosome(steinerPoints=[(0.1583793, 0.32064945), (0.8702259, 0.6862037), (0.513192, 0.79928815), (0.42508242, 0.7446116)], includedObstacleCornersIndices=set([]))§6.7472825
+122885§2.3775208§Chromosome(steinerPoints=[(0.1583793, 0.32064945), (0.8702259, 0.6862037), (0.513192, 0.79928815), (0.41397107, 0.7364658)], includedObstacleCornersIndices=set([]))§6.748253
+171378§2.3772008§Chromosome(steinerPoints=[(0.41903874, 0.70646405), (0.14503604, 0.32604676), (0.5230279, 0.7696971), (0.8746605, 0.69527304)], includedObstacleCornersIndices=set([]))§8.844576
+175488§2.3768637§Chromosome(steinerPoints=[(0.14232725, 0.33258638), (0.52195364, 0.7826134), (0.41850013, 0.7221105), (0.86935264, 0.6830967)], includedObstacleCornersIndices=set([]))§9.02347
+314680§2.3768637§Chromosome(steinerPoints=[(0.14232725, 0.33258638), (0.52195364, 0.7826134), (0.41850013, 0.7221105), (0.86935264, 0.6830967)], includedObstacleCornersIndices=set([]))§15.990574

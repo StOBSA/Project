@@ -1,0 +1,13 @@
+generation§population average§best§chromosome§function evaluations§runtime in seconds§svg
+1§3.6259043§3.0927026§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([8, 3]))§670§1.0312536
+7§3.182461§3.0908113§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([16, 15]))§1679§1.162195
+9§3.1555142§3.0807118§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([16, 15, 8]))§2016§1.2017064
+10§3.1500993§3.0673506§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([16, 15, 8, 3]))§2184§1.2224101
+11§3.1436837§3.0652416§Chromosome(steinerPoints=[(0.41409504, 0.91810524)], includedObstacleCornersIndices=set([16, 3, 8, 15]))§2350§1.2429988
+16§3.1288176§3.0639858§Chromosome(steinerPoints=[(0.72322845, 0.5965917)], includedObstacleCornersIndices=set([16, 8, 15]))§3199§1.3482041
+17§3.125551§3.0485153§Chromosome(steinerPoints=[(0.41409504, 0.91810524), (0.72322845, 0.5965917)], includedObstacleCornersIndices=set([16, 3, 15, 8]))§3371§1.3735961
+21§3.1168184§3.0413744§Chromosome(steinerPoints=[(0.9598286, 0.7866192), (0.41409504, 0.91810524), (0.72322845, 0.5965917)], includedObstacleCornersIndices=set([15, 16, 8]))§4050§1.5432105
+33§3.082812§3.0358555§Chromosome(steinerPoints=[(0.41409504, 0.91810524), (0.72322845, 0.5965917), (0.72436714, 0.50475633), (0.9598286, 0.7866192)], includedObstacleCornersIndices=set([16, 15, 8]))§6114§1.8810744
+40§3.08105§3.0350773§Chromosome(steinerPoints=[(0.9598286, 0.7866192), (0.41409504, 0.91810524), (0.72322845, 0.5965917), (0.72436714, 0.50475633), (0.40292615, 0.89031357)], includedObstacleCornersIndices=set([8, 16, 15]))§7320§2.1086948
+46§3.0759473§3.0346675§Chromosome(steinerPoints=[(0.40292615, 0.89031357), (0.9598286, 0.7866192), (0.72322845, 0.5965917), (0.72436714, 0.50475633)], includedObstacleCornersIndices=set([28, 15, 16, 8]))§8365§2.3534281
+547§3.0588198§3.0346675§Chromosome(steinerPoints=[(0.40292615, 0.89031357), (0.72322845, 0.5965917), (0.72436714, 0.50475633), (0.9598286, 0.7866192)], includedObstacleCornersIndices=set([15, 16, 28, 8]))§114543§25.729864

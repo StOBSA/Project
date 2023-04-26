@@ -1,0 +1,13 @@
+generation§population average§best§chromosome§function evaluations§runtime in seconds§svg
+1§3.5189188§3.094055§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([15, 3, 8]))§671§0.50030035
+4§3.2162383§3.0927026§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([3, 8]))§1177§0.5344301
+10§3.1452937§3.0807118§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([15, 8, 16]))§2186§0.61509675
+11§3.1383817§3.0740852§Chromosome(steinerPoints=[(0.72322845, 0.5965917)], includedObstacleCornersIndices=set([15, 16]))§2355§0.6265685
+13§3.1368525§3.0673506§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([8, 3, 15, 16]))§2693§0.6670291
+14§3.1333303§3.0631092§Chromosome(steinerPoints=[(0.9598286, 0.7866192), (0.72322845, 0.5965917), (0.72436714, 0.50475633)], includedObstacleCornersIndices=set([28, 3, 8]))§2865§0.67954063
+16§3.127796§3.0506244§Chromosome(steinerPoints=[(0.72322845, 0.5965917)], includedObstacleCornersIndices=set([8, 3, 15, 16]))§3208§0.70444316
+19§3.1281157§3.0435638§Chromosome(steinerPoints=[(0.9598286, 0.7866192), (0.72322845, 0.5965917)], includedObstacleCornersIndices=set([3, 8, 15, 16]))§3716§0.74430937
+21§3.1178062§3.038045§Chromosome(steinerPoints=[(0.9598286, 0.7866192), (0.72322845, 0.5965917), (0.72436714, 0.50475633)], includedObstacleCornersIndices=set([8, 3, 15, 16]))§4062§0.78989303
+25§3.0983865§3.035648§Chromosome(steinerPoints=[(0.41409504, 0.91810524), (0.9598286, 0.7866192), (0.72322845, 0.5965917), (0.72436714, 0.50475633)], includedObstacleCornersIndices=set([3, 15, 16, 28, 8]))§4756§0.8777836
+49§3.0695403§3.0347898§Chromosome(steinerPoints=[(0.72322845, 0.5965917), (0.72436714, 0.50475633), (0.9598286, 0.7866192), (0.41409504, 0.91810524), (0.40292615, 0.89031357)], includedObstacleCornersIndices=set([8, 28, 15, 16]))§8917§1.3821149
+550§3.0545113§3.0346675§Chromosome(steinerPoints=[(0.40292615, 0.89031357), (0.72322845, 0.5965917), (0.72436714, 0.50475633), (0.9598286, 0.7866192)], includedObstacleCornersIndices=set([15, 16, 28, 8]))§115808§20.142859

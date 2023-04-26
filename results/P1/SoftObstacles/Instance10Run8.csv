@@ -1,0 +1,11 @@
+generation§population average§best§chromosome§function evaluations§runtime in seconds§svg
+1§2.2930622§1.9280776§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([1, 3]))§669§0.07621086
+2§2.170199§1.8865021§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([]))§837§0.07966631
+7§1.9426415§1.8818989§Chromosome(steinerPoints=[(0.8780974, 0.7732695)], includedObstacleCornersIndices=set([]))§1676§0.090210915
+31§1.9272665§1.8812534§Chromosome(steinerPoints=[(0.8780974, 0.7732695), (0.43657535, 0.23170567)], includedObstacleCornersIndices=set([]))§5765§0.14023478
+237§1.9079577§1.8801326§Chromosome(steinerPoints=[(0.43657535, 0.23170567), (0.8780974, 0.7732695), (0.64085734, 0.290432)], includedObstacleCornersIndices=set([]))§44782§0.7728231
+484§1.8967115§1.879939§Chromosome(steinerPoints=[(0.6690509, 0.30241174), (0.8780974, 0.7732695), (0.43657535, 0.23170567), (0.64085734, 0.290432)], includedObstacleCornersIndices=set([]))§100030§1.7015179
+602§1.8969646§1.8797046§Chromosome(steinerPoints=[(0.43657535, 0.23170567), (0.6690509, 0.30241174), (0.40934625, 0.25815836), (0.8780974, 0.7732695), (0.64085734, 0.290432), (0.31022438, 0.36167026)], includedObstacleCornersIndices=set([]))§127416§2.2149315
+761§1.8942591§1.8794798§Chromosome(steinerPoints=[(0.8780974, 0.7732695), (0.43657535, 0.23170567), (0.65993446, 0.29786438), (0.34893137, 0.322495), (0.6690509, 0.30241174), (0.3781867, 0.28983918)], includedObstacleCornersIndices=set([]))§164363§3.1154425
+808§1.8936466§1.8792429§Chromosome(steinerPoints=[(0.65993446, 0.29786438), (0.6690509, 0.30241174), (0.8780974, 0.7732695), (0.43657535, 0.23170567), (0.34893137, 0.322495), (0.3781867, 0.28983918), (0.20058814, 0.48814255)], includedObstacleCornersIndices=set([]))§175366§3.3934014
+1309§1.886308§1.8791666§Chromosome(steinerPoints=[(0.6690509, 0.30241174), (0.65993446, 0.29786438), (0.8780974, 0.7732695), (0.20058814, 0.48814255), (0.36483878, 0.30079484), (0.43657535, 0.23170567)], includedObstacleCornersIndices=set([]))§291819§6.1116424

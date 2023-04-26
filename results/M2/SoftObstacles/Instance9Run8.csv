@@ -1,0 +1,11 @@
+generation§population average§best§chromosome§function evaluations§runtime in seconds§svg
+1§1.9759516§1.9286945§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([3]))§672§0.022868866
+25§1.9420899§1.9276208§Chromosome(steinerPoints=[(0.29229194, 0.32730734)], includedObstacleCornersIndices=set([3]))§4736§0.059778657
+50§1.9571661§1.9254485§Chromosome(steinerPoints=[(0.29229194, 0.32730734), (0.41283417, 0.2099816)], includedObstacleCornersIndices=set([3]))§9101§0.106067576
+68§1.959189§1.92203§Chromosome(steinerPoints=[(0.29229194, 0.32730734), (0.41283417, 0.2099816), (0.85865986, 0.77608377)], includedObstacleCornersIndices=set([3]))§12276§0.15085067
+81§1.9685491§1.9207246§Chromosome(steinerPoints=[(0.85865986, 0.77608377), (0.41283417, 0.2099816), (0.18903337, 0.4784334)], includedObstacleCornersIndices=set([3]))§14635§0.19250816
+83§1.9608235§1.9193592§Chromosome(steinerPoints=[(0.18903337, 0.4784334), (0.29229194, 0.32730734), (0.41283417, 0.2099816), (0.85865986, 0.77608377)], includedObstacleCornersIndices=set([3]))§14993§0.19929378
+130§1.9658967§1.9178343§Chromosome(steinerPoints=[(0.18903337, 0.4784334), (0.29229194, 0.32730734), (0.41283417, 0.2099816), (0.37221426, 0.24812813), (0.8719139, 0.7629412), (0.20136148, 0.44227248)], includedObstacleCornersIndices=set([3]))§23646§0.4361639
+190§1.9584157§1.9171355§Chromosome(steinerPoints=[(0.8719139, 0.7629412), (0.19916713, 0.4518956), (0.41283417, 0.2099816), (0.33321285, 0.28743428), (0.88073885, 0.7790693)], includedObstacleCornersIndices=set([3]))§35301§0.79262835
+262§1.9543377§1.9168808§Chromosome(steinerPoints=[(0.88073885, 0.7790693), (0.41283417, 0.2099816), (0.19916713, 0.4518956), (0.3052873, 0.31431225)], includedObstacleCornersIndices=set([3]))§49951§1.1701558
+763§1.9398423§1.9167123§Chromosome(steinerPoints=[(0.88073885, 0.7790693), (0.41283417, 0.2099816), (0.36992943, 0.25105828), (0.316461, 0.3037142), (0.19916713, 0.4518956), (0.2179618, 0.42793626)], includedObstacleCornersIndices=set([3]))§164982§4.284047

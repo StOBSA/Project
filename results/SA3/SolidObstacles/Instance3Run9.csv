@@ -1,0 +1,7 @@
+function evaluations§best§chromosome§runtime in seconds
+2§10000000000§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([]))§0.000196376
+7§6.946461§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([6]))§0.000551354
+31§6.415654§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([6, 8, 9, 7]))§0.001437757
+191§6.363984§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([6, 8, 7, 10]))§0.005511548
+302§5.66619§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([0, 5, 4]))§0.007339054
+139494§5.66619§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([0, 5, 4]))§1.6896307

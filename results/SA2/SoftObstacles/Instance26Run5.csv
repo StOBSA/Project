@@ -1,0 +1,15 @@
+function evaluations§best§chromosome§runtime in seconds
+2§12.315004§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([]))§0.000184325
+6917§12.2363615§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([15, 47]))§0.36092535
+7322§12.223042§Chromosome(steinerPoints=[(4.8323684, 3.608248)], includedObstacleCornersIndices=set([47]))§0.36592585
+8894§12.195803§Chromosome(steinerPoints=[(5.6062055, 4.0590796), (6.8744755, 2.4228222), (5.608927, 3.8629186), (5.5619764, 3.6668339)], includedObstacleCornersIndices=set([47, 37]))§0.39852676
+9901§12.129593§Chromosome(steinerPoints=[(5.2898893, 3.6221647), (5.225745, 3.6532202)], includedObstacleCornersIndices=set([37, 47]))§0.41322726
+14427§12.122698§Chromosome(steinerPoints=[(4.811423, 6.53636), (4.9180217, 3.5435154)], includedObstacleCornersIndices=set([47, 37]))§0.4765401
+15595§12.098917§Chromosome(steinerPoints=[(4.6273255, 5.4995785)], includedObstacleCornersIndices=set([37, 47]))§0.49580002
+15623§12.06966§Chromosome(steinerPoints=[(4.6273255, 5.4995785), (4.7963486, 3.5946586)], includedObstacleCornersIndices=set([37, 47]))§0.49630454
+36917§12.041713§Chromosome(steinerPoints=[(4.8418145, 5.153037), (4.7028055, 6.2126436)], includedObstacleCornersIndices=set([37, 47]))§0.74615747
+36923§12.034642§Chromosome(steinerPoints=[(4.8418145, 5.153037), (4.7028055, 6.2126436), (4.906892, 3.548835)], includedObstacleCornersIndices=set([37, 47]))§0.7463419
+36973§12.030279§Chromosome(steinerPoints=[(4.906892, 3.548835), (4.7028055, 6.2126436)], includedObstacleCornersIndices=set([37, 47]))§0.74740297
+37029§12.028386§Chromosome(steinerPoints=[(4.906892, 3.548835), (4.7028055, 6.2126436), (4.863173, 3.5706575)], includedObstacleCornersIndices=set([37, 47]))§0.74833375
+79603§12.024707§Chromosome(steinerPoints=[(4.863173, 3.5706575), (4.7438927, 6.041949)], includedObstacleCornersIndices=set([37, 47]))§1.2702519
+218795§12.024707§Chromosome(steinerPoints=[(4.863173, 3.5706575), (4.7438927, 6.041949)], includedObstacleCornersIndices=set([37, 47]))§2.8526225

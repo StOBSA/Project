@@ -1,0 +1,17 @@
+function evaluations§best§chromosome§runtime in seconds
+2§10000000000§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([4, 5]))§0.001320677
+4§3.8953962§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([4, 5, 1]))§0.00188764
+10§3.5150988§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([4, 5, 1, 8, 9]))§0.003376842
+12§3.5064454§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([4, 5, 1, 8, 9, 7]))§0.004065565
+14§3.3244495§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([0, 5, 1, 8, 9, 7, 6]))§0.004870216
+23§3.1453676§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([0, 3, 1, 4, 9, 7]))§0.006842698
+27§3.0982213§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([0, 3, 1, 4, 9]))§0.007380438
+28§2.9941287§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([0, 3, 1, 4, 9, 2]))§0.007674358
+121§2.8216648§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([2, 8, 3, 9]))§0.016932672
+257§2.8203518§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([2]))§0.024666488
+308§2.7657378§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([2, 5, 7, 6]))§0.02757357
+8760§2.7642097§Chromosome(steinerPoints=[(0.07659507, 0.099438876)], includedObstacleCornersIndices=set([2, 8, 9, 6]))§0.88607687
+9577§2.763343§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([2, 9, 8, 6]))§0.9497357
+11286§2.75022§Chromosome(steinerPoints=[(0.01671617, 0.8633711), (0.6879361, 0.274196), (0.8362087, 0.118673846), (0.08574775, 0.11146358), (0.7187227, 0.28126603)], includedObstacleCornersIndices=set([8, 2, 9, 6]))§1.0968041
+15753§2.7420807§Chromosome(steinerPoints=[(0.0763326, 0.0982514), (0.81445247, 0.12459756), (0.71876144, 0.2802855)], includedObstacleCornersIndices=set([2, 9]))§1.462725
+154945§2.7420807§Chromosome(steinerPoints=[(0.0763326, 0.0982514), (0.81445247, 0.12459756), (0.71876144, 0.2802855)], includedObstacleCornersIndices=set([2, 9]))§11.32088

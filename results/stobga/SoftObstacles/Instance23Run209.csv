@@ -1,0 +1,17 @@
+generation§population average§best§chromosome§function evaluations§runtime in seconds§svg
+1§4520001000§18.347748§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([25, 48, 32, 28, 31, 37]))§671§1.4393145
+2§660000260§17.221998§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([38, 30, 17, 25, 48]))§838§1.4935416
+4§100000024§16.890125§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([23, 30, 48]))§1173§1.5449679
+6§220000030§16.771173§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([14, 30]))§1509§1.5708146
+7§280000030§16.523561§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([25, 32, 37]))§1679§1.5827875
+9§340000030§16.362288§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([32, 38]))§2017§1.6036515
+11§180000030§16.33856§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([26]))§2354§1.6238228
+13§120000020§16.311634§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([32, 37, 26]))§2696§1.6428354
+15§320000030§16.151606§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([]))§3033§1.6603006
+16§340000000§16.13967§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([37]))§3202§1.6689622
+17§220000020§16.136686§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([37, 32, 48]))§3372§1.6762366
+19§240000020§16.12661§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([24, 37, 32, 12]))§3708§1.6908634
+20§240000020§16.085302§Chromosome(steinerPoints=[(3.2267678, 2.530331)], includedObstacleCornersIndices=set([37, 32, 48]))§3880§1.7020701
+32§419999900§16.073296§Chromosome(steinerPoints=[(3.2267678, 2.530331)], includedObstacleCornersIndices=set([37, 32]))§5933§1.8686072
+38§359999970§16.069613§Chromosome(steinerPoints=[(3.2267678, 2.530331)], includedObstacleCornersIndices=set([24, 37, 32]))§6969§1.9297434
+539§180000020§16.069613§Chromosome(steinerPoints=[(3.2267678, 2.530331)], includedObstacleCornersIndices=set([24, 37, 32]))§112966§9.735032

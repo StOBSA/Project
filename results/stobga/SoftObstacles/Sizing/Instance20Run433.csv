@@ -1,0 +1,24 @@
+generation§population average§best§chromosome§function evaluations§runtime in seconds§svg
+1§3.7593098§3.1060638§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([8]))§670§1.0913742
+3§3.433376§3.103035§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([6, 3]))§1006§1.1384382
+6§3.2475564§3.0927026§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([8, 3]))§1507§1.2006638
+9§3.1674228§3.0807118§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([16, 8, 15]))§2017§1.2594594
+12§3.147708§3.0797746§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([16, 3, 8, 15, 20]))§2524§1.3180285
+13§3.1405442§3.0673506§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([16, 3, 8, 15]))§2694§1.3378482
+16§3.1310098§3.0642662§Chromosome(steinerPoints=[(0.3977725, 0.89180285)], includedObstacleCornersIndices=set([16, 8, 15]))§3201§1.398378
+20§3.126711§3.0517955§Chromosome(steinerPoints=[(0.72865844, 0.6079824)], includedObstacleCornersIndices=set([8, 16, 3, 15]))§3883§1.4867089
+22§3.1153638§3.0504298§Chromosome(steinerPoints=[(0.3977725, 0.89180285), (0.72865844, 0.6079824)], includedObstacleCornersIndices=set([16, 15, 8, 20]))§4225§1.5323913
+23§3.112962§3.048711§Chromosome(steinerPoints=[(0.3977725, 0.89180285), (0.72865844, 0.6079824)], includedObstacleCornersIndices=set([8, 16, 15]))§4399§1.5569617
+24§3.1052783§3.0477726§Chromosome(steinerPoints=[(0.3977725, 0.89180285), (0.72322845, 0.5965917)], includedObstacleCornersIndices=set([16, 15, 8, 6]))§4572§1.5809634
+26§3.1120737§3.0444472§Chromosome(steinerPoints=[(0.72865844, 0.6079824), (0.9598286, 0.7866192)], includedObstacleCornersIndices=set([15, 16, 8, 3, 28]))§4913§1.6311249
+30§3.10253§3.043369§Chromosome(steinerPoints=[(0.3977725, 0.89180285), (0.72865844, 0.6079824), (0.9598286, 0.7866192)], includedObstacleCornersIndices=set([16, 15, 20, 8]))§5597§1.7401032
+31§3.1003897§3.0415952§Chromosome(steinerPoints=[(0.3977725, 0.89180285), (0.72865844, 0.6079824), (0.9598286, 0.7866192)], includedObstacleCornersIndices=set([16, 15, 6, 28, 8]))§5766§1.7683283
+36§3.088487§3.0407119§Chromosome(steinerPoints=[(0.9598286, 0.7866192), (0.72322845, 0.5965917), (0.3977725, 0.89180285)], includedObstacleCornersIndices=set([8, 6, 15, 16]))§6626§1.911828
+37§3.0841718§3.0392158§Chromosome(steinerPoints=[(0.72865844, 0.6079824), (0.9598286, 0.7866192), (0.72436714, 0.50475633)], includedObstacleCornersIndices=set([15, 16, 3, 8]))§6798§1.943785
+38§3.085857§3.0371068§Chromosome(steinerPoints=[(0.72865844, 0.6079824), (0.41409504, 0.91810524), (0.72436714, 0.50475633), (0.9598286, 0.7866192)], includedObstacleCornersIndices=set([16, 15, 3, 8]))§6972§1.9757
+39§3.0820816§3.0361316§Chromosome(steinerPoints=[(0.9598286, 0.7866192), (0.72865844, 0.6079824), (0.3977725, 0.89180285), (0.72436714, 0.50475633)], includedObstacleCornersIndices=set([8, 16, 15]))§7142§2.0091484
+42§3.078659§3.0352468§Chromosome(steinerPoints=[(0.3977725, 0.89180285), (0.72322845, 0.5965917), (0.73080343, 0.5308269), (0.9598286, 0.7866192)], includedObstacleCornersIndices=set([16, 15, 28, 8]))§7667§2.1046524
+221§3.0704215§3.0336099§Chromosome(steinerPoints=[(0.72322845, 0.5965917), (0.3977725, 0.89180285), (0.9598286, 0.7866192), (0.7136454, 0.51021844)], includedObstacleCornersIndices=set([8, 16, 15]))§41509§6.776669
+232§3.0684419§3.0310953§Chromosome(steinerPoints=[(0.72322845, 0.5965917), (0.7136454, 0.51021844), (0.9598286, 0.7866192), (0.3977725, 0.89180285), (0.72359335, 0.51374215)], includedObstacleCornersIndices=set([28, 8, 16, 15]))§43752§7.0454273
+246§3.0607746§3.0306933§Chromosome(steinerPoints=[(0.9598286, 0.7866192), (0.72322845, 0.5965917), (0.6728828, 0.47791782), (0.72359335, 0.51374215), (0.3977725, 0.89180285)], includedObstacleCornersIndices=set([8, 15, 16, 28]))§46628§7.4280562
+747§3.052525§3.0306933§Chromosome(steinerPoints=[(0.9598286, 0.7866192), (0.6728828, 0.47791782), (0.72322845, 0.5965917), (0.72359335, 0.51374215), (0.3977725, 0.89180285)], includedObstacleCornersIndices=set([8, 28, 16, 15]))§161234§22.434101

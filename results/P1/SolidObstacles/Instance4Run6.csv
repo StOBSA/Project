@@ -1,0 +1,15 @@
+generation§population average§best§chromosome§function evaluations§runtime in seconds§svg
+1§7100014000§20.533796§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([0, 1, 5, 2, 7, 8]))§667§0.19944304
+2§2580001000§20.186497§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([1, 2, 3, 5, 0, 4, 7]))§833§0.2067411
+3§460000030§19.296528§Chromosome(steinerPoints=[(6.25999, 2.846167)], includedObstacleCornersIndices=set([0, 4, 7, 5, 2]))§1003§0.21229373
+4§320000030§17.166454§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([1, 2, 5, 4]))§1171§0.21720564
+6§140000030§15.975255§Chromosome(steinerPoints=[(7.136905, 1.9028924)], includedObstacleCornersIndices=set([3, 4, 5, 2]))§1506§0.22502764
+7§180000030§15.831966§Chromosome(steinerPoints=[(6.965644, 1.7118407)], includedObstacleCornersIndices=set([4, 2, 3]))§1675§0.22824171
+10§559999900§15.737154§Chromosome(steinerPoints=[(5.4779124, 7.019163)], includedObstacleCornersIndices=set([4, 2, 3]))§2185§0.23738973
+12§739999740§15.73019§Chromosome(steinerPoints=[(5.4779124, 7.019163)], includedObstacleCornersIndices=set([4, 2]))§2521§0.24282981
+22§799999700§15.704563§Chromosome(steinerPoints=[(5.4779124, 7.019163), (5.62506, 6.899425)], includedObstacleCornersIndices=set([2, 4]))§4233§0.26749814
+24§779999700§15.685459§Chromosome(steinerPoints=[(5.749057, 6.9888854)], includedObstacleCornersIndices=set([2, 4]))§4572§0.27167523
+27§819999700§15.651972§Chromosome(steinerPoints=[(5.4779124, 7.019163), (6.9449005, 2.0935225)], includedObstacleCornersIndices=set([2, 4]))§5095§0.2781153
+28§779999700§15.626347§Chromosome(steinerPoints=[(5.4779124, 7.019163), (5.62506, 6.899425), (6.9449005, 2.0935225)], includedObstacleCornersIndices=set([2, 4]))§5265§0.28032517
+30§1019999500§15.607243§Chromosome(steinerPoints=[(6.9449005, 2.0935225), (5.749057, 6.9888854)], includedObstacleCornersIndices=set([4, 2]))§5607§0.28529012
+531§1219999700§15.607243§Chromosome(steinerPoints=[(5.749057, 6.9888854), (6.9449005, 2.0935225)], includedObstacleCornersIndices=set([4, 2]))§111120§1.8566146

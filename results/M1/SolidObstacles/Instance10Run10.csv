@@ -1,0 +1,12 @@
+generation§population average§best§chromosome§function evaluations§runtime in seconds§svg
+1§819999940§2.573172§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([42, 23, 28, 11, 27, 29]))§1029§0.46479073
+3§200000020§2.5716927§Chromosome(steinerPoints=[(0.55790555, 0.7177201)], includedObstacleCornersIndices=set([42, 23, 28, 11, 27, 29]))§1585§0.5032732
+6§280000030§2.507692§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([12, 28, 11, 27, 29]))§2409§0.545788
+10§499999870§2.500521§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([31, 27, 7, 6, 12, 11]))§3511§0.59133804
+12§479999870§2.4563284§Chromosome(steinerPoints=[(0.5846148, 0.40132263)], includedObstacleCornersIndices=set([12, 29, 28, 11, 27]))§4067§0.6112515
+14§579999800§2.455107§Chromosome(steinerPoints=[(0.55790555, 0.7177201), (0.5900248, 0.3988038)], includedObstacleCornersIndices=set([12, 11, 29, 23, 28]))§4620§0.6306715
+15§839999600§2.4505696§Chromosome(steinerPoints=[(0.55790555, 0.7177201), (0.5900248, 0.3988038), (0.7382008, 0.39814574)], includedObstacleCornersIndices=set([12, 11, 29, 23, 28]))§4903§0.640302
+16§799999700§2.4449632§Chromosome(steinerPoints=[(0.5846148, 0.40132263), (0.7767428, 0.80868715), (0.48000178, 0.53173983)], includedObstacleCornersIndices=set([23, 28, 11, 29, 12]))§5183§0.64982647
+19§539999900§2.4402997§Chromosome(steinerPoints=[(0.7767428, 0.80868715), (0.7386565, 0.39939258), (0.5900248, 0.3988038), (0.48000178, 0.53173983)], includedObstacleCornersIndices=set([12, 23, 28, 29, 11]))§6012§0.67842865
+24§759999700§2.4391022§Chromosome(steinerPoints=[(0.7767428, 0.80868715), (0.7386565, 0.39939258), (0.5900248, 0.3988038), (0.48000178, 0.53173983), (0.59907573, 0.38608885)], includedObstacleCornersIndices=set([12, 11, 28, 29]))§7393§0.7279679
+525§739999740§2.4388702§Chromosome(steinerPoints=[(0.48000178, 0.53173983), (0.5966153, 0.3847386), (0.7382008, 0.39814574), (0.7767428, 0.80868715)], includedObstacleCornersIndices=set([12, 11, 28, 29]))§145726§5.6745243

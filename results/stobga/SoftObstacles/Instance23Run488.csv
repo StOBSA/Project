@@ -1,0 +1,16 @@
+generation§population average§best§chromosome§function evaluations§runtime in seconds§svg
+1§1300000000§16.163767§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([48, 12]))§669§1.2170775
+2§200000030§16.157219§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([12]))§835§1.2372524
+4§160000030§16.145096§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([24, 12, 48, 32]))§1171§1.2647933
+6§260000030§16.142231§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([12, 32]))§1505§1.2857747
+7§220000030§16.11745§Chromosome(steinerPoints=[(3.134449, 2.5823407)], includedObstacleCornersIndices=set([12]))§1672§1.2960008
+13§260000020§16.113768§Chromosome(steinerPoints=[(3.134449, 2.5823407)], includedObstacleCornersIndices=set([24, 12]))§2692§1.3454494
+15§360000000§16.111837§Chromosome(steinerPoints=[(3.134449, 2.5823407)], includedObstacleCornersIndices=set([]))§3031§1.361008
+16§260000020§16.105328§Chromosome(steinerPoints=[(3.134449, 2.5823407)], includedObstacleCornersIndices=set([24, 12, 48, 32]))§3202§1.3692377
+19§220000020§16.102463§Chromosome(steinerPoints=[(3.134449, 2.5823407)], includedObstacleCornersIndices=set([12, 32]))§3706§1.3923483
+22§240000020§16.088285§Chromosome(steinerPoints=[(3.2267678, 2.530331)], includedObstacleCornersIndices=set([37]))§4230§1.416325
+32§200000020§16.0846§Chromosome(steinerPoints=[(3.2267678, 2.530331)], includedObstacleCornersIndices=set([37, 24]))§5944§1.4969904
+33§180000020§16.07891§Chromosome(steinerPoints=[(3.2267678, 2.530331)], includedObstacleCornersIndices=set([37, 12, 32]))§6116§1.5066559
+39§240000020§16.073296§Chromosome(steinerPoints=[(3.2267678, 2.530331)], includedObstacleCornersIndices=set([37, 32]))§7156§1.5566792
+41§240000020§16.069613§Chromosome(steinerPoints=[(3.2267678, 2.530331)], includedObstacleCornersIndices=set([24, 37, 32]))§7506§1.5737408
+542§200000020§16.069613§Chromosome(steinerPoints=[(3.2267678, 2.530331)], includedObstacleCornersIndices=set([24, 37, 32]))§113534§6.725974

@@ -1,0 +1,5 @@
+generation§population average§best§chromosome§function evaluations§runtime in seconds§svg
+1§100000020§14.6339855§Chromosome(steinerPoints=[], includedObstacleCornersIndices=set([0, 2]))§1052§0.038925495
+3§17.367384§14.511892§Chromosome(steinerPoints=[(3.534823, 2.7972777), (5.950361, 6.088279)], includedObstacleCornersIndices=set([2, 0]))§1616§0.045665663
+5§20000016§14.506903§Chromosome(steinerPoints=[(3.534823, 2.7972777), (5.951338, 6.1439524)], includedObstacleCornersIndices=set([2, 0]))§2183§0.052406393
+506§80000020§14.506903§Chromosome(steinerPoints=[(3.534823, 2.7972777), (5.951338, 6.1439524)], includedObstacleCornersIndices=set([0, 2]))§140883§1.7523892
